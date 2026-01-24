@@ -129,23 +129,39 @@ load();
 
 // ================= CSV UPLOAD =================
 function upload(){
- let f=csv.files[0]; if(!f) return;
- let r=new FileReader();
- r.onload=()=>{
-  let lines=r.result.trim().split(/\n+/);
-  data=lines.map(line=>{
-    let parts=line.split(".");
-    let row=["**","**","**","**","**","**"];
-    if(parts.length===1){
-      row[parseInt(day.value)]=pad(parts[0]);
-    }else{
-      for(let i=0;i<6;i++) row[i]=pad(parts[i]||"**");
-    }
-    return row;
-  });
-  save(); render();
- };
- r.readAsText(f);
+  const csvInput = document.getElementById("csv");
+  const daySel   = document.getElementById("day");
+
+  if(!csvInput.files.length){
+    alert("CSV file select karo");
+    return;
+  }
+
+  let f = csvInput.files[0];
+  let r = new FileReader();
+
+  r.onload = () => {
+    let lines = r.result.trim().split(/\r?\n/);
+    data = lines.map(line=>{
+      let parts = line.trim().split(".");
+      let row = ["**","**","**","**","**","**"];
+
+      // 🔒 single value rule (LOCKED)
+      if(parts.length === 1){
+        row[parseInt(daySel.value)] = pad(parts[0]);
+      } else {
+        for(let i=0;i<6;i++){
+          row[i] = pad(parts[i] || "**");
+        }
+      }
+      return row;
+    });
+
+    save();
+    render();
+  };
+
+  r.readAsText(f);
 }
 
 // ================= TABLE =================
