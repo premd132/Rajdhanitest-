@@ -2,60 +2,78 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Jodi Pattern – Photo Style (Final)</title>
+<title>Jodi System – Foundation</title>
 
 <style>
 body{font-family:Arial;background:#f4f6f8}
 h2{text-align:center}
 .panel{background:#fff;padding:10px;margin:10px;border-radius:6px}
+label{margin-right:6px}
+select,input{margin-right:10px;padding:4px}
 table{border-collapse:collapse;width:100%;font-size:13px}
 td{border:1px solid #999;padding:6px;text-align:center;min-width:42px}
 td[contenteditable]{background:#fffbe6}
 .blank{background:#eee}
-.circle{border:2px solid #0b5cff;border-radius:50%}
-canvas{position:absolute;left:0;top:0;pointer-events:none}
-.popup{
- position:fixed;top:10%;left:5%;right:5%;
- background:#fff;border:2px solid #000;
- padding:10px;z-index:999
-}
 </style>
 </head>
 
 <body>
 
-<h2>Jodi Pattern – Photo Style</h2>
+<h2>Jodi Pattern – Foundation</h2>
 
+<!-- SEARCH OPTIONS -->
 <div class="panel">
-Base Jodi:
-<input id="base" maxlength="2" style="width:60px">
+<label>Market:</label>
+<select id="market">
+  <option>Kalyan</option>
+  <option>Rajdhani</option>
+  <option>Milan</option>
+</select>
 
-Top Rows:
+<label>Day:</label>
+<select id="day">
+  <option>Mon</option><option>Tue</option><option>Wed</option>
+  <option>Thu</option><option>Fri</option><option>Sat</option>
+</select>
+
+<br><br>
+
+<label>Jodi 1:</label><input id="j1" maxlength="2" style="width:50px">
+<label>Jodi 2:</label><input id="j2" maxlength="2" style="width:50px">
+<label>Jodi 3:</label><input id="j3" maxlength="2" style="width:50px">
+
+<br><br>
+
+<label>Game Type:</label>
+<select disabled>
+  <option>Straight</option>
+</select>
+
+<label>Top Rows:</label>
 <select id="top"></select>
 
-Bottom Rows:
+<label>Bottom Rows:</label>
 <select id="bottom"></select>
 
-<button onclick="search()">SEARCH</button>
-<button onclick="clearMarking()">Clear Marking</button>
+<button>SEARCH</button>
 </div>
 
+<!-- CSV -->
 <div class="panel">
 CSV Upload:
 <input type="file" id="csv">
 <button onclick="loadCSV()">Upload</button>
+<button onclick="addRow()">Add Row</button>
 <button onclick="clearAll()">Clear Data</button>
 </div>
 
-<div class="panel" style="position:relative">
-<canvas id="lineCanvas"></canvas>
+<!-- TABLE -->
+<div class="panel">
 <table id="chart"><tbody></tbody></table>
 </div>
 
-<div id="popup"></div>
-
 <script>
-/* ================= INIT ================= */
+/* ---------- INIT ---------- */
 for(let i=1;i<=10;i++){
   top.innerHTML+=`<option>${i}</option>`;
   bottom.innerHTML+=`<option>${i}</option>`;
@@ -63,51 +81,19 @@ for(let i=1;i<=10;i++){
 
 let data = JSON.parse(localStorage.getItem("jodiData")) || [];
 
-/* ================= UTILITIES ================= */
-
-/* normalize ANY cell value */
+/* ---------- NORMALIZE JODI ---------- */
 function norm(v){
   if(v===undefined || v===null) return "**";
-  v = String(v).trim();
-
-  // blanks / garbage
-  if(v==="" || v==="*" || v==="**") return "**";
-
-  // remove non-numeric
-  v = v.replace(/[^0-9]/g,"");
+  v=String(v).trim();
+  if(v===""||v==="*"||v==="**") return "**";
+  v=v.replace(/[^0-9]/g,"");
   if(v==="") return "**";
-
-  // single ank -> 0 prefix
   if(v.length===1) return "0"+v;
-
-  // more than 2 digits -> take last 2
   if(v.length>2) return v.slice(-2);
-
   return v;
 }
 
-/* palti */
-function palti(j){ return j[1]+j[0]; }
-
-/* family map (sample, extend if needed) */
-const families={
- "15":["01","06","10","15","51","56","60","65"],
- "25":["02","07","20","25","52","57","70","75"],
- "35":["03","08","30","35","53","58","80","85"],
- "45":["04","09","40","45","54","59","90","95"]
-};
-
-function family(j){
-  for(let k in families)
-    if(families[k].includes(j)) return k;
-  return "NA";
-}
-
-function sameNature(a,b){
-  return palti(a)===palti(b) || family(a)===family(b);
-}
-
-/* ================= TABLE RENDER ================= */
+/* ---------- TABLE ---------- */
 function drawTable(){
   let t=document.querySelector("#chart tbody");
   t.innerHTML="";
@@ -118,155 +104,57 @@ function drawTable(){
       td.textContent=cell;
       td.contentEditable=true;
       if(cell==="**") td.classList.add("blank");
-
       td.oninput=()=>{
         data[ri][ci]=norm(td.textContent);
         save();
         drawTable();
       };
-
       tr.appendChild(td);
     });
     t.appendChild(tr);
   });
-  resizeCanvas();
 }
 
 function save(){
   localStorage.setItem("jodiData",JSON.stringify(data));
 }
 
-/* ================= CSV UPLOAD ================= */
+/* ---------- CSV UPLOAD ---------- */
 function loadCSV(){
   let f=csv.files[0];
   if(!f) return;
-
   let reader=new FileReader();
   reader.onload=e=>{
-    let lines=e.target.result
-      .replace(/\r/g,"")
-      .split("\n")
-      .map(l=>l.trim())
-      .filter(l=>l.length);
-
+    let lines=e.target.result.replace(/\r/g,"").split("\n").filter(l=>l.trim());
     data=[];
-
     lines.forEach(line=>{
-      // skip header
-      if(line.toLowerCase().includes("mon")) return;
-
-      // comma OR dot supported
-      let cols = line.includes(",")
-        ? line.split(",")
-        : line.split(".");
-
-      let row = cols.map(v=>norm(v));
-      data.push(row);
+      let cols=line.includes(",")?line.split(","):line.split(".");
+      data.push(cols.map(v=>norm(v)));
     });
-
     save();
     drawTable();
   };
   reader.readAsText(f);
 }
 
-/* ================= CLEAR ================= */
+/* ---------- ADD ROW ---------- */
+function addRow(){
+  if(data.length===0) return;
+  let cols=data[0].length;
+  let row=[];
+  for(let i=0;i<cols;i++) row.push("**");
+  data.push(row);
+  save();
+  drawTable();
+}
+
+/* ---------- CLEAR ---------- */
 function clearAll(){
   if(confirm("Clear all data?")){
     data=[];
     localStorage.removeItem("jodiData");
     drawTable();
   }
-}
-
-function clearMarking(){
-  document.querySelectorAll("td").forEach(td=>{
-    td.classList.remove("circle");
-  });
-  let ctx=lineCanvas.getContext("2d");
-  ctx.clearRect(0,0,lineCanvas.width,lineCanvas.height);
-  popup.innerHTML="";
-}
-
-/* ================= CANVAS ================= */
-function resizeCanvas(){
-  let table=document.getElementById("chart");
-  let c=document.getElementById("lineCanvas");
-  c.width=table.offsetWidth;
-  c.height=table.offsetHeight;
-  c.style.width=table.offsetWidth+"px";
-  c.style.height=table.offsetHeight+"px";
-}
-
-/* ================= SEARCH (PHOTO STYLE) ================= */
-function search(){
-  clearMarking();
-  resizeCanvas();
-
-  let baseJ = norm(base.value);
-  if(baseJ==="**") return alert("Base jodi likho");
-
-  let ctx = lineCanvas.getContext("2d");
-  let tableRect = chart.getBoundingClientRect();
-
-  data.forEach((row,ri)=>{
-    row.forEach((cell,ci)=>{
-      if(cell === baseJ){
-
-        let pattern = [{r:ri, c:ci, v:cell}];
-        let lastCol = ci;
-
-        // walk downward (photo style)
-        for(let step=1; step<=bottom.value; step++){
-          let r = ri + step;
-          if(r >= data.length) break;
-
-          let found = false;
-          for(let dc of [0,-1,1]){
-            let c = lastCol + dc;
-            if(c < 0 || c >= data[r].length) continue;
-
-            let v = data[r][c];
-            if(v !== "**" && sameNature(pattern.at(-1).v, v)){
-              pattern.push({r,c,v});
-              lastCol = c;
-              found = true;
-              break;
-            }
-          }
-          if(!found) break;
-        }
-
-        // draw only if 2 or 3 touch
-        if(pattern.length >= 2){
-          ctx.beginPath();
-          pattern.forEach((p,i)=>{
-            let td = document.querySelectorAll("#chart tr")[p.r].children[p.c];
-            td.classList.add("circle");
-
-            let rect = td.getBoundingClientRect();
-            let x = rect.left - tableRect.left + rect.width/2;
-            let y = rect.top - tableRect.top + rect.height/2;
-
-            if(i===0) ctx.moveTo(x,y);
-            else ctx.lineTo(x,y);
-          });
-          ctx.strokeStyle = "#0b5cff";
-          ctx.lineWidth = 2;
-          ctx.stroke();
-
-          popup.innerHTML += `
-            <div class="popup">
-              <b>Pattern Found</b><br>
-              Base Jodi: ${baseJ}<br>
-              Touch: ${pattern.length}<br>
-              <button onclick="this.parentElement.remove()">Close</button>
-            </div>`;
-        }
-
-      }
-    });
-  });
 }
 
 drawTable();
