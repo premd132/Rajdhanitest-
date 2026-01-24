@@ -1,24 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jodi Pattern – Full System</title>
+<title>Jodi Pattern – Same Column (Final)</title>
 <style>
-body{font-family:Arial;background:#f6f1d3}
-.controls{margin:10px}
-table{border-collapse:collapse;margin-top:10px}
-td{border:1px solid #999;width:60px;height:32px;
-   text-align:center;font-weight:600;position:relative}
-.square{outline:3px solid #000}
-.circle{border:3px solid blue;border-radius:50%}
-svg{position:absolute;top:0;left:0;pointer-events:none}
-.popup{
- position:fixed;top:10%;left:5%;right:5%;
- background:#fff;border:2px solid #000;
- padding:10px;z-index:999
+body{font-family:Arial;background:#f6f1d3;margin:10px}
+.controls{margin-bottom:8px}
+table{border-collapse:collapse}
+td,th{
+  border:1px solid #999;
+  width:56px;height:32px;
+  text-align:center;
+  font-weight:700;position:relative;
+  background:#fbf6db;
 }
-.popup table td{width:50px}
-button{margin:3px}
+th{background:#eee}
+.square{outline:3px solid #000}
+.circle{border:3px solid #1f66ff;border-radius:50%}
+svg{position:absolute;top:0;left:0;pointer-events:none}
+.btn{margin-left:6px}
+.small{font-size:12px}
 </style>
 </head>
 <body>
@@ -26,15 +27,13 @@ button{margin:3px}
 <div class="controls">
 Market:
 <select id="market">
-  <option>Kalyan</option>
-  <option>Rajdhani</option>
-  <option>Milan</option>
+  <option>Kalyan</option><option>Rajdhani</option><option>Milan</option>
 </select>
 
 Day:
 <select id="day">
-  <option>Mon</option><option>Tue</option><option>Wed</option>
-  <option>Thu</option><option>Fri</option><option>Sat</option>
+  <option value="0">Mon</option><option value="1">Tue</option><option value="2">Wed</option>
+  <option value="3">Thu</option><option value="4">Fri</option><option value="5">Sat</option>
 </select>
 
 Base Jodi:
@@ -43,26 +42,31 @@ Base Jodi:
 Rows:
 <select id="rows"></select>
 
-<button onclick="search()">SEARCH</button>
-<button onclick="clearMarks()">Clear</button>
+<button class="btn" onclick="search()">SEARCH</button>
+<button class="btn" onclick="clearMarks()">Clear</button>
 </div>
 
-<div>
-CSV Upload:
+<div class="controls small">
+CSV:
 <input type="file" id="csv">
-<button onclick="upload()">Upload</button>
-<button onclick="addRow()">Add Row</button>
+<button class="btn" onclick="upload()">Upload</button>
+<button class="btn" onclick="addRow()">Add Row</button>
 </div>
 
-<div id="wrap" style="position:relative">
+<div id="wrap" style="position:relative;margin-top:6px">
 <svg id="lines"></svg>
-<table id="tbl"></table>
+<table id="tbl">
+  <thead>
+    <tr>
+      <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 </div>
-
-<div id="popup"></div>
 
 <script>
-// ================= FAMILY =================
+// ================= FAMILY (SAME AS YOU) =================
 const FAMILIES={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -80,164 +84,137 @@ const FAMILIES={
 
 // ================= UTIL =================
 const pad=v=>{
- if(v=="**")return "**";
+ if(v==="**") return "**";
  v=String(v).replace(/[^0-9]/g,"");
  if(v==="") return "**";
- return v.length==1?"0"+v:v.slice(-2);
-}
+ return v.length===1 ? "0"+v : v.slice(-2);
+};
 const palti=v=>v[1]+v[0];
 const familyOf=v=>{
- for(let k in FAMILIES) if(FAMILIES[k].includes(v)) return k;
+ for(const k in FAMILIES) if(FAMILIES[k].includes(v)) return k;
  return null;
-}
+};
+const match=(base,v)=>{
+ if(v==="**") return false;
+ if(v===base) return true;
+ if(palti(v)===base) return true;
+ const f=familyOf(base);
+ return f && FAMILIES[f].includes(v);
+};
 
 // ================= DATA =================
-let data=[];
-let patterns=[];
+let data=[]; // rows x 6
+const tbody=document.querySelector("#tbl tbody");
 
-// rows selector
+// rows selector 1..10
 for(let i=1;i<=10;i++){
- let o=document.createElement("option");
- o.text=i; o.value=i;
- rows.appendChild(o);
+ const o=document.createElement("option");
+ o.value=i;o.text=i;rows.appendChild(o);
 }
+
+// ================= STORAGE =================
+function save(){localStorage.setItem("jodiData",JSON.stringify(data));}
+function load(){
+ const d=localStorage.getItem("jodiData");
+ if(d){data=JSON.parse(d); render();}
+}
+load();
 
 // ================= CSV =================
 function upload(){
- let f=csv.files[0];
- if(!f) return;
- let r=new FileReader();
+ const f=csv.files[0]; if(!f) return;
+ const r=new FileReader();
  r.onload=()=>{
-  data=r.result.trim().split(/\n/).map(l=>
-    l.split(".").map(pad)
-  );
+  const lines=r.result.trim().split(/\n+/);
+  data=lines.map(line=>{
+    const p=line.split(".");
+    const row=[];
+    for(let i=0;i<6;i++) row[i]=pad(p[i]??"**");
+    return row;
+  });
   save(); render();
  };
  r.readAsText(f);
 }
-function load(){
- let d=localStorage.getItem("jodiData");
- if(d){data=JSON.parse(d); render();}
-}
-function save(){
- localStorage.setItem("jodiData",JSON.stringify(data));
-}
-load();
 
 // ================= TABLE =================
 function render(){
- tbl.innerHTML="";
- data.forEach((r,ri)=>{
-  let tr=document.createElement("tr");
-  r.forEach((c,ci)=>{
-    let td=document.createElement("td");
-    td.textContent=c;
-    td.contentEditable=true;
+ tbody.innerHTML="";
+ data.forEach((row,ri)=>{
+  const tr=document.createElement("tr");
+  row.forEach((v,ci)=>{
+    const td=document.createElement("td");
+    td.textContent=v;
     td.dataset.r=ri; td.dataset.c=ci;
+    td.contentEditable=true;
     td.oninput=()=>{
       data[ri][ci]=pad(td.textContent);
       save(); render();
     };
     tr.appendChild(td);
   });
-  tbl.appendChild(tr);
+  tbody.appendChild(tr);
  });
  resizeSVG();
 }
 function addRow(){
- if(!data.length) return;
- data.push(new Array(data[0].length).fill("**"));
+ if(!data.length) data.push(["**","**","**","**","**","**"]);
+ else data.push(["**","**","**","**","**","**"]);
  save(); render();
 }
 
-// ================= SEARCH =================
+// ================= SEARCH (SAME COLUMN ONLY) =================
 function search(){
-  clearMarks();
-  patterns = [];
+ clearMarks();
+ const base=pad(document.getElementById("base").value);
+ const col=parseInt(day.value,10);
+ const R=parseInt(rows.value,10);
 
-  let base = pad(baseInput());
-  let R = parseInt(rows.value);
+ // scan from bottom to top
+ for(let r=data.length-1; r>=0; r--){
+   if(data[r][col]===base){
+     // base found -> square
+     markSquare(r,col);
 
-  for(let start=0; start<=data.length-R; start++){
+     // look UP only within selected rows
+     const hits=[];
+     for(let k=1;k<=R;k++){
+       const rr=r-k;
+       if(rr<0) break;
+       const v=data[rr][col];
+       if(match(base,v)) hits.push({r:rr,c:col});
+     }
 
-    for(let r=start; r<start+R; r++){
-      data[r].forEach((v,c)=>{
-
-        // 🔳 base jodi found
-        if(v === base){
-
-          let baseCell = {r, c, v, base:true};
-          let chain = [];
-
-          // scan SAME COLUMN only
-          for(let rr=start; rr<start+R; rr++){
-            let cv = data[rr][c];
-            if(cv === "**") continue;
-
-            if(
-              cv === base ||
-              palti(cv) === base ||
-              (familyOf(base) && FAMILIES[familyOf(base)].includes(cv))
-            ){
-              // skip base itself
-              if(!(rr===r && c===c)){
-                chain.push({r:rr, c, v:cv});
-              }
-            }
-          }
-
-          // save pattern (1 touch bhi valid)
-          if(chain.length >= 1){
-            patterns.push({base:baseCell, chain});
-          }
-        }
-
-      });
-    }
-
-  }
-
-  drawPatterns();
-  showPopup();
-             }
+     // mark circles + check line
+     hits.forEach(h=>markCircle(h.r,h.c));
+     if(hits.length>1) drawVerticalLine(r,col,hits);
+   }
+ }
+}
 
 // ================= MARKING =================
 function cell(r,c){
  return document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
 }
-function markSquare(o){ cell(o.r,o.c).classList.add("square"); }
-function markCircle(o){ cell(o.r,o.c).classList.add("circle"); }
+function markSquare(r,c){ cell(r,c).classList.add("square"); }
+function markCircle(r,c){ cell(r,c).classList.add("circle"); }
 
-function drawLines(arr){
- for(let i=0;i<arr.length-1;i++){
-  let a=cell(arr[i].r,arr[i].c).getBoundingClientRect();
-  let b=cell(arr[i+1].r,arr[i+1].c).getBoundingClientRect();
-  let bx=lines.getBoundingClientRect().left;
-  let by=lines.getBoundingClientRect().top;
-  let l=document.createElementNS("http://www.w3.org/2000/svg","line");
-  l.setAttribute("x1",a.left+a.width/2-bx);
-  l.setAttribute("y1",a.top+a.height/2-by);
-  l.setAttribute("x2",b.left+b.width/2-bx);
-  l.setAttribute("y2",b.top+b.height/2-by);
-  l.setAttribute("stroke","blue");
-  l.setAttribute("stroke-width","2");
-  lines.appendChild(l);
+function drawVerticalLine(baseR,c,hits){
+ // connect in order top->down to look photo-like
+ const pts=hits.slice().sort((a,b)=>a.r-b.r);
+ for(let i=0;i<pts.length-1;i++){
+   const A=cell(pts[i].r,c).getBoundingClientRect();
+   const B=cell(pts[i+1].r,c).getBoundingClientRect();
+   const box=lines.getBoundingClientRect();
+   const L=document.createElementNS("http://www.w3.org/2000/svg","line");
+   L.setAttribute("x1",A.left+A.width/2-box.left);
+   L.setAttribute("y1",A.top+A.height/2-box.top);
+   L.setAttribute("x2",B.left+B.width/2-box.left);
+   L.setAttribute("y2",B.top+B.height/2-box.top);
+   L.setAttribute("stroke","#1f66ff");
+   L.setAttribute("stroke-width","2");
+   lines.appendChild(L);
  }
-}
-
-// ================= POPUP =================
-function showPopup(){
- let p=document.getElementById("popup");
- p.innerHTML="";
- patterns.forEach((pt,i)=>{
-  p.innerHTML+=`
-   <div class="popup">
-    <b>Pattern ${i+1}</b><br>
-    Base Jodi: ${pt.base.v}<br>
-    Touch: ${pt.chain.length}<br>
-    <button onclick="this.parentElement.remove()">Close</button>
-   </div>`;
- });
 }
 
 // ================= CLEAR =================
@@ -246,15 +223,12 @@ function clearMarks(){
   e.classList.remove("square","circle");
  });
  lines.innerHTML="";
- popup.innerHTML="";
 }
 function resizeSVG(){
- let t=tbl.getBoundingClientRect();
+ const t=document.getElementById("tbl").getBoundingClientRect();
  lines.setAttribute("width",t.width);
  lines.setAttribute("height",t.height);
 }
-function baseInput(){return document.getElementById("base").value}
 </script>
-
 </body>
 </html>
