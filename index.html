@@ -2,79 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Matka Advanced Pattern Logic</title>
+    <title>Matka Pattern Searcher - Mon-Sat</title>
     <style>
-        :root { --gold: #ffd700; --bg: #121212; --panel: #1e1e1e; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
+        :root { --gold: #ffd700; --bg: #121212; --panel: #1e1e1e; --cell-size: 45px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; text-align: center; }
+        .container { max-width: 1000px; margin: auto; }
         
-        /* Search Box Styles */
-        .search-section { background: var(--panel); padding: 20px; border-radius: 10px; border: 1px solid #444; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        input, select { padding: 10px; border-radius: 5px; border: 1px solid #555; background: #333; color: white; }
+        /* Search Box */
+        .search-section { background: var(--panel); padding: 20px; border-radius: 10px; border: 1px solid #444; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; }
+        input, select { padding: 10px; border-radius: 5px; border: 1px solid #555; background: #333; color: white; font-weight: bold; }
         
-        /* Table Styles */
-        .table-container { background: white; border-radius: 10px; overflow-x: auto; position: relative; }
-        table { width: 100%; border-collapse: collapse; color: black; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; font-weight: bold; position: relative; }
-        th { background: #800000; color: white; }
+        /* Table Controls */
+        .table-container { background: white; border-radius: 8px; overflow: hidden; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; color: black; table-layout: fixed; }
+        th, td { border: 1px solid #bbb; padding: 12px 5px; text-align: center; font-weight: bold; position: relative; }
+        th { background: #800000; color: white; font-size: 14px; }
 
         /* Marking Styles */
-        .jodi-cell { display: inline-block; width: 40px; height: 40px; line-height: 40px; cursor: pointer; transition: 0.2s; position: relative; z-index: 2; }
-        .base-jodi-mark { border: 3px solid #ff0000; background: rgba(255, 0, 0, 0.1); border-radius: 5px; } /* Chokor 🔳 */
-        .pattern-circle { border: 3px solid #0000ff; border-radius: 50%; } /* Round ⭕ */
+        .jodi-cell { display: inline-block; width: var(--cell-size); height: var(--cell-size); line-height: var(--cell-size); cursor: pointer; font-size: 20px; transition: 0.2s; z-index: 2; position: relative; }
+        .base-jodi-mark { border: 3px solid #ff0000; background: rgba(255, 0, 0, 0.15); border-radius: 4px; } /* Chokor 🔳 */
+        .pattern-circle { border: 3px solid #0000ff; border-radius: 50%; background: rgba(0, 0, 255, 0.1); } /* Round ⭕ */
         
-        /* Connection Line (Canvas Layer) */
-        #lineCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-save { background: #28a745; color: white; }
-        .btn-upload { background: var(--gold); color: black; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-run { background: #28a745; color: white; border: 2px solid #1e7e34; }
+        .btn-run:hover { background: #218838; }
+        .btn-tool { background: #444; color: white; margin: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h2 style="color:var(--gold); margin-bottom:10px;">📊 MATKA PATTERN LOGIC MANAGER</h2>
+    
     <div class="search-section">
         <div>
-            <label>Market:</label><br>
-            <select id="marketSelect">
-                <option>Kalyan</option><option>Rajdhani</option><option>Milan</option>
+            <label>Market</label><br>
+            <select id="market">
+                <option>KALYAN</option><option>RAJDHANI</option><option>MILAN</option>
             </select>
         </div>
         <div>
-            <label>Select Day:</label><br>
+            <label>Day</label><br>
             <select id="daySelect">
-                <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
-                <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+                <option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option>
+                <option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option>
             </select>
         </div>
         <div>
-            <label>Base Jodis:</label><br>
-            <input type="text" id="baseJodi1" placeholder="Jodi 1" style="width:50px">
-            <input type="text" id="baseJodi2" placeholder="Jodi 2" style="width:50px">
+            <label>Base Jodi</label><br>
+            <input type="text" id="baseJodi" maxlength="2" placeholder="00" style="width:50px; text-align:center;">
         </div>
         <div>
-            <label>Search Rows (Up):</label><br>
-            <input type="number" id="rowRange" value="8" style="width:60px">
+            <label>Rows (Up)</label><br>
+            <input type="number" id="rowRange" value="8" style="width:60px;">
         </div>
-        <div style="display:flex; align-items:flex-end;">
-            <button class="btn btn-save" onclick="runPatternSearch()">Run Pattern</button>
+        <div style="padding-top:15px;">
+            <button class="btn btn-run" onclick="runPatternSearch()">APPLY SEARCH</button>
         </div>
     </div>
 
-    <div class="controls" style="margin-bottom:10px;">
-        <input type="file" id="csvFile" hidden onchange="handleCSV(this.files)">
-        <button class="btn btn-upload" onclick="document.getElementById('csvFile').click()">📂 Upload CSV</button>
-        <button class="btn" style="background:#007bff; color:white;" onclick="addNewRow()">➕ Add Row</button>
-        <button class="btn" style="background:#ff4d4d; color:white;" onclick="clearData()">🗑️ Clear Data</button>
+    <div class="controls">
+        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSV(this.files)">
+        <button class="btn btn-tool" onclick="document.getElementById('csvFile').click()" style="background:var(--gold); color:black;">📂 UPLOAD CSV</button>
+        <button class="btn btn-tool" onclick="addNewRow()">➕ ADD ROW</button>
+        <button class="btn btn-tool" onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR ALL</button>
     </div>
 
-    <div class="table-container" id="tableWrapper">
-        <canvas id="lineCanvas"></canvas>
+    <div class="table-container">
         <table id="mainTable">
             <thead>
                 <tr>
-                    <th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                    <th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -85,64 +83,82 @@
 <script>
     const tableBody = document.getElementById('tableBody');
 
-    // 1. Padding Logic (01, 02...)
+    // 1. Auto-Padding & Formatting
     function formatJodi(val) {
-        val = val.toString().trim();
-        if(val.length === 1) return "0" + val;
-        return val || "00";
+        let clean = val.toString().trim().replace(/[^0-9]/g, '');
+        if (clean === "") return "00";
+        return clean.length === 1 ? "0" + clean : clean.slice(0, 2);
     }
 
-    // 2. Family Jodi Logic
+    // 2. Family Calculation
     function getFamily(jodi) {
-        if(!jodi || jodi == "00") return [];
         let a = parseInt(jodi[0]), b = parseInt(jodi[1]);
         let cut = (n) => (n + 5) % 10;
-        let fam = [
+        let f = [
             `${a}${b}`, `${cut(a)}${b}`, `${a}${cut(b)}`, `${cut(a)}${cut(b)}`,
             `${b}${a}`, `${cut(b)}${a}`, `${b}${cut(a)}`, `${cut(b)}${cut(a)}`
         ];
-        return [...new Set(fam)];
+        return [...new Set(f)];
     }
 
-    // 3. Local Storage & Add Row
-    function addNewRow(data = ["NEW", "00", "00", "00", "00", "00", "00"]) {
+    // 3. Add Row
+    function addNewRow(data = ["00", "00", "00", "00", "00", "00"], isLoading = false) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><input type="text" value="${data[0]}" onchange="saveAll()"></td>`;
-        for(let i=1; i<=6; i++) {
-            let val = formatJodi(data[i]);
-            tr.innerHTML += `<td><span class="jodi-cell" data-col="${i}">${val}</span></td>`;
+        let html = "";
+        for (let i = 0; i < 6; i++) {
+            let val = formatJodi(data[i] || "00");
+            html += `<td><span class="jodi-cell" contenteditable="true" onblur="saveAll()">${val}</span></td>`;
         }
-        tableBody.prepend(tr); // Niche se start (Newest top, search bottom to up)
-        saveAll();
+        tr.innerHTML = html;
+        tableBody.appendChild(tr); // New rows at bottom
+        if (!isLoading) saveAll();
     }
 
-    // 4. Pattern Search Logic
+    // 4. Fixed CSV Upload
+    function handleCSV(files) {
+        if (files.length === 0) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const rows = text.split(/\r?\n/);
+            tableBody.innerHTML = ""; 
+            rows.forEach(row => {
+                if (row.trim()) {
+                    const cols = row.split(',');
+                    // CSV me Date column ho sakta hai, use skip karke 6 jodi lenge
+                    let jodiData = cols.length > 6 ? cols.slice(1, 7) : cols;
+                    addNewRow(jodiData, true);
+                }
+            });
+            saveAll();
+            alert("Data Uploaded Successfully!");
+        };
+        reader.readAsText(files[0]);
+    }
+
+    // 5. Pattern Logic (Bottom-Up)
     function runPatternSearch() {
-        // Reset markings
+        // Reset old marks
         document.querySelectorAll('.jodi-cell').forEach(el => el.className = 'jodi-cell');
         
-        let targetDay = document.getElementById('daySelect').value;
-        let baseJ1 = formatJodi(document.getElementById('baseJodi1').value);
+        let dayIdx = parseInt(document.getElementById('daySelect').value);
+        let baseJ = formatJodi(document.getElementById('baseJodi').value);
         let range = parseInt(document.getElementById('rowRange').value);
-        
         let rows = Array.from(tableBody.querySelectorAll('tr'));
-        
-        // Niche se start search (Bottom-up)
-        for(let i = rows.length - 1; i >= 0; i--) {
-            let cell = rows[i].children[targetDay].querySelector('.jodi-cell');
-            let jodiVal = cell.innerText;
 
-            if(jodiVal === baseJ1) {
-                cell.classList.add('base-jodi-mark'); // Chokor 🔳
+        // Bottom se search start karenge
+        for (let i = rows.length - 1; i >= 0; i--) {
+            let cell = rows[i].children[dayIdx].querySelector('.jodi-cell');
+            if (cell.innerText.trim() === baseJ) {
+                cell.classList.add('base-jodi-mark'); // 🔳
                 
-                // Check rows above for family
-                let family = getFamily(baseJ1);
-                for(let r = 1; r <= range; r++) {
-                    if(i - r >= 0) {
-                        let rowToSearch = rows[i - r];
-                        Array.from(rowToSearch.querySelectorAll('.jodi-cell')).forEach(c => {
-                            if(family.includes(c.innerText)) {
-                                c.classList.add('pattern-circle'); // Round ⭕
+                let family = getFamily(baseJ);
+                // Check rows above
+                for (let r = 1; r <= range; r++) {
+                    if (i - r >= 0) {
+                        rows[i - r].querySelectorAll('.jodi-cell').forEach(c => {
+                            if (family.includes(c.innerText.trim())) {
+                                c.classList.add('pattern-circle'); // ⭕
                             }
                         });
                     }
@@ -151,36 +167,34 @@
         }
     }
 
-    // 5. Data Persistence
+    // 6. Data Persistence
     function saveAll() {
         let data = [];
         tableBody.querySelectorAll('tr').forEach(tr => {
-            let rowData = [tr.querySelector('input').value];
-            tr.querySelectorAll('.jodi-cell').forEach(span => rowData.push(span.innerText));
-            data.push(rowData);
+            let row = [];
+            tr.querySelectorAll('.jodi-cell').forEach(span => row.push(span.innerText.trim()));
+            data.push(row);
         });
-        localStorage.setItem('matkaData', JSON.stringify(data));
+        localStorage.setItem('matka_v3_data', JSON.stringify(data));
     }
 
     function loadData() {
-        let stored = localStorage.getItem('matkaData');
-        if(stored) {
-            tableBody.innerHTML = "";
-            JSON.parse(stored).reverse().forEach(row => addNewRow(row));
+        let stored = localStorage.getItem('matka_v3_data');
+        if (stored) {
+            let data = JSON.parse(stored);
+            data.forEach(r => addNewRow(r, true));
+        } else {
+            // Default 10 empty rows
+            for(let i=0; i<10; i++) addNewRow(undefined, true);
         }
     }
 
-    function handleCSV(files) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const lines = e.target.result.split('\n');
-            tableBody.innerHTML = "";
-            lines.forEach(line => { if(line.trim()) addNewRow(line.split(',')); });
-        };
-        reader.readAsText(files[0]);
+    function clearData() {
+        if (confirm("Pura data delete karein?")) {
+            localStorage.removeItem('matka_v3_data');
+            location.reload();
+        }
     }
-
-    function clearData() { if(confirm("Clear everything?")) { localStorage.clear(); location.reload(); } }
 
     window.onload = loadData;
 </script>
