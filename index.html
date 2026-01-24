@@ -111,28 +111,52 @@ function save(){
 
 /* ---------- CSV UPLOAD (DOT FORMAT) ---------- */
 function loadCSV(){
- let f=csv.files[0];
- if(!f) return;
+  let f = csv.files[0];
+  if(!f) return;
 
- let reader=new FileReader();
- reader.onload=e=>{
-  let rows=e.target.result.trim().split(/\r?\n/);
-  data=[];
-  rows.forEach(line=>{
-   let cols=line.trim().split(".");
-   data.push(
-    cols.map(v=>{
-     v=v.trim();
-     if(v==="") return "**";
-     if(v!=="**") v=v.padStart(2,"0");
-     return v;
-    })
-   );
-  });
-  save();
-  drawTable();
- };
- reader.readAsText(f);
+  let reader = new FileReader();
+  reader.onload = e => {
+    let lines = e.target.result
+      .replace(/\r/g,"")
+      .split("\n")
+      .map(l=>l.trim())
+      .filter(l=>l.length);
+
+    data = [];
+
+    lines.forEach(line=>{
+      // header skip
+      if(line.toLowerCase().includes("mon")) return;
+
+      // support comma OR dot
+      let cols = line.includes(",")
+        ? line.split(",")
+        : line.split(".");
+
+      let row = cols.map(v=>{
+        v = v.trim();
+
+        // blank handling
+        if(v==="*" || v==="**" || v==="") return "**";
+
+        // remove non-numeric
+        v = v.replace(/[^0-9]/g,"");
+
+        if(v==="") return "**";
+
+        // jodi normalize
+        return v.padStart(2,"0");
+      });
+
+      data.push(row);
+    });
+
+    localStorage.setItem("jodiData", JSON.stringify(data));
+    drawTable();
+  };
+
+  reader.readAsText(f);
+}
 }
 
 /* ---------- CLEAR ---------- */
