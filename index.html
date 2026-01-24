@@ -1,223 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Pattern Table – Stage 1</title>
-
-<style>
-body{font-family:Arial;background:#f5f5f5}
-h2{margin:6px 0}
-.controls{margin-bottom:10px}
-.panel{
-  background:#fff;
-  padding:6px;
-  margin-bottom:8px;
-  border:1px solid #ccc;
-  font-size:13px;
-}
-
-table{border-collapse:collapse;background:#fff;font-size:13px}
-td{
-  border:1px solid #999;
-  padding:6px;
-  text-align:center;
-  min-width:42px;
-  font-weight:600;
-}
-td[contenteditable]{background:#fffbe6}
-.blank{background:#eee}
-
-.circle{
-  border:3px solid red !important;
-  border-radius:50%;
-}
-.line{
-  box-shadow: inset 0 -4px red;
-}
-
-button{padding:5px 10px;margin-right:5px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pradeep King Style Data Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
+        h2 { color: #800080; }
+        .controls { margin-bottom: 20px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #ffd700; color: black; }
+        .btn { padding: 8px 15px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-edit { background-color: #ffc107; color: black; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-upload { background-color: #007bff; color: white; }
+        input[type="text"] { padding: 5px; width: 80%; }
+    </style>
 </head>
-
 <body>
 
-<h2>Pattern Table (Family – Stage 1)</h2>
+<div class="container">
+    <h2>Pradeep Style Data Table</h2>
+    
+    <div class="controls">
+        <input type="file" id="csvFile" accept=".csv" class="btn">
+        <button onclick="uploadCSV()" class="btn btn-upload">Upload CSV</button>
+        <button onclick="addRow()" class="btn btn-add">Add New Row</button>
+    </div>
 
-<div class="panel">
-  <label><input type="checkbox" id="famOn" checked> Family Pattern</label>
-  &nbsp;&nbsp;
-  <label><input type="checkbox" id="paltiOn" checked> Palti Pattern</label>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Market</th>
+                <th>Jodi</th>
+                <th>Panel</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
 </div>
-
-<div class="controls">
-  <input type="file" id="csvFile">
-  <button onclick="exportCSV()">Export CSV</button>
-  <button onclick="clearAll()">Clear</button>
-</div>
-
-<div id="tableWrap"></div>
 
 <script>
-/* ================= FAMILY DATA (A) ================= */
-const families = {
-  "12":["12","17","21","26","62","67","71","76"],
-  "13":["13","18","31","36","63","68","81","86"],
-  "14":["14","19","41","46","64","69","91","96"],
-  "15":["01","06","10","15","51","56","60","65"],
-  "23":["23","28","32","37","73","78","82","87"],
-  "24":["24","29","42","47","74","79","92","97"],
-  "25":["02","07","20","25","52","57","70","75"],
-  "34":["34","39","43","48","84","89","93","98"],
-  "35":["03","08","30","35","53","58","80","85"],
-  "45":["04","09","40","45","54","59","90","95"],
-  "half":["05","16","27","38","49","50","61","72","83","94"],
-  "full":["00","11","22","33","44","55","66","77","88","99"]
-};
+    const tableBody = document.getElementById('tableBody');
 
-function fam(v){
-  for(let k in families){
-    if(families[k].includes(v)) return k;
-  }
-  return "";
-}
-function palti(v){
-  if(v=="**") return "**";
-  return v[1]+v[0];
-}
-function norm(v){
-  if(v==null) return "**";
-  v=String(v).trim();
-  if(v==""||v=="**") return "**";
-  return v.length==1?"0"+v:v;
-}
-
-/* ================= DATA ================= */
-let data = JSON.parse(localStorage.getItem("csvData")) || [];
-let marks = JSON.parse(localStorage.getItem("marks")) || {};
-
-/* ================= CSV LOAD ================= */
-csvFile.onchange=e=>{
-  let f=e.target.files[0];
-  if(!f) return;
-  let r=new FileReader();
-  r.onload=()=>{
-    data=r.result.trim().split(/\r?\n/)
-      .map(r=>r.split(",").map(norm));
-    marks={};
-    save(); draw();
-  };
-  r.readAsText(f);
-};
-
-/* ================= DRAW ================= */
-function draw(){
-  let html="<table><tbody>";
-  for(let r=0;r<data.length;r++){
-    html+="<tr>";
-    for(let c=0;c<data[r].length;c++){
-      let v=data[r][c];
-      let k=r+"-"+c;
-      let cls=(v=="**"?"blank ":"")+(marks[k]||"");
-      html+=`<td class="${cls}" contenteditable
-        data-r="${r}" data-c="${c}">${v}</td>`;
+    // 1. Add New Row Functionality
+    function addRow(date = "", market = "", jodi = "", panel = "") {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><input type="text" value="${date}" placeholder="DD-MM-YY"></td>
+            <td><input type="text" value="${market}" placeholder="Market Name"></td>
+            <td><input type="text" value="${jodi}" placeholder="00"></td>
+            <td><input type="text" value="${panel}" placeholder="000-0"></td>
+            <td>
+                <button onclick="saveRow(this)" class="btn btn-edit">Save</button>
+                <button onclick="deleteRow(this)" class="btn btn-delete">Delete</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
     }
-    html+="</tr>";
-  }
-  html+="</tbody></table>";
-  tableWrap.innerHTML=html;
-  bind();
-  autoPatterns();
-}
 
-/* ================= EVENTS ================= */
-function bind(){
-  document.querySelectorAll("td").forEach(td=>{
-    td.onblur=()=>{
-      let r=+td.dataset.r,c=+td.dataset.c;
-      data[r][c]=norm(td.innerText);
-      save(); draw();
-    };
-    td.onclick=e=>{
-      if(e.shiftKey){
-        let k=td.dataset.r+"-"+td.dataset.c;
-        marks[k]=marks[k]=="circle"?"line":marks[k]=="line"?"": "circle";
-        if(marks[k]=="") delete marks[k];
-        save(); draw();
-      }
-    };
-  });
-}
-
-/* ================= AUTO FAMILY + PALTI ================= */
-function autoPatterns(){
-  let famOn=document.getElementById("famOn").checked;
-  let palOn=document.getElementById("paltiOn").checked;
-
-  if(data.length<3) return;
-  let cols=data[0].length;
-
-  for(let c=0;c<cols;c++){
-    let a=data[data.length-2][c];
-    let b=data[data.length-1][c];
-
-    for(let r=0;r<data.length-2;r++){
-      if(famOn && fam(a) && fam(a)==fam(data[r][c]) &&
-         fam(b)==fam(data[r+1][c])){
-        marks[r+"-"+c]="circle";
-        marks[(r+1)+"-"+c]="line";
-      }
-
-      if(palOn && palti(a)==data[r][c] &&
-         palti(b)==data[r+1][c]){
-        marks[r+"-"+c]="circle";
-        marks[(r+1)+"-"+c]="line";
-      }
+    // 2. Save/Edit Row
+    function saveRow(btn) {
+        const row = btn.parentElement.parentElement;
+        const inputs = row.querySelectorAll('input');
+        if (btn.innerText === "Save") {
+            inputs.forEach(input => input.disabled = true);
+            btn.innerText = "Edit";
+            btn.style.backgroundColor = "#17a2b8";
+            btn.style.color = "white";
+        } else {
+            inputs.forEach(input => input.disabled = false);
+            btn.innerText = "Save";
+            btn.style.backgroundColor = "#ffc107";
+            btn.style.color = "black";
+        }
     }
-  }
-  save();
-}
 
-/* ================= STORAGE ================= */
-function save(){
-  localStorage.setItem("csvData",JSON.stringify(data));
-  localStorage.setItem("marks",JSON.stringify(marks));
-}
-function clearAll(){
-  if(confirm("Clear all?")){
-    localStorage.clear();
-    data=[]; marks={};
-    draw();
-  }
-}
+    // 3. Delete Row
+    function deleteRow(btn) {
+        if(confirm("Kya aap is row ko delete karna chahte hain?")) {
+            btn.parentElement.parentElement.remove();
+        }
+    }
 
-/* ================= CSV EXPORT ================= */
-function exportCSV(){
-  let csv=data.map(r=>r.join(",")).join("\n");
-  let b=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(b);
-  a.download="pattern.csv";
-  a.click();
-}
+    // 4. CSV File Upload & Parse
+    function uploadCSV() {
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
 
-/* ================= INIT ================= */
-if(data.length==0){
-  data=[
-    ["12","23","34","45"],
-    ["21","32","43","54"],
-    ["12","23","34","45"],
-    ["21","32","43","54"]
-  ];
-}
-draw();
+        if (!file) {
+            alert("Please select a CSV file first.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const content = e.target.result;
+            const lines = content.split("\n");
+
+            lines.forEach((line, index) => {
+                if (line.trim() !== "" && index !== 0) { // Skipping header row
+                    const columns = line.split(",");
+                    addRow(columns[0] || "", columns[1] || "", columns[2] || "", columns[3] || "");
+                }
+            });
+        };
+        reader.readAsText(file);
+    }
 </script>
-
-<p style="font-size:13px">
-<b>USE:</b><br>
-• Edit cell → normal click<br>
-• <b>SHIFT + click</b> → Circle → Line → Remove<br>
-• Checkbox se Family / Palti ON-OFF
-</p>
 
 </body>
 </html>
