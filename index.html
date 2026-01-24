@@ -2,163 +2,226 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>3rd Touch Line System</title>
+<title>Photo Pattern Jodi System</title>
 
 <style>
-body{font-family:Arial;background:#f4f4f4}
+body{font-family:Arial;background:#f4f6f8}
 h2{text-align:center}
-.panel{background:#fff;padding:15px;margin:10px;border-radius:6px}
+.panel{background:#fff;padding:10px;margin:10px;border-radius:6px}
 table{border-collapse:collapse;width:100%;font-size:13px}
-th,td{border:1px solid #999;padding:6px;text-align:center}
-th{background:#333;color:#fff}
-input,select,button{padding:6px;margin:4px}
-.circle{border:2px solid blue;border-radius:50%}
-.line{background:#cce5ff}
+td{border:1px solid #999;padding:6px;text-align:center;min-width:42px}
+td[contenteditable]{background:#fffbe6}
+.blank{background:#eee}
+.circle{border:2px solid #0b5cff;border-radius:50%}
+canvas{position:absolute;left:0;top:0;pointer-events:none}
+.popup{
+ position:fixed;top:10%;left:5%;right:5%;
+ background:#fff;border:2px solid #000;
+ padding:10px;z-index:999
+}
 </style>
 </head>
 
 <body>
 
-<h2>3rd Touch Line Trick System</h2>
+<h2>Jodi Pattern – Photo Style</h2>
 
 <div class="panel">
-  <b>CSV Upload:</b>
-  <input type="file" id="csvFile">
-  <button onclick="loadCSV()">Upload</button>
-  <button onclick="clearAll()">Clear All</button>
+Base Jodi:
+<input id="base" maxlength="2" style="width:60px">
+
+Top Rows:
+<select id="top"></select>
+
+Bottom Rows:
+<select id="bottom"></select>
+
+<button onclick="search()">SEARCH</button>
+<button onclick="clearMarking()">Clear Marking</button>
 </div>
 
 <div class="panel">
-  <b>Add Row Manually:</b><br>
-  Date: <input id="date">
-  Panna: <input id="panna" maxlength="3">
-  <button onclick="addRow()">Add Row</button>
+CSV Upload:
+<input type="file" id="csv">
+<button onclick="loadCSV()">Upload</button>
+<button onclick="clearAll()">Clear Data</button>
 </div>
 
-<div class="panel">
-  <b>Search Pattern:</b><br>
-  Panna: <input id="searchPanna" maxlength="3">
-  <button onclick="runPattern()">Find 3rd Touch</button>
+<div class="panel" style="position:relative">
+<canvas id="lineCanvas"></canvas>
+<table id="chart"><tbody></tbody></table>
 </div>
 
-<div class="panel">
-  <table id="chart">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Date</th>
-        <th>Panna</th>
-        <th>Family</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<div class="panel" id="result"></div>
+<div id="popup"></div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("chartData")) || [];
-render();
-
-/* FAMILY LOGIC */
-function family(p){
-  if(p=="**") return "**";
-  return p[0]+p[1];
+/* ---------- INIT ---------- */
+for(let i=1;i<=10;i++){
+ top.innerHTML+=`<option>${i}</option>`;
+ bottom.innerHTML+=`<option>${i}</option>`;
 }
 
-/* RENDER TABLE */
-function render(){
-  const tbody = document.querySelector("#chart tbody");
-  tbody.innerHTML="";
-  data.forEach((r,i)=>{
-    let tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td>${i+1}</td>
-      <td>${r.date}</td>
-      <td>${r.panna}</td>
-      <td>${family(r.panna)}</td>
-    `;
-    tbody.appendChild(tr);
+let data = JSON.parse(localStorage.getItem("jodiData")) || [];
+
+/* ---------- FAMILY + PALTI ---------- */
+const families={
+ "15":["01","06","10","15","51","56","60","65"],
+ "25":["02","07","20","25","52","57","70","75"],
+ "35":["03","08","30","35","53","58","80","85"],
+ "45":["04","09","40","45","54","59","90","95"]
+};
+
+function palti(j){ return j[1]+j[0]; }
+
+function family(j){
+ for(let k in families)
+  if(families[k].includes(j)) return k;
+ return "NA";
+}
+
+function sameNature(a,b){
+ return palti(a)===palti(b) || family(a)===family(b);
+}
+
+/* ---------- RENDER TABLE ---------- */
+function drawTable(){
+ let t=document.querySelector("#chart tbody");
+ t.innerHTML="";
+ data.forEach((row,ri)=>{
+  let tr=document.createElement("tr");
+  row.forEach((cell,ci)=>{
+   let td=document.createElement("td");
+   td.textContent=cell;
+   td.contentEditable=true;
+   if(cell==="**") td.classList.add("blank");
+   td.oninput=()=>{
+    data[ri][ci]=td.textContent.trim() || "**";
+    save();
+   };
+   tr.appendChild(td);
   });
-  localStorage.setItem("chartData",JSON.stringify(data));
+  t.appendChild(tr);
+ });
+ resizeCanvas();
 }
 
-/* ADD ROW */
-function addRow(){
-  let d=date.value;
-  let p=panna.value.padStart(3,"0");
-  if(!d||!p) return alert("Fill all");
-  data.push({date:d,panna:p});
-  render();
+function save(){
+ localStorage.setItem("jodiData",JSON.stringify(data));
 }
 
-/* CLEAR */
-function clearAll(){
-  if(confirm("Clear all data?")){
-    data=[];
-    localStorage.removeItem("chartData");
-    render();
-  }
-}
-
-/* CSV UPLOAD */
+/* ---------- CSV UPLOAD (DOT FORMAT) ---------- */
 function loadCSV(){
-  let file=document.getElementById("csvFile").files[0];
-  if(!file) return;
-  let reader=new FileReader();
-  reader.onload=function(e){
-    let rows=e.target.result.split("\n");
-    rows.forEach(r=>{
-      let c=r.split(",");
-      if(c.length>=2){
-        data.push({
-          date:c[0].trim(),
-          panna:c[1].trim().padStart(3,"0")
-        });
+ let f=csv.files[0];
+ if(!f) return;
+
+ let reader=new FileReader();
+ reader.onload=e=>{
+  let rows=e.target.result.trim().split(/\r?\n/);
+  data=[];
+  rows.forEach(line=>{
+   let cols=line.trim().split(".");
+   data.push(
+    cols.map(v=>{
+     v=v.trim();
+     if(v==="") return "**";
+     if(v!=="**") v=v.padStart(2,"0");
+     return v;
+    })
+   );
+  });
+  save();
+  drawTable();
+ };
+ reader.readAsText(f);
+}
+
+/* ---------- CLEAR ---------- */
+function clearAll(){
+ if(confirm("Clear all data?")){
+  data=[];
+  localStorage.removeItem("jodiData");
+  drawTable();
+ }
+}
+
+function clearMarking(){
+ document.querySelectorAll("td").forEach(td=>{
+  td.classList.remove("circle");
+ });
+ let ctx=lineCanvas.getContext("2d");
+ ctx.clearRect(0,0,lineCanvas.width,lineCanvas.height);
+ popup.innerHTML="";
+}
+
+/* ---------- CANVAS ---------- */
+function resizeCanvas(){
+ let table=document.getElementById("chart");
+ let c=document.getElementById("lineCanvas");
+ c.width=table.offsetWidth;
+ c.height=table.offsetHeight;
+ c.style.width=table.offsetWidth+"px";
+ c.style.height=table.offsetHeight+"px";
+}
+
+/* ---------- SEARCH LOGIC (PHOTO STYLE) ---------- */
+function search(){
+ clearMarking();
+ resizeCanvas();
+
+ let baseJ=base.value;
+ if(baseJ.length!==2) return alert("Base jodi likho");
+
+ let ctx=lineCanvas.getContext("2d");
+ let tableRect=chart.getBoundingClientRect();
+ let patterns=[];
+
+ data.forEach((row,ri)=>{
+  row.forEach((cell,ci)=>{
+   if(cell===baseJ){
+    let start=Math.max(0,ri-top.value);
+    let end=Math.min(data.length-1,ri+bottom.value);
+    let pat=[];
+
+    for(let r=start;r<=end;r++){
+     for(let c=0;c<row.length;c++){
+      let v=data[r][c];
+      if(v!=="**" && sameNature(cell,v)){
+       pat.push({r,c});
       }
-    });
-    render();
-  };
-  reader.readAsText(file);
-}
-
-/* 3RD TOUCH PATTERN */
-function runPattern(){
-  let p=searchPanna.value.padStart(3,"0");
-  let fam=family(p);
-  let hits=[];
-  data.forEach((r,i)=>{
-    if(family(r.panna)==fam){
-      hits.push(i);
+     }
     }
+    if(pat.length>=2) patterns.push(pat);
+   }
   });
+ });
 
-  document.querySelectorAll("tr").forEach(r=>{
-    r.classList.remove("circle","line");
+ patterns.forEach((pat,idx)=>{
+  ctx.beginPath();
+  pat.forEach((p,i)=>{
+   let td=document.querySelectorAll("#chart tr")[p.r].children[p.c];
+   td.classList.add("circle");
+   let rect=td.getBoundingClientRect();
+   let x=rect.left-tableRect.left+rect.width/2;
+   let y=rect.top-tableRect.top+rect.height/2;
+   if(i===0) ctx.moveTo(x,y);
+   else ctx.lineTo(x,y);
   });
+  ctx.strokeStyle="#0b5cff";
+  ctx.lineWidth=2;
+  ctx.stroke();
 
-  hits.forEach((i,idx)=>{
-    let tr=document.querySelectorAll("#chart tbody tr")[i];
-    tr.classList.add("circle");
-    if(idx>=1) tr.classList.add("line");
-  });
-
-  let res=document.getElementById("result");
-  if(hits.length>=3){
-    res.innerHTML=`
-      <b style="color:green">3rd Touch Confirmed!</b><br>
-      Family: ${fam}<br>
-      Touch Count: ${hits.length}<br>
-      Suggested Panna: ${p}
-    `;
-  }else{
-    res.innerHTML=`
-      <b style="color:red">Touch Incomplete</b><br>
-      Touch Count: ${hits.length}
-    `;
-  }
+  popup.innerHTML+=`
+   <div class="popup">
+    <b>Pattern ${idx+1}</b><br>
+    Touch Count: ${pat.length}<br>
+    Base Jodi: ${baseJ}<br><br>
+    <button onclick="this.parentElement.remove()">Close</button>
+   </div>
+  `;
+ });
 }
+
+drawTable();
 </script>
 
 </body>
