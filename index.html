@@ -3,42 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pradeep King Style Data Manager</title>
+    <title>Matka Pattern Pro + Scheme Searcher</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
-        h2 { color: #800080; }
-        .controls { margin-bottom: 20px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background-color: #ffd700; color: black; }
-        .btn { padding: 8px 15px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        .btn-add { background-color: #28a745; color: white; }
-        .btn-edit { background-color: #ffc107; color: black; }
-        .btn-delete { background-color: #dc3545; color: white; }
-        .btn-upload { background-color: #007bff; color: white; }
-        input[type="text"] { padding: 5px; width: 80%; }
+        :root { --primary: #4b0082; --gold: #ffd700; --bg: #121212; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 15px; border: 1px solid #444; }
+        
+        /* Search Section */
+        .search-panel { background: #2d2d2d; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border-left: 5px solid var(--gold); }
+        .search-panel input { padding: 10px; border-radius: 5px; border: none; width: 150px; font-weight: bold; }
+        
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        table { width: 100%; border-collapse: collapse; background: #fff; color: #000; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #ccc; padding: 12px; text-align: center; position: relative; }
+        th { background: var(--primary); color: white; text-transform: uppercase; }
+
+        /* Cell Styling */
+        .number-cell { display: inline-block; width: 45px; height: 45px; line-height: 45px; border-radius: 50%; 
+                       font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+        
+        /* Scheme Highlight Classes */
+        .found-match { border-color: #ff0000 !important; background: rgba(255, 0, 0, 0.2); transform: scale(1.1); box-shadow: 0 0 10px red; }
+        .marked-red { background: #ff4d4d; color: white; }
+        .marked-blue { background: #4d94ff; color: white; }
+        
+        .logic-label { font-size: 10px; color: #777; display: block; margin-top: 2px; }
+        .btn { padding: 10px 18px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-search { background: var(--gold); color: black; }
+        .btn-add { background: #28a745; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Pradeep Style Data Table</h2>
-    
-    <div class="controls">
-        <input type="file" id="csvFile" accept=".csv" class="btn">
-        <button onclick="uploadCSV()" class="btn btn-upload">Upload CSV</button>
-        <button onclick="addRow()" class="btn btn-add">Add New Row</button>
+    <h2 style="text-align:center; color: var(--gold);">MATKA SCHEME SEARCHER & ANALYZER</h2>
+
+    <div class="search-panel">
+        <strong>🔍 Scheme Searcher:</strong>
+        <input type="text" id="searchJodi" placeholder="Search Jodi (e.g. 24)">
+        <input type="number" id="searchTotal" placeholder="Search Total (0-9)">
+        <button class="btn btn-search" onclick="runSchemeSearch()">Apply Scheme</button>
+        <button class="btn" style="background:#666; color:white;" onclick="clearSearch()">Clear</button>
     </div>
 
-    <table id="dataTable">
+    <div class="controls">
+        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="uploadCSV(this.files)">
+        <button class="btn" style="background:#007bff; color:white" onclick="document.getElementById('csvFile').click()">📂 Upload History</button>
+        <button class="btn btn-add" onclick="addNewRow()">➕ Add Week Row</button>
+    </div>
+
+    <table id="mainTable">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Market</th>
-                <th>Jodi</th>
-                <th>Panel</th>
-                <th>Actions</th>
+                <th>Date / Week</th>
+                <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
             </tr>
         </thead>
         <tbody id="tableBody">
@@ -47,72 +65,80 @@
 </div>
 
 <script>
-    const tableBody = document.getElementById('tableBody');
+    // 1. Logic to Add New Row
+    function addNewRow(data = ["NEW", "00", "00", "00", "00", "00", "00"]) {
+        const tr = document.createElement('tr');
+        
+        // Date cell
+        let dateTd = `<td><input type="text" value="${data[0]}" style="width:80px; border:none; text-align:center; font-weight:bold;"></td>`;
+        tr.innerHTML = dateTd;
 
-    // 1. Add New Row Functionality
-    function addRow(date = "", market = "", jodi = "", panel = "") {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><input type="text" value="${date}" placeholder="DD-MM-YY"></td>
-            <td><input type="text" value="${market}" placeholder="Market Name"></td>
-            <td><input type="text" value="${jodi}" placeholder="00"></td>
-            <td><input type="text" value="${panel}" placeholder="000-0"></td>
-            <td>
-                <button onclick="saveRow(this)" class="btn btn-edit">Save</button>
-                <button onclick="deleteRow(this)" class="btn btn-delete">Delete</button>
-            </td>
-        `;
-        tableBody.appendChild(row);
+        // Day cells
+        for(let i=1; i<data.length; i++) {
+            let val = data[i].trim();
+            let total = (parseInt(val[0]) + parseInt(val[1])) % 10 || 0;
+            
+            let td = document.createElement('td');
+            td.innerHTML = `
+                <span class="number-cell" data-jodi="${val}" data-total="${total}" onclick="toggleMark(this)">
+                    ${val}
+                </span>
+                <span class="logic-label">T: ${total}</span>
+            `;
+            tr.appendChild(td);
+        }
+        document.getElementById('tableBody').appendChild(tr);
     }
 
-    // 2. Save/Edit Row
-    function saveRow(btn) {
-        const row = btn.parentElement.parentElement;
-        const inputs = row.querySelectorAll('input');
-        if (btn.innerText === "Save") {
-            inputs.forEach(input => input.disabled = true);
-            btn.innerText = "Edit";
-            btn.style.backgroundColor = "#17a2b8";
-            btn.style.color = "white";
+    // 2. Marking Function
+    function toggleMark(el) {
+        if(el.classList.contains('marked-red')) {
+            el.classList.remove('marked-red');
+            el.classList.add('marked-blue');
+        } else if(el.classList.contains('marked-blue')) {
+            el.classList.remove('marked-blue');
         } else {
-            inputs.forEach(input => input.disabled = false);
-            btn.innerText = "Save";
-            btn.style.backgroundColor = "#ffc107";
-            btn.style.color = "black";
+            el.classList.add('marked-red');
         }
     }
 
-    // 3. Delete Row
-    function deleteRow(btn) {
-        if(confirm("Kya aap is row ko delete karna chahte hain?")) {
-            btn.parentElement.parentElement.remove();
-        }
+    // 3. SCHEME SEARCHER LOGIC
+    function runSchemeSearch() {
+        clearSearch(); // Reset previous search
+        const sJodi = document.getElementById('searchJodi').value;
+        const sTotal = document.getElementById('searchTotal').value;
+
+        document.querySelectorAll('.number-cell').forEach(cell => {
+            let matchJodi = (sJodi && cell.getAttribute('data-jodi') === sJodi);
+            let matchTotal = (sTotal !== "" && cell.getAttribute('data-total') === sTotal);
+
+            if(matchJodi || matchTotal) {
+                cell.classList.add('found-match');
+            }
+        });
     }
 
-    // 4. CSV File Upload & Parse
-    function uploadCSV() {
-        const fileInput = document.getElementById('csvFile');
-        const file = fileInput.files[0];
+    function clearSearch() {
+        document.querySelectorAll('.number-cell').forEach(cell => {
+            cell.classList.remove('found-match');
+        });
+    }
 
-        if (!file) {
-            alert("Please select a CSV file first.");
-            return;
-        }
-
+    // 4. CSV Handler
+    function uploadCSV(files) {
         const reader = new FileReader();
-        reader.onload = function (e) {
-            const content = e.target.result;
-            const lines = content.split("\n");
-
-            lines.forEach((line, index) => {
-                if (line.trim() !== "" && index !== 0) { // Skipping header row
-                    const columns = line.split(",");
-                    addRow(columns[0] || "", columns[1] || "", columns[2] || "", columns[3] || "");
-                }
-            });
+        reader.onload = (e) => {
+            const lines = e.target.result.split('\n');
+            lines.forEach(line => { if(line.trim()) addNewRow(line.split(',')); });
         };
-        reader.readAsText(file);
+        reader.readAsText(files[0]);
     }
+
+    // Default Load
+    window.onload = () => {
+        addNewRow(["WEEK 1", "24", "45", "60", "11", "89", "33"]);
+        addNewRow(["WEEK 2", "15", "67", "24", "90", "50", "12"]);
+    };
 </script>
 
 </body>
