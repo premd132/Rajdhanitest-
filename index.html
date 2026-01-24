@@ -2,162 +2,248 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Jodi System – Foundation</title>
-
+<title>Jodi Pattern – Full System</title>
 <style>
-body{font-family:Arial;background:#f4f6f8}
-h2{text-align:center}
-.panel{background:#fff;padding:10px;margin:10px;border-radius:6px}
-label{margin-right:6px}
-select,input{margin-right:10px;padding:4px}
-table{border-collapse:collapse;width:100%;font-size:13px}
-td{border:1px solid #999;padding:6px;text-align:center;min-width:42px}
-td[contenteditable]{background:#fffbe6}
-.blank{background:#eee}
+body{font-family:Arial;background:#f6f1d3}
+.controls{margin:10px}
+table{border-collapse:collapse;margin-top:10px}
+td{border:1px solid #999;width:60px;height:32px;
+   text-align:center;font-weight:600;position:relative}
+.square{outline:3px solid #000}
+.circle{border:3px solid blue;border-radius:50%}
+svg{position:absolute;top:0;left:0;pointer-events:none}
+.popup{
+ position:fixed;top:10%;left:5%;right:5%;
+ background:#fff;border:2px solid #000;
+ padding:10px;z-index:999
+}
+.popup table td{width:50px}
+button{margin:3px}
 </style>
 </head>
-
 <body>
 
-<h2>Jodi Pattern – Foundation</h2>
-
-<!-- SEARCH OPTIONS -->
-<div class="panel">
-<label>Market:</label>
+<div class="controls">
+Market:
 <select id="market">
   <option>Kalyan</option>
   <option>Rajdhani</option>
   <option>Milan</option>
 </select>
 
-<label>Day:</label>
+Day:
 <select id="day">
   <option>Mon</option><option>Tue</option><option>Wed</option>
   <option>Thu</option><option>Fri</option><option>Sat</option>
 </select>
 
-<br><br>
+Base Jodi:
+<input id="base" size="3" value="20">
 
-<label>Jodi 1:</label><input id="j1" maxlength="2" style="width:50px">
-<label>Jodi 2:</label><input id="j2" maxlength="2" style="width:50px">
-<label>Jodi 3:</label><input id="j3" maxlength="2" style="width:50px">
+Rows:
+<select id="rows"></select>
 
-<br><br>
-
-<label>Game Type:</label>
-<select disabled>
-  <option>Straight</option>
-</select>
-
-<label>Top Rows:</label>
-<select id="top"></select>
-
-<label>Bottom Rows:</label>
-<select id="bottom"></select>
-
-<button>SEARCH</button>
+<button onclick="search()">SEARCH</button>
+<button onclick="clearMarks()">Clear</button>
 </div>
 
-<!-- CSV -->
-<div class="panel">
+<div>
 CSV Upload:
 <input type="file" id="csv">
-<button onclick="loadCSV()">Upload</button>
+<button onclick="upload()">Upload</button>
 <button onclick="addRow()">Add Row</button>
-<button onclick="clearAll()">Clear Data</button>
 </div>
 
-<!-- TABLE -->
-<div class="panel">
-<table id="chart"><tbody></tbody></table>
+<div id="wrap" style="position:relative">
+<svg id="lines"></svg>
+<table id="tbl"></table>
 </div>
+
+<div id="popup"></div>
 
 <script>
-/* ---------- INIT ---------- */
+// ================= FAMILY =================
+const FAMILIES={
+"12":["12","17","21","26","62","67","71","76"],
+"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],
+"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],
+"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],
+"45":["04","09","40","45","54","59","90","95"],
+"half":["05","16","27","38","49","50","61","72","83","94"],
+"full":["00","11","22","33","44","55","66","77","88","99"]
+};
+
+// ================= UTIL =================
+const pad=v=>{
+ if(v=="**")return "**";
+ v=String(v).replace(/[^0-9]/g,"");
+ if(v==="") return "**";
+ return v.length==1?"0"+v:v.slice(-2);
+}
+const palti=v=>v[1]+v[0];
+const familyOf=v=>{
+ for(let k in FAMILIES) if(FAMILIES[k].includes(v)) return k;
+ return null;
+}
+
+// ================= DATA =================
+let data=[];
+let patterns=[];
+
+// rows selector
 for(let i=1;i<=10;i++){
-  top.innerHTML+=`<option>${i}</option>`;
-  bottom.innerHTML+=`<option>${i}</option>`;
+ let o=document.createElement("option");
+ o.text=i; o.value=i;
+ rows.appendChild(o);
 }
 
-let data = JSON.parse(localStorage.getItem("jodiData")) || [];
-
-/* ---------- NORMALIZE JODI ---------- */
-function norm(v){
-  if(v===undefined || v===null) return "**";
-  v=String(v).trim();
-  if(v===""||v==="*"||v==="**") return "**";
-  v=v.replace(/[^0-9]/g,"");
-  if(v==="") return "**";
-  if(v.length===1) return "0"+v;
-  if(v.length>2) return v.slice(-2);
-  return v;
+// ================= CSV =================
+function upload(){
+ let f=csv.files[0];
+ if(!f) return;
+ let r=new FileReader();
+ r.onload=()=>{
+  data=r.result.trim().split(/\n/).map(l=>
+    l.split(".").map(pad)
+  );
+  save(); render();
+ };
+ r.readAsText(f);
 }
-
-/* ---------- TABLE ---------- */
-function drawTable(){
-  let t=document.querySelector("#chart tbody");
-  t.innerHTML="";
-  data.forEach((row,ri)=>{
-    let tr=document.createElement("tr");
-    row.forEach((cell,ci)=>{
-      let td=document.createElement("td");
-      td.textContent=cell;
-      td.contentEditable=true;
-      if(cell==="**") td.classList.add("blank");
-      td.oninput=()=>{
-        data[ri][ci]=norm(td.textContent);
-        save();
-        drawTable();
-      };
-      tr.appendChild(td);
-    });
-    t.appendChild(tr);
-  });
+function load(){
+ let d=localStorage.getItem("jodiData");
+ if(d){data=JSON.parse(d); render();}
 }
-
 function save(){
-  localStorage.setItem("jodiData",JSON.stringify(data));
+ localStorage.setItem("jodiData",JSON.stringify(data));
 }
+load();
 
-/* ---------- CSV UPLOAD ---------- */
-function loadCSV(){
-  let f=csv.files[0];
-  if(!f) return;
-  let reader=new FileReader();
-  reader.onload=e=>{
-    let lines=e.target.result.replace(/\r/g,"").split("\n").filter(l=>l.trim());
-    data=[];
-    lines.forEach(line=>{
-      let cols=line.includes(",")?line.split(","):line.split(".");
-      data.push(cols.map(v=>norm(v)));
-    });
-    save();
-    drawTable();
-  };
-  reader.readAsText(f);
+// ================= TABLE =================
+function render(){
+ tbl.innerHTML="";
+ data.forEach((r,ri)=>{
+  let tr=document.createElement("tr");
+  r.forEach((c,ci)=>{
+    let td=document.createElement("td");
+    td.textContent=c;
+    td.contentEditable=true;
+    td.dataset.r=ri; td.dataset.c=ci;
+    td.oninput=()=>{
+      data[ri][ci]=pad(td.textContent);
+      save(); render();
+    };
+    tr.appendChild(td);
+  });
+  tbl.appendChild(tr);
+ });
+ resizeSVG();
 }
-
-/* ---------- ADD ROW ---------- */
 function addRow(){
-  if(data.length===0) return;
-  let cols=data[0].length;
-  let row=[];
-  for(let i=0;i<cols;i++) row.push("**");
-  data.push(row);
-  save();
-  drawTable();
+ if(!data.length) return;
+ data.push(new Array(data[0].length).fill("**"));
+ save(); render();
 }
 
-/* ---------- CLEAR ---------- */
-function clearAll(){
-  if(confirm("Clear all data?")){
-    data=[];
-    localStorage.removeItem("jodiData");
-    drawTable();
+// ================= SEARCH =================
+function match(base,v){
+ if(v=="**") return false;
+ if(v===base) return true;
+ if(palti(v)===base) return true;
+ let f=familyOf(base);
+ return f && FAMILIES[f].includes(v);
+}
+
+function search(){
+ clearMarks();
+ patterns=[];
+ let base=pad(baseInput());
+ let R=parseInt(rows.value);
+
+ for(let start=0;start<=data.length-R;start++){
+  let window=[];
+  for(let i=0;i<R;i++){
+    data[start+i].forEach((v,c)=>{
+      if(v===base) window.push({r:start+i,c,v,base:true});
+      else if(match(base,v)) window.push({r:start+i,c,v});
+    });
   }
+  let bases=window.filter(x=>x.base);
+  bases.forEach(b=>{
+    let chain=window.filter(x=>!x.base && match(base,x.v));
+    patterns.push({base:b,chain});
+  });
+ }
+ drawPatterns();
+ showPopup();
 }
 
-drawTable();
+function drawPatterns(){
+ patterns.forEach(p=>{
+  markSquare(p.base);
+  p.chain.forEach(c=>markCircle(c));
+  if(p.chain.length>1) drawLines(p.chain);
+ });
+}
+
+// ================= MARKING =================
+function cell(r,c){
+ return document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+}
+function markSquare(o){ cell(o.r,o.c).classList.add("square"); }
+function markCircle(o){ cell(o.r,o.c).classList.add("circle"); }
+
+function drawLines(arr){
+ for(let i=0;i<arr.length-1;i++){
+  let a=cell(arr[i].r,arr[i].c).getBoundingClientRect();
+  let b=cell(arr[i+1].r,arr[i+1].c).getBoundingClientRect();
+  let bx=lines.getBoundingClientRect().left;
+  let by=lines.getBoundingClientRect().top;
+  let l=document.createElementNS("http://www.w3.org/2000/svg","line");
+  l.setAttribute("x1",a.left+a.width/2-bx);
+  l.setAttribute("y1",a.top+a.height/2-by);
+  l.setAttribute("x2",b.left+b.width/2-bx);
+  l.setAttribute("y2",b.top+b.height/2-by);
+  l.setAttribute("stroke","blue");
+  l.setAttribute("stroke-width","2");
+  lines.appendChild(l);
+ }
+}
+
+// ================= POPUP =================
+function showPopup(){
+ let p=document.getElementById("popup");
+ p.innerHTML="";
+ patterns.forEach((pt,i)=>{
+  p.innerHTML+=`
+   <div class="popup">
+    <b>Pattern ${i+1}</b><br>
+    Base Jodi: ${pt.base.v}<br>
+    Touch: ${pt.chain.length}<br>
+    <button onclick="this.parentElement.remove()">Close</button>
+   </div>`;
+ });
+}
+
+// ================= CLEAR =================
+function clearMarks(){
+ document.querySelectorAll(".square,.circle").forEach(e=>{
+  e.classList.remove("square","circle");
+ });
+ lines.innerHTML="";
+ popup.innerHTML="";
+}
+function resizeSVG(){
+ let t=tbl.getBoundingClientRect();
+ lines.setAttribute("width",t.width);
+ lines.setAttribute("height",t.height);
+}
+function baseInput(){return document.getElementById("base").value}
 </script>
 
 </body>
