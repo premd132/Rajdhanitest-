@@ -9,7 +9,9 @@ body{
   font-family: Arial;
   background:#f5f5f5;
 }
-h2{margin:5px 0}
+h2{margin:8px 0}
+
+.controls{margin-bottom:10px}
 
 table{
   border-collapse:collapse;
@@ -20,16 +22,14 @@ th,td{
   border:1px solid #999;
   padding:6px;
   text-align:center;
-  min-width:40px;
+  min-width:42px;
   font-weight:600;
 }
 td[contenteditable]{
   background:#fffbe6;
-  cursor:text;
 }
 .blank{
   background:#eee;
-  cursor:pointer;
 }
 .circle{
   border:3px solid red !important;
@@ -37,13 +37,6 @@ td[contenteditable]{
 }
 .line-vert{
   box-shadow: inset 0 -4px red;
-}
-.line-diag{
-  background:
-   linear-gradient(135deg, transparent 45%, red 46%, red 54%, transparent 55%);
-}
-.controls{
-  margin-bottom:10px;
 }
 button{
   padding:6px 10px;
@@ -54,7 +47,7 @@ button{
 
 <body>
 
-<h2>Pattern Table (Video Style)</h2>
+<h2>Pattern Table (CSV + LocalStorage)</h2>
 
 <div class="controls">
   <input type="file" id="csvFile">
@@ -65,28 +58,24 @@ button{
 <div id="tableWrap"></div>
 
 <script>
-/* ==========================
-   BASIC HELPERS
-========================== */
+/* =====================
+   HELPERS
+===================== */
 function norm(v){
-  if(v==""||v=="**") return "**";
+  if(v==null) return "**";
   v=String(v).trim();
-  if(!v) return "**";
+  if(v=="" || v=="**") return "**";
   return v.length==1 ? "0"+v : v;
 }
-function palti(v){
-  if(v=="**") return "**";
-  return v[1]+v[0];
-}
 
-/* ==========================
-   DATA STORAGE
-========================== */
+/* =====================
+   DATA
+===================== */
 let data = JSON.parse(localStorage.getItem("patternCSV")) || [];
 
-/* ==========================
+/* =====================
    CSV LOAD
-========================== */
+===================== */
 document.getElementById("csvFile").addEventListener("change",e=>{
   let f=e.target.files[0];
   if(!f) return;
@@ -100,9 +89,9 @@ document.getElementById("csvFile").addEventListener("change",e=>{
   r.readAsText(f);
 });
 
-/* ==========================
+/* =====================
    DRAW TABLE
-========================== */
+===================== */
 function draw(){
   let html="<table><tbody>";
   for(let i=0;i<data.length;i++){
@@ -111,7 +100,7 @@ function draw(){
       let v=data[i][j];
       let cls=v=="**"?"blank":"";
       html+=`<td class="${cls}" contenteditable
-             data-r="${i}" data-c="${j}">${v}</td>`;
+              data-r="${i}" data-c="${j}">${v}</td>`;
     }
     html+="</tr>";
   }
@@ -121,9 +110,9 @@ function draw(){
   applyPatterns();
 }
 
-/* ==========================
-   EDIT HANDLING
-========================== */
+/* =====================
+   EDIT
+===================== */
 function bindEdit(){
   document.querySelectorAll("td[contenteditable]").forEach(td=>{
     td.onblur=()=>{
@@ -136,16 +125,12 @@ function bindEdit(){
   });
 }
 
-/* ==========================
-   SAVE
-========================== */
+/* =====================
+   STORAGE
+===================== */
 function save(){
   localStorage.setItem("patternCSV",JSON.stringify(data));
 }
-
-/* ==========================
-   CLEAR
-========================== */
 function clearStorage(){
   if(confirm("Clear all data?")){
     localStorage.removeItem("patternCSV");
@@ -154,9 +139,9 @@ function clearStorage(){
   }
 }
 
-/* ==========================
+/* =====================
    CSV EXPORT
-========================== */
+===================== */
 function exportCSV(){
   let csv=data.map(r=>r.join(",")).join("\n");
   let b=new Blob([csv],{type:"text/csv"});
@@ -166,65 +151,46 @@ function exportCSV(){
   a.click();
 }
 
-/* ==========================
-   PATTERN ENGINE (VIDEO STYLE)
-========================== */
+/* =====================
+   PATTERN ENGINE
+   (Guaranteed visible)
+===================== */
 function applyPatterns(){
-  // sab purane mark hatao
   document.querySelectorAll("td").forEach(td=>{
-    td.classList.remove("circle","line-vert","line-diag");
+    td.classList.remove("circle","line-vert");
   });
 
-  let recent = 3; // video jaisa base
-  if(data.length <= recent) return;
+  if(data.length < 4) return;
 
   let cols = data[0].length;
 
   for(let c=0;c<cols;c++){
-    // last 3 rows ko pattern base banao
-    let base = [];
-    for(let r=data.length-recent;r<data.length;r++){
-      base.push(data[r][c]);
-    }
+    let a = data[data.length-2][c];
+    let b = data[data.length-1][c];
+    if(a=="**" || b=="**") continue;
 
-    // poori history me match dhundo
-    for(let r=0;r<=data.length-recent*2;r++){
-      let match = true;
-      for(let k=0;k<recent;k++){
-        if(data[r+k][c] !== base[k]) match = false;
-      }
-
-      if(match){
-        for(let k=0;k<recent;k++){
-          let td = document.querySelector(
-            `td[data-r="${r+k}"][data-c="${c}"]`
-          );
-          if(td){
-            if(k===0) td.classList.add("circle");
-            else td.classList.add("line-vert");
-          }
-        }
+    for(let r=0;r<data.length-2;r++){
+      if(data[r][c]===a && data[r+1][c]===b){
+        let td1=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+        let td2=document.querySelector(`td[data-r="${r+1}"][data-c="${c}"]`);
+        if(td1) td1.classList.add("circle");
+        if(td2) td2.classList.add("line-vert");
       }
     }
   }
 }
 
-function mark(r,c,k){
-  let td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
-  if(!td) return;
-  if(k==0) td.classList.add("circle");
-  if(k>0) td.classList.add("line-vert");
-}
-
-/* ==========================
-   INIT
-========================== */
+/* =====================
+   INIT DATA
+===================== */
 if(data.length==0){
   data=[
-    ["01","12","23","**"],
-    ["02","21","32","**"],
-    ["03","12","23","**"],
-    ["04","21","32","**"]
+    ["01","12","23","34"],
+    ["02","21","32","43"],
+    ["01","12","23","34"],
+    ["02","21","32","43"],
+    ["01","12","23","34"],
+    ["02","21","32","43"]
   ];
   save();
 }
