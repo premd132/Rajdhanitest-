@@ -2,15 +2,14 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Pattern Table System</title>
+<title>Pattern Table – Final</title>
 
 <style>
 body{
   font-family: Arial;
   background:#f5f5f5;
 }
-h2{margin:8px 0}
-
+h2{margin:6px 0}
 .controls{margin-bottom:10px}
 
 table{
@@ -18,26 +17,27 @@ table{
   background:#fff;
   font-size:13px;
 }
-th,td{
+td{
   border:1px solid #999;
   padding:6px;
   text-align:center;
   min-width:42px;
   font-weight:600;
+  cursor:pointer;
 }
 td[contenteditable]{
   background:#fffbe6;
 }
-.blank{
-  background:#eee;
-}
+.blank{background:#eee}
+
 .circle{
   border:3px solid red !important;
   border-radius:50%;
 }
-.line-vert{
+.line{
   box-shadow: inset 0 -4px red;
 }
+
 button{
   padding:6px 10px;
   margin-right:5px;
@@ -47,20 +47,18 @@ button{
 
 <body>
 
-<h2>Pattern Table (CSV + LocalStorage)</h2>
+<h2>Pattern Table (Manual + Auto)</h2>
 
 <div class="controls">
   <input type="file" id="csvFile">
   <button onclick="exportCSV()">Export CSV</button>
-  <button onclick="clearStorage()">Clear</button>
+  <button onclick="clearAll()">Clear</button>
 </div>
 
 <div id="tableWrap"></div>
 
 <script>
-/* =====================
-   HELPERS
-===================== */
+/* ========= HELPERS ========= */
 function norm(v){
   if(v==null) return "**";
   v=String(v).trim();
@@ -68,80 +66,82 @@ function norm(v){
   return v.length==1 ? "0"+v : v;
 }
 
-/* =====================
-   DATA
-===================== */
-let data = JSON.parse(localStorage.getItem("patternCSV")) || [];
+/* ========= DATA ========= */
+let data = JSON.parse(localStorage.getItem("csvData")) || [];
+let marks = JSON.parse(localStorage.getItem("marks")) || {}; 
+// marks: {"r-c":"circle|line"}
 
-/* =====================
-   CSV LOAD
-===================== */
-document.getElementById("csvFile").addEventListener("change",e=>{
+/* ========= CSV LOAD ========= */
+csvFile.onchange = e=>{
   let f=e.target.files[0];
   if(!f) return;
   let r=new FileReader();
   r.onload=()=>{
-    let rows=r.result.trim().split(/\r?\n/);
-    data=rows.map(r=>r.split(",").map(norm));
+    data = r.result.trim().split(/\r?\n/)
+      .map(r=>r.split(",").map(norm));
+    marks={};
     save();
     draw();
   };
   r.readAsText(f);
-});
+};
 
-/* =====================
-   DRAW TABLE
-===================== */
+/* ========= DRAW ========= */
 function draw(){
   let html="<table><tbody>";
-  for(let i=0;i<data.length;i++){
+  for(let r=0;r<data.length;r++){
     html+="<tr>";
-    for(let j=0;j<data[i].length;j++){
-      let v=data[i][j];
-      let cls=v=="**"?"blank":"";
-      html+=`<td class="${cls}" contenteditable
-              data-r="${i}" data-c="${j}">${v}</td>`;
+    for(let c=0;c<data[r].length;c++){
+      let v=data[r][c];
+      let k=r+"-"+c;
+      let cls=(v=="**"?"blank ":"")+(marks[k]||"");
+      html+=`<td class="${cls}" 
+        data-r="${r}" data-c="${c}" contenteditable>${v}</td>`;
     }
     html+="</tr>";
   }
   html+="</tbody></table>";
-  document.getElementById("tableWrap").innerHTML=html;
-  bindEdit();
-  applyPatterns();
+  tableWrap.innerHTML=html;
+  bind();
 }
 
-/* =====================
-   EDIT
-===================== */
-function bindEdit(){
-  document.querySelectorAll("td[contenteditable]").forEach(td=>{
+/* ========= EVENTS ========= */
+function bind(){
+  document.querySelectorAll("td").forEach(td=>{
+    // edit
     td.onblur=()=>{
-      let r=+td.dataset.r;
-      let c=+td.dataset.c;
+      let r=+td.dataset.r,c=+td.dataset.c;
       data[r][c]=norm(td.innerText);
-      save();
-      draw();
+      save(); draw();
+    };
+
+    // manual marking (VIDEO STYLE)
+    td.onclick=e=>{
+      if(e.shiftKey){
+        let k=td.dataset.r+"-"+td.dataset.c;
+        if(marks[k]=="circle") marks[k]="line";
+        else if(marks[k]=="line") delete marks[k];
+        else marks[k]="circle";
+        save(); draw();
+      }
     };
   });
 }
 
-/* =====================
-   STORAGE
-===================== */
+/* ========= STORAGE ========= */
 function save(){
-  localStorage.setItem("patternCSV",JSON.stringify(data));
+  localStorage.setItem("csvData",JSON.stringify(data));
+  localStorage.setItem("marks",JSON.stringify(marks));
 }
-function clearStorage(){
-  if(confirm("Clear all data?")){
-    localStorage.removeItem("patternCSV");
-    data=[];
+function clearAll(){
+  if(confirm("Clear all?")){
+    localStorage.clear();
+    data=[]; marks={};
     draw();
   }
 }
 
-/* =====================
-   CSV EXPORT
-===================== */
+/* ========= CSV EXPORT ========= */
 function exportCSV(){
   let csv=data.map(r=>r.join(",")).join("\n");
   let b=new Blob([csv],{type:"text/csv"});
@@ -151,51 +151,43 @@ function exportCSV(){
   a.click();
 }
 
-/* =====================
-   PATTERN ENGINE
-   (Guaranteed visible)
-===================== */
-function applyPatterns(){
-  document.querySelectorAll("td").forEach(td=>{
-    td.classList.remove("circle","line-vert");
-  });
-
-  if(data.length < 4) return;
-
-  let cols = data[0].length;
+/* ========= AUTO BASIC PATTERN ========= */
+function autoPattern(){
+  if(data.length<4) return;
+  let cols=data[0].length;
 
   for(let c=0;c<cols;c++){
-    let a = data[data.length-2][c];
-    let b = data[data.length-1][c];
-    if(a=="**" || b=="**") continue;
-
+    let a=data[data.length-2][c];
+    let b=data[data.length-1][c];
     for(let r=0;r<data.length-2;r++){
-      if(data[r][c]===a && data[r+1][c]===b){
-        let td1=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
-        let td2=document.querySelector(`td[data-r="${r+1}"][data-c="${c}"]`);
-        if(td1) td1.classList.add("circle");
-        if(td2) td2.classList.add("line-vert");
+      if(data[r][c]==a && data[r+1][c]==b){
+        marks[r+"-"+c]="circle";
+        marks[(r+1)+"-"+c]="line";
       }
     }
   }
+  save();
 }
 
-/* =====================
-   INIT DATA
-===================== */
+/* ========= INIT ========= */
 if(data.length==0){
   data=[
     ["01","12","23","34"],
     ["02","21","32","43"],
     ["01","12","23","34"],
-    ["02","21","32","43"],
-    ["01","12","23","34"],
     ["02","21","32","43"]
   ];
-  save();
+  autoPattern();
 }
 draw();
 </script>
+
+<p>
+<b>USE:</b><br>
+• Cell edit → normal click<br>
+• <b>SHIFT + click</b> → Circle → Line → Remove (video jaisa)<br>
+• Reload → sab save rahega
+</p>
 
 </body>
 </html>
