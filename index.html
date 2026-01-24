@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>3rd Touch Line System</title>
+
+<style>
+body{font-family:Arial;background:#f4f4f4}
+h2{text-align:center}
+.panel{background:#fff;padding:15px;margin:10px;border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid #999;padding:6px;text-align:center}
+th{background:#333;color:#fff}
+input,select,button{padding:6px;margin:4px}
+.circle{border:2px solid blue;border-radius:50%}
+.line{background:#cce5ff}
+</style>
+</head>
+
+<body>
+
+<h2>3rd Touch Line Trick System</h2>
+
+<div class="panel">
+  <b>CSV Upload:</b>
+  <input type="file" id="csvFile">
+  <button onclick="loadCSV()">Upload</button>
+  <button onclick="clearAll()">Clear All</button>
+</div>
+
+<div class="panel">
+  <b>Add Row Manually:</b><br>
+  Date: <input id="date">
+  Panna: <input id="panna" maxlength="3">
+  <button onclick="addRow()">Add Row</button>
+</div>
+
+<div class="panel">
+  <b>Search Pattern:</b><br>
+  Panna: <input id="searchPanna" maxlength="3">
+  <button onclick="runPattern()">Find 3rd Touch</button>
+</div>
+
+<div class="panel">
+  <table id="chart">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Panna</th>
+        <th>Family</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="panel" id="result"></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("chartData")) || [];
+render();
+
+/* FAMILY LOGIC */
+function family(p){
+  if(p=="**") return "**";
+  return p[0]+p[1];
+}
+
+/* RENDER TABLE */
+function render(){
+  const tbody = document.querySelector("#chart tbody");
+  tbody.innerHTML="";
+  data.forEach((r,i)=>{
+    let tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${i+1}</td>
+      <td>${r.date}</td>
+      <td>${r.panna}</td>
+      <td>${family(r.panna)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  localStorage.setItem("chartData",JSON.stringify(data));
+}
+
+/* ADD ROW */
+function addRow(){
+  let d=date.value;
+  let p=panna.value.padStart(3,"0");
+  if(!d||!p) return alert("Fill all");
+  data.push({date:d,panna:p});
+  render();
+}
+
+/* CLEAR */
+function clearAll(){
+  if(confirm("Clear all data?")){
+    data=[];
+    localStorage.removeItem("chartData");
+    render();
+  }
+}
+
+/* CSV UPLOAD */
+function loadCSV(){
+  let file=document.getElementById("csvFile").files[0];
+  if(!file) return;
+  let reader=new FileReader();
+  reader.onload=function(e){
+    let rows=e.target.result.split("\n");
+    rows.forEach(r=>{
+      let c=r.split(",");
+      if(c.length>=2){
+        data.push({
+          date:c[0].trim(),
+          panna:c[1].trim().padStart(3,"0")
+        });
+      }
+    });
+    render();
+  };
+  reader.readAsText(file);
+}
+
+/* 3RD TOUCH PATTERN */
+function runPattern(){
+  let p=searchPanna.value.padStart(3,"0");
+  let fam=family(p);
+  let hits=[];
+  data.forEach((r,i)=>{
+    if(family(r.panna)==fam){
+      hits.push(i);
+    }
+  });
+
+  document.querySelectorAll("tr").forEach(r=>{
+    r.classList.remove("circle","line");
+  });
+
+  hits.forEach((i,idx)=>{
+    let tr=document.querySelectorAll("#chart tbody tr")[i];
+    tr.classList.add("circle");
+    if(idx>=1) tr.classList.add("line");
+  });
+
+  let res=document.getElementById("result");
+  if(hits.length>=3){
+    res.innerHTML=`
+      <b style="color:green">3rd Touch Confirmed!</b><br>
+      Family: ${fam}<br>
+      Touch Count: ${hits.length}<br>
+      Suggested Panna: ${p}
+    `;
+  }else{
+    res.innerHTML=`
+      <b style="color:red">Touch Incomplete</b><br>
+      Touch Count: ${hits.length}
+    `;
+  }
+}
+</script>
+
+</body>
+</html>
