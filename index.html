@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Photo Pattern Jodi System</title>
+<title>Jodi Pattern – Photo Style (Final)</title>
 
 <style>
 body{font-family:Arial;background:#f4f6f8}
@@ -55,15 +55,41 @@ CSV Upload:
 <div id="popup"></div>
 
 <script>
-/* ---------- INIT ---------- */
+/* ================= INIT ================= */
 for(let i=1;i<=10;i++){
- top.innerHTML+=`<option>${i}</option>`;
- bottom.innerHTML+=`<option>${i}</option>`;
+  top.innerHTML+=`<option>${i}</option>`;
+  bottom.innerHTML+=`<option>${i}</option>`;
 }
 
 let data = JSON.parse(localStorage.getItem("jodiData")) || [];
 
-/* ---------- FAMILY + PALTI ---------- */
+/* ================= UTILITIES ================= */
+
+/* normalize ANY cell value */
+function norm(v){
+  if(v===undefined || v===null) return "**";
+  v = String(v).trim();
+
+  // blanks / garbage
+  if(v==="" || v==="*" || v==="**") return "**";
+
+  // remove non-numeric
+  v = v.replace(/[^0-9]/g,"");
+  if(v==="") return "**";
+
+  // single ank -> 0 prefix
+  if(v.length===1) return "0"+v;
+
+  // more than 2 digits -> take last 2
+  if(v.length>2) return v.slice(-2);
+
+  return v;
+}
+
+/* palti */
+function palti(j){ return j[1]+j[0]; }
+
+/* family map (sample, extend if needed) */
 const families={
  "15":["01","06","10","15","51","56","60","65"],
  "25":["02","07","20","25","52","57","70","75"],
@@ -71,178 +97,161 @@ const families={
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-function palti(j){ return j[1]+j[0]; }
-
 function family(j){
- for(let k in families)
-  if(families[k].includes(j)) return k;
- return "NA";
+  for(let k in families)
+    if(families[k].includes(j)) return k;
+  return "NA";
 }
 
 function sameNature(a,b){
- return palti(a)===palti(b) || family(a)===family(b);
+  return palti(a)===palti(b) || family(a)===family(b);
 }
 
-/* ---------- RENDER TABLE ---------- */
+/* ================= TABLE RENDER ================= */
 function drawTable(){
- let t=document.querySelector("#chart tbody");
- t.innerHTML="";
- data.forEach((row,ri)=>{
-  let tr=document.createElement("tr");
-  row.forEach((cell,ci)=>{
-   let td=document.createElement("td");
-   td.textContent=cell;
-   td.contentEditable=true;
-   if(cell==="**") td.classList.add("blank");
-   td.oninput=()=>{
-    data[ri][ci]=td.textContent.trim() || "**";
-    save();
-   };
-   tr.appendChild(td);
+  let t=document.querySelector("#chart tbody");
+  t.innerHTML="";
+  data.forEach((row,ri)=>{
+    let tr=document.createElement("tr");
+    row.forEach((cell,ci)=>{
+      let td=document.createElement("td");
+      td.textContent=cell;
+      td.contentEditable=true;
+      if(cell==="**") td.classList.add("blank");
+
+      td.oninput=()=>{
+        data[ri][ci]=norm(td.textContent);
+        save();
+        drawTable();
+      };
+
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
   });
-  t.appendChild(tr);
- });
- resizeCanvas();
+  resizeCanvas();
 }
 
 function save(){
- localStorage.setItem("jodiData",JSON.stringify(data));
+  localStorage.setItem("jodiData",JSON.stringify(data));
 }
 
-/* ---------- CSV UPLOAD (DOT FORMAT) ---------- */
+/* ================= CSV UPLOAD ================= */
 function loadCSV(){
-  let f = csv.files[0];
+  let f=csv.files[0];
   if(!f) return;
 
-  let reader = new FileReader();
-  reader.onload = e => {
-    let lines = e.target.result
+  let reader=new FileReader();
+  reader.onload=e=>{
+    let lines=e.target.result
       .replace(/\r/g,"")
       .split("\n")
       .map(l=>l.trim())
       .filter(l=>l.length);
 
-    data = [];
+    data=[];
 
     lines.forEach(line=>{
-      // header skip
+      // skip header
       if(line.toLowerCase().includes("mon")) return;
 
-      // support comma OR dot
+      // comma OR dot supported
       let cols = line.includes(",")
         ? line.split(",")
         : line.split(".");
 
-      let row = cols.map(v=>{
-        v = v.trim();
-
-        // blank handling
-        if(v==="*" || v==="**" || v==="") return "**";
-
-        // remove non-numeric
-        v = v.replace(/[^0-9]/g,"");
-
-        if(v==="") return "**";
-
-        // jodi normalize
-        return v.padStart(2,"0");
-      });
-
+      let row = cols.map(v=>norm(v));
       data.push(row);
     });
 
-    localStorage.setItem("jodiData", JSON.stringify(data));
+    save();
     drawTable();
   };
-
   reader.readAsText(f);
 }
-}
 
-/* ---------- CLEAR ---------- */
+/* ================= CLEAR ================= */
 function clearAll(){
- if(confirm("Clear all data?")){
-  data=[];
-  localStorage.removeItem("jodiData");
-  drawTable();
- }
+  if(confirm("Clear all data?")){
+    data=[];
+    localStorage.removeItem("jodiData");
+    drawTable();
+  }
 }
 
 function clearMarking(){
- document.querySelectorAll("td").forEach(td=>{
-  td.classList.remove("circle");
- });
- let ctx=lineCanvas.getContext("2d");
- ctx.clearRect(0,0,lineCanvas.width,lineCanvas.height);
- popup.innerHTML="";
+  document.querySelectorAll("td").forEach(td=>{
+    td.classList.remove("circle");
+  });
+  let ctx=lineCanvas.getContext("2d");
+  ctx.clearRect(0,0,lineCanvas.width,lineCanvas.height);
+  popup.innerHTML="";
 }
 
-/* ---------- CANVAS ---------- */
+/* ================= CANVAS ================= */
 function resizeCanvas(){
- let table=document.getElementById("chart");
- let c=document.getElementById("lineCanvas");
- c.width=table.offsetWidth;
- c.height=table.offsetHeight;
- c.style.width=table.offsetWidth+"px";
- c.style.height=table.offsetHeight+"px";
+  let table=document.getElementById("chart");
+  let c=document.getElementById("lineCanvas");
+  c.width=table.offsetWidth;
+  c.height=table.offsetHeight;
+  c.style.width=table.offsetWidth+"px";
+  c.style.height=table.offsetHeight+"px";
 }
 
-/* ---------- SEARCH LOGIC (PHOTO STYLE) ---------- */
+/* ================= SEARCH (PHOTO STYLE) ================= */
 function search(){
- clearMarking();
- resizeCanvas();
+  clearMarking();
+  resizeCanvas();
 
- let baseJ=base.value;
- if(baseJ.length!==2) return alert("Base jodi likho");
+  let baseJ = norm(base.value);
+  if(baseJ==="**") return alert("Base jodi likho");
 
- let ctx=lineCanvas.getContext("2d");
- let tableRect=chart.getBoundingClientRect();
- let patterns=[];
+  let ctx=lineCanvas.getContext("2d");
+  let tableRect=chart.getBoundingClientRect();
 
- data.forEach((row,ri)=>{
-  row.forEach((cell,ci)=>{
-   if(cell===baseJ){
-    let start=Math.max(0,ri-top.value);
-    let end=Math.min(data.length-1,ri+bottom.value);
-    let pat=[];
+  data.forEach((row,ri)=>{
+    row.forEach((cell,ci)=>{
+      if(cell===baseJ){
+        let start=Math.max(0,ri-top.value);
+        let end=Math.min(data.length-1,ri+bottom.value);
+        let pat=[];
 
-    for(let r=start;r<=end;r++){
-     for(let c=0;c<row.length;c++){
-      let v=data[r][c];
-      if(v!=="**" && sameNature(cell,v)){
-       pat.push({r,c});
+        for(let r=start;r<=end;r++){
+          for(let c=0;c<row.length;c++){
+            let v=data[r][c];
+            if(v!=="**" && sameNature(cell,v)){
+              pat.push({r,c});
+            }
+          }
+        }
+
+        if(pat.length>=2){
+          ctx.beginPath();
+          pat.forEach((p,i)=>{
+            let td=document.querySelectorAll("#chart tr")[p.r].children[p.c];
+            td.classList.add("circle");
+            let rect=td.getBoundingClientRect();
+            let x=rect.left-tableRect.left+rect.width/2;
+            let y=rect.top-tableRect.top+rect.height/2;
+            if(i===0) ctx.moveTo(x,y);
+            else ctx.lineTo(x,y);
+          });
+          ctx.strokeStyle="#0b5cff";
+          ctx.lineWidth=2;
+          ctx.stroke();
+
+          popup.innerHTML+=`
+            <div class="popup">
+              <b>Pattern Found</b><br>
+              Base Jodi: ${baseJ}<br>
+              Touch: ${pat.length}<br><br>
+              <button onclick="this.parentElement.remove()">Close</button>
+            </div>
+          `;
+        }
       }
-     }
-    }
-    if(pat.length>=2) patterns.push(pat);
-   }
+    });
   });
- });
-
- patterns.forEach((pat,idx)=>{
-  ctx.beginPath();
-  pat.forEach((p,i)=>{
-   let td=document.querySelectorAll("#chart tr")[p.r].children[p.c];
-   td.classList.add("circle");
-   let rect=td.getBoundingClientRect();
-   let x=rect.left-tableRect.left+rect.width/2;
-   let y=rect.top-tableRect.top+rect.height/2;
-   if(i===0) ctx.moveTo(x,y);
-   else ctx.lineTo(x,y);
-  });
-  ctx.strokeStyle="#0b5cff";
-  ctx.lineWidth=2;
-  ctx.stroke();
-
-  popup.innerHTML+=`
-   <div class="popup">
-    <b>Pattern ${idx+1}</b><br>
-    Touch Count: ${pat.length}<br>
-    Base Jodi: ${baseJ}<br><br>
-    <button onclick="this.parentElement.remove()">Close</button>
-   </div>
-  `;
- });
 }
 
 drawTable();
