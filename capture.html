@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pattern Capture Mode</title>
+<style>
+body{font-family:Arial;background:#f6f1d3;padding:10px}
+table{border-collapse:collapse}
+td{
+  border:1px solid #999;
+  width:55px;height:32px;
+  text-align:center;
+  font-weight:700;
+  background:#fbf6db;
+  cursor:pointer;
+  position:relative;
+}
+.square{outline:3px solid #000}
+.circle{border:3px solid #1e5bff;border-radius:50%}
+.controls{margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="controls">
+<button onclick="toggleCapture()">Pattern Capture: <span id="state">OFF</span></button>
+<button onclick="clearPattern()">Clear Pattern</button>
+<button onclick="savePattern()">Save Pattern</button>
+</div>
+
+<table id="tbl"></table>
+
+<script>
+// -------- SAMPLE DATA (replace with CSV data later) ----------
+let data=[
+["12","35","09","57","97","96"],
+["20","**","**","**","**","**"],
+["25","**","**","**","**","**"],
+["70","**","**","**","**","**"],
+["75","**","**","**","**","**"]
+];
+
+// -------- FAMILY ----------
+const FAMILIES={
+"25":["02","07","20","25","52","57","70","75"],
+"15":["01","06","10","15","51","56","60","65"],
+"full":["00","11","22","33","44","55","66","77","88","99"]
+};
+const palti=v=>v[1]+v[0];
+const familyOf=v=>{
+ for(let k in FAMILIES) if(FAMILIES[k].includes(v)) return k;
+ return null;
+};
+
+// -------- RENDER TABLE ----------
+const tbl=document.getElementById("tbl");
+function render(){
+ tbl.innerHTML="";
+ data.forEach((r,ri)=>{
+  let tr=document.createElement("tr");
+  r.forEach((v,ci)=>{
+    let td=document.createElement("td");
+    td.textContent=v;
+    td.dataset.r=ri;
+    td.dataset.c=ci;
+    td.onclick=()=>cellClick(td);
+    tr.appendChild(td);
+  });
+  tbl.appendChild(tr);
+ });
+}
+render();
+
+// -------- PATTERN CAPTURE STATE ----------
+let capture=false;
+let pattern={ base:null, steps:[] };
+
+function toggleCapture(){
+ capture=!capture;
+ document.getElementById("state").textContent=capture?"ON":"OFF";
+}
+
+function clearPattern(){
+ pattern={base:null,steps:[]};
+ document.querySelectorAll(".square,.circle").forEach(e=>{
+  e.classList.remove("square","circle");
+ });
+}
+
+// -------- CLICK LOGIC ----------
+function cellClick(td){
+ if(!capture) return;
+
+ let r=parseInt(td.dataset.r);
+ let c=parseInt(td.dataset.c);
+ let v=td.textContent;
+
+ // base select
+ if(!pattern.base){
+  pattern.base={r,c,v};
+  td.classList.add("square");
+  return;
+ }
+
+ // pattern point
+ td.classList.add("circle");
+
+ let dr=r-pattern.base.r;
+ let dc=c-pattern.base.c;
+
+ let type="same";
+ if(palti(v)===pattern.base.v) type="palti";
+ else if(familyOf(v) && familyOf(v)===familyOf(pattern.base.v)) type="family";
+
+ pattern.steps.push({dr,dc,type});
+}
+
+// -------- SAVE ----------
+function savePattern(){
+ if(!pattern.base || !pattern.steps.length){
+  alert("Base aur kam se kam 1 circle select karo");
+  return;
+ }
+ localStorage.setItem("savedPattern",JSON.stringify(pattern));
+ alert("Pattern saved successfully");
+ console.log(pattern);
+}
+</script>
+
+</body>
+</html>
