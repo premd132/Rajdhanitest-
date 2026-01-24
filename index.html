@@ -2,163 +2,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Matka Pattern Searcher - Mon-Sat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matka Advanced Logic Tool</title>
     <style>
-        :root { --gold: #ffd700; --bg: #121212; --panel: #1e1e1e; --cell-size: 45px; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 20px; text-align: center; }
-        .container { max-width: 1000px; margin: auto; }
+        :root { --gold: #ffd700; --bg: #1a1a1a; --panel: #2d2d2d; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; overflow-x: hidden; }
         
-        /* Search Box */
-        .search-section { background: var(--panel); padding: 20px; border-radius: 10px; border: 1px solid #444; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; }
-        input, select { padding: 10px; border-radius: 5px; border: 1px solid #555; background: #333; color: white; font-weight: bold; }
+        /* Header Controls */
+        .header { background: var(--panel); padding: 15px; border-radius: 10px; border: 1px solid #444; margin-bottom: 10px; }
+        .grid-ctrl { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; }
         
-        /* Table Controls */
-        .table-container { background: white; border-radius: 8px; overflow: hidden; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        table { width: 100%; border-collapse: collapse; color: black; table-layout: fixed; }
-        th, td { border: 1px solid #bbb; padding: 12px 5px; text-align: center; font-weight: bold; position: relative; }
-        th { background: #800000; color: white; font-size: 14px; }
+        input, select { background: #000; color: var(--gold); border: 1px solid var(--gold); padding: 8px; border-radius: 5px; font-weight: bold; width: 100%; box-sizing: border-box; }
+        label { font-size: 12px; color: #bbb; display: block; margin-bottom: 4px; }
 
-        /* Marking Styles */
-        .jodi-cell { display: inline-block; width: var(--cell-size); height: var(--cell-size); line-height: var(--cell-size); cursor: pointer; font-size: 20px; transition: 0.2s; z-index: 2; position: relative; }
-        .base-jodi-mark { border: 3px solid #ff0000; background: rgba(255, 0, 0, 0.15); border-radius: 4px; } /* Chokor 🔳 */
-        .pattern-circle { border: 3px solid #0000ff; border-radius: 50%; background: rgba(0, 0, 255, 0.1); } /* Round ⭕ */
-        
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-run { background: #28a745; color: white; border: 2px solid #1e7e34; }
-        .btn-run:hover { background: #218838; }
-        .btn-tool { background: #444; color: white; margin: 5px; }
+        /* Table & Canvas Area */
+        .table-wrapper { position: relative; background: #fff; border-radius: 5px; margin-top: 10px; overflow: auto; }
+        table { width: 100%; border-collapse: collapse; color: #000; font-weight: bold; table-layout: fixed; }
+        th, td { border: 1px solid #999; padding: 12px 5px; text-align: center; position: relative; }
+        th { background: #800000; color: white; font-size: 13px; }
+
+        /* Marking Elements */
+        .jodi-cell { display: inline-block; width: 40px; height: 40px; line-height: 40px; font-size: 18px; position: relative; z-index: 5; cursor: pointer; outline: none; }
+        .base-mark { border: 3px solid red; background: rgba(255,0,0,0.1); border-radius: 4px; } /* 🔳 Chokor */
+        .family-mark { border: 3px solid blue; border-radius: 50%; background: rgba(0,0,255,0.1); } /* ⭕ Round */
+
+        #lineCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+
+        /* Buttons */
+        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-search { background: var(--gold); color: black; width: 100%; }
+        .btn-tool { background: #444; color: white; font-size: 11px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 style="color:var(--gold); margin-bottom:10px;">📊 MATKA PATTERN LOGIC MANAGER</h2>
+<div class="header">
+    <div class="grid-ctrl">
+        <div><label>Market</label><select id="market"><option>KALYAN</option><option>RAJDHANI</option></select></div>
+        <div><label>Search Day</label><select id="daySelect"><option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option><option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option></select></div>
+        <div><label>Base Jodi</label><input type="text" id="baseJodi" placeholder="00" maxlength="2"></div>
+        <div><label>Rows (Up)</label><input type="number" id="rowRange" value="8"></div>
+        <div><label>&nbsp;</label><button class="btn btn-search" onclick="runLogic()">Run Pattern</button></div>
+    </div>
     
-    <div class="search-section">
-        <div>
-            <label>Market</label><br>
-            <select id="market">
-                <option>KALYAN</option><option>RAJDHANI</option><option>MILAN</option>
-            </select>
-        </div>
-        <div>
-            <label>Day</label><br>
-            <select id="daySelect">
-                <option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option>
-                <option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option>
-            </select>
-        </div>
-        <div>
-            <label>Base Jodi</label><br>
-            <input type="text" id="baseJodi" maxlength="2" placeholder="00" style="width:50px; text-align:center;">
-        </div>
-        <div>
-            <label>Rows (Up)</label><br>
-            <input type="number" id="rowRange" value="8" style="width:60px;">
-        </div>
-        <div style="padding-top:15px;">
-            <button class="btn btn-run" onclick="runPatternSearch()">APPLY SEARCH</button>
-        </div>
-    </div>
-
-    <div class="controls">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSV(this.files)">
-        <button class="btn btn-tool" onclick="document.getElementById('csvFile').click()" style="background:var(--gold); color:black;">📂 UPLOAD CSV</button>
-        <button class="btn btn-tool" onclick="addNewRow()">➕ ADD ROW</button>
-        <button class="btn btn-tool" onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR ALL</button>
+        <button class="btn btn-tool" onclick="document.getElementById('csvFile').click()">📂 Upload CSV</button>
+        <button class="btn btn-tool" onclick="addNewRow()">➕ Add Row</button>
+        <button class="btn btn-tool" onclick="clearAll()" style="background:#800000;">🗑️ Clear Data</button>
     </div>
+</div>
 
-    <div class="table-container">
-        <table id="mainTable">
-            <thead>
-                <tr>
-                    <th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+<div class="table-wrapper" id="tableWrapper">
+    <canvas id="lineCanvas"></canvas>
+    <table id="mainTable">
+        <thead>
+            <tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
 </div>
 
 <script>
     const tableBody = document.getElementById('tableBody');
+    const canvas = document.getElementById('lineCanvas');
+    const ctx = canvas.getContext('2d');
 
-    // 1. Auto-Padding & Formatting
-    function formatJodi(val) {
-        let clean = val.toString().trim().replace(/[^0-9]/g, '');
-        if (clean === "") return "00";
-        return clean.length === 1 ? "0" + clean : clean.slice(0, 2);
+    // 1. Auto Padding & Family Logic
+    function formatJ(v) { 
+        v = v.toString().replace(/[^0-9]/g, '');
+        return v.length === 1 ? "0"+v : (v.length === 0 ? "00" : v.slice(0,2));
     }
 
-    // 2. Family Calculation
-    function getFamily(jodi) {
-        let a = parseInt(jodi[0]), b = parseInt(jodi[1]);
-        let cut = (n) => (n + 5) % 10;
-        let f = [
-            `${a}${b}`, `${cut(a)}${b}`, `${a}${cut(b)}`, `${cut(a)}${cut(b)}`,
-            `${b}${a}`, `${cut(b)}${a}`, `${b}${cut(a)}`, `${cut(b)}${cut(a)}`
-        ];
-        return [...new Set(f)];
+    function getFamily(j) {
+        let a = parseInt(j[0]), b = parseInt(j[1]);
+        let c = (n) => (n + 5) % 10;
+        return [...new Set([`${a}${b}`,`${c(a)}${b}`,`${a}${c(b)}`,`${c(a)}${c(b)}`,`${b}${a}`,`${c(b)}${a}`,`${b}${c(a)}`,`${c(b)}${c(a)}` ])];
     }
 
-    // 3. Add Row
-    function addNewRow(data = ["00", "00", "00", "00", "00", "00"], isLoading = false) {
+    // 2. Add Row & LocalStorage
+    function addNewRow(data = ["00","00","00","00","00","00"], isInitial = false) {
         const tr = document.createElement('tr');
-        let html = "";
-        for (let i = 0; i < 6; i++) {
-            let val = formatJodi(data[i] || "00");
-            html += `<td><span class="jodi-cell" contenteditable="true" onblur="saveAll()">${val}</span></td>`;
-        }
-        tr.innerHTML = html;
-        tableBody.appendChild(tr); // New rows at bottom
-        if (!isLoading) saveAll();
+        data.forEach(val => {
+            const td = document.createElement('td');
+            td.innerHTML = `<span class="jodi-cell" contenteditable="true" onblur="saveData()">${formatJ(val)}</span>`;
+            tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+        if(!isInitial) saveData();
     }
 
-    // 4. Fixed CSV Upload
+    // 3. CSV Upload (Fixed)
     function handleCSV(files) {
-        if (files.length === 0) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            const rows = text.split(/\r?\n/);
-            tableBody.innerHTML = ""; 
-            rows.forEach(row => {
-                if (row.trim()) {
-                    const cols = row.split(',');
-                    // CSV me Date column ho sakta hai, use skip karke 6 jodi lenge
-                    let jodiData = cols.length > 6 ? cols.slice(1, 7) : cols;
-                    addNewRow(jodiData, true);
+        reader.onload = (e) => {
+            tableBody.innerHTML = "";
+            e.target.result.split('\n').forEach(line => {
+                if(line.trim()) {
+                    let cols = line.split(',');
+                    // Agar CSV me date hai to use hata ke 6 jodi lega
+                    addNewRow(cols.length > 6 ? cols.slice(1,7) : cols, true);
                 }
             });
-            saveAll();
-            alert("Data Uploaded Successfully!");
+            saveData();
+            window.location.reload();
         };
         reader.readAsText(files[0]);
     }
 
-    // 5. Pattern Logic (Bottom-Up)
-    function runPatternSearch() {
-        // Reset old marks
-        document.querySelectorAll('.jodi-cell').forEach(el => el.className = 'jodi-cell');
+    // 4. Main Pattern Logic & Line Drawing
+    function runLogic() {
+        // Reset
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.querySelectorAll('.jodi-cell').forEach(c => c.className = 'jodi-cell');
         
-        let dayIdx = parseInt(document.getElementById('daySelect').value);
-        let baseJ = formatJodi(document.getElementById('baseJodi').value);
-        let range = parseInt(document.getElementById('rowRange').value);
-        let rows = Array.from(tableBody.querySelectorAll('tr'));
+        const dayIdx = parseInt(document.getElementById('daySelect').value);
+        const base = formatJ(document.getElementById('baseJodi').value);
+        const range = parseInt(document.getElementById('rowRange').value);
+        const rows = Array.from(tableBody.querySelectorAll('tr'));
+        
+        canvas.width = document.getElementById('mainTable').offsetWidth;
+        canvas.height = document.getElementById('mainTable').offsetHeight;
 
-        // Bottom se search start karenge
+        const family = getFamily(base);
+        
+        // Search Bottom to Top
         for (let i = rows.length - 1; i >= 0; i--) {
-            let cell = rows[i].children[dayIdx].querySelector('.jodi-cell');
-            if (cell.innerText.trim() === baseJ) {
-                cell.classList.add('base-jodi-mark'); // 🔳
+            let baseCell = rows[i].children[dayIdx].querySelector('.jodi-cell');
+            if(baseCell.innerText === base) {
+                baseCell.classList.add('base-mark');
                 
-                let family = getFamily(baseJ);
-                // Check rows above
+                let bRect = baseCell.getBoundingClientRect();
+                let bX = (bRect.left + bRect.width/2) - canvas.getBoundingClientRect().left;
+                let bY = (bRect.top + bRect.height/2) - canvas.getBoundingClientRect().top;
+
+                // Search Rows Above
                 for (let r = 1; r <= range; r++) {
-                    if (i - r >= 0) {
-                        rows[i - r].querySelectorAll('.jodi-cell').forEach(c => {
-                            if (family.includes(c.innerText.trim())) {
-                                c.classList.add('pattern-circle'); // ⭕
+                    if(i - r >= 0) {
+                        rows[i-r].querySelectorAll('.jodi-cell').forEach(fCell => {
+                            if(family.includes(fCell.innerText)) {
+                                fCell.classList.add('family-mark');
+                                
+                                // Draw Line
+                                let fRect = fCell.getBoundingClientRect();
+                                let fX = (fRect.left + fRect.width/2) - canvas.getBoundingClientRect().left;
+                                let fY = (fRect.top + fRect.height/2) - canvas.getBoundingClientRect().top;
+                                
+                                ctx.beginPath();
+                                ctx.moveTo(bX, bY);
+                                ctx.lineTo(fX, fY);
+                                ctx.strokeStyle = "red";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
                             }
                         });
                     }
@@ -167,37 +162,26 @@
         }
     }
 
-    // 6. Data Persistence
-    function saveAll() {
-        let data = [];
+    // 5. Storage Functions
+    function saveData() {
+        let arr = [];
         tableBody.querySelectorAll('tr').forEach(tr => {
             let row = [];
-            tr.querySelectorAll('.jodi-cell').forEach(span => row.push(span.innerText.trim()));
-            data.push(row);
+            tr.querySelectorAll('.jodi-cell').forEach(s => row.push(s.innerText));
+            arr.push(row);
         });
-        localStorage.setItem('matka_v3_data', JSON.stringify(data));
+        localStorage.setItem('matka_jodi_db', JSON.stringify(arr));
     }
 
     function loadData() {
-        let stored = localStorage.getItem('matka_v3_data');
-        if (stored) {
-            let data = JSON.parse(stored);
-            data.forEach(r => addNewRow(r, true));
-        } else {
-            // Default 10 empty rows
-            for(let i=0; i<10; i++) addNewRow(undefined, true);
-        }
+        let saved = localStorage.getItem('matka_jodi_db');
+        if(saved) JSON.parse(saved).forEach(r => addNewRow(r, true));
+        else for(let i=0; i<15; i++) addNewRow(undefined, true);
     }
 
-    function clearData() {
-        if (confirm("Pura data delete karein?")) {
-            localStorage.removeItem('matka_v3_data');
-            location.reload();
-        }
-    }
+    function clearAll() { if(confirm("Delete all?")) { localStorage.clear(); location.reload(); } }
 
     window.onload = loadData;
 </script>
-
 </body>
 </html>
