@@ -151,45 +151,55 @@ function addRow(){
 }
 
 // ================= SEARCH =================
-function match(base,v){
- if(v=="**") return false;
- if(v===base) return true;
- if(palti(v)===base) return true;
- let f=familyOf(base);
- return f && FAMILIES[f].includes(v);
-}
-
 function search(){
- clearMarks();
- patterns=[];
- let base=pad(baseInput());
- let R=parseInt(rows.value);
+  clearMarks();
+  patterns = [];
 
- for(let start=0;start<=data.length-R;start++){
-  let window=[];
-  for(let i=0;i<R;i++){
-    data[start+i].forEach((v,c)=>{
-      if(v===base) window.push({r:start+i,c,v,base:true});
-      else if(match(base,v)) window.push({r:start+i,c,v});
-    });
+  let base = pad(baseInput());
+  let R = parseInt(rows.value);
+
+  for(let start=0; start<=data.length-R; start++){
+
+    for(let r=start; r<start+R; r++){
+      data[r].forEach((v,c)=>{
+
+        // 🔳 base jodi found
+        if(v === base){
+
+          let baseCell = {r, c, v, base:true};
+          let chain = [];
+
+          // scan SAME COLUMN only
+          for(let rr=start; rr<start+R; rr++){
+            let cv = data[rr][c];
+            if(cv === "**") continue;
+
+            if(
+              cv === base ||
+              palti(cv) === base ||
+              (familyOf(base) && FAMILIES[familyOf(base)].includes(cv))
+            ){
+              // skip base itself
+              if(!(rr===r && c===c)){
+                chain.push({r:rr, c, v:cv});
+              }
+            }
+          }
+
+          // save pattern (1 touch bhi valid)
+          if(chain.length >= 1){
+            patterns.push({base:baseCell, chain});
+          }
+        }
+
+      });
+    }
+
   }
-  let bases=window.filter(x=>x.base);
-  bases.forEach(b=>{
-    let chain=window.filter(x=>!x.base && match(base,x.v));
-    patterns.push({base:b,chain});
-  });
- }
- drawPatterns();
- showPopup();
-}
 
-function drawPatterns(){
- patterns.forEach(p=>{
-  markSquare(p.base);
-  p.chain.forEach(c=>markCircle(c));
-  if(p.chain.length>1) drawLines(p.chain);
- });
-}
+  drawPatterns();
+  showPopup();
+             }
 
 // ================= MARKING =================
 function cell(r,c){
