@@ -3,39 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan Pro – Strong Column Logic</title>
+<title>Kalyan Pro – Top 3 Logic</title>
 <style>
     :root { --gold: #ffd700; --red: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
-    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 5px 0; font-size: 1.2rem; }
-    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); max-width: 100%; }
-    table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; width: 100%; }
-    td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 38px; height: 38px; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 5px 0; font-size: 1.1rem; }
+    
+    .toolbar { background: var(--panel); padding: 8px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 6px; justify-content: center; }
+    
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+    table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; }
+    td, th { border: 1px solid #ccc; padding: 6px; text-align: center; font-weight: bold; width: 35px; height: 35px; }
     th { background: #800000; color: white; }
-    td[contenteditable] { background: #fffbe6; outline: none; }
-    .blank { background: #e0e0e0 !important; cursor: pointer; color: #888; border: 2px dashed #999; }
-    .circle { border: 2.5px solid var(--red); border-radius: 50%; background: rgba(255, 0, 0, 0.15); z-index: 5; }
-    .base-anchor { background: rgba(255, 215, 0, 0.3) !important; border: 2px solid orange !important; }
-    .dashboard { display: flex; flex-direction: row; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-    .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); flex: 1; min-width: 200px; }
-    #checks div { background: #2a2a2a; margin: 3px 0; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 12px; border: 1px solid #444; }
+    
+    .blank { background: #e0e0e0 !important; cursor: pointer; border: 1.5px dashed #999; }
+    .circle { border: 2.5px solid var(--red); border-radius: 50%; background: rgba(255, 0, 0, 0.1); z-index: 5; }
+    .base-anchor { background: rgba(255, 165, 0, 0.4) !important; border: 2.5px solid #ff8c00 !important; }
+
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+    .card { background: var(--panel); padding: 10px; border-radius: 8px; border-top: 3px solid var(--gold); }
+    .card h3 { margin: 0 0 5px 0; color: var(--gold); font-size: 13px; text-align: center; }
+    
+    .stat-box { text-align: center; font-size: 18px; font-weight: bold; color: #fff; }
+    .stat-label { font-size: 10px; color: #aaa; text-transform: uppercase; }
+
+    #checks div { background: #2a2a2a; margin: 3px 0; padding: 6px; cursor: pointer; border-radius: 4px; font-size: 11px; border: 1px solid #444; }
+    
     #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 10px; border-radius: 8px; color: #000; }
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
-    button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    
+    button { background: var(--gold); color: #000; border: none; padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 11px; }
 </style>
 </head>
 <body>
 
-<h2>💎 Strong Logic Analyzer</h2>
+<h2>💎 Strong 3-Ank Analyzer</h2>
 
 <div class="toolbar">
-    <input type="file" id="csv" style="display:none">
-    <button onclick="document.getElementById('csv').click()">📂 CSV</button>
     <button onclick="addRow()">➕ Row</button>
     <button onclick="saveData()" style="background:#28a745; color:white;">💾 Save</button>
-    <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ Clear</button>
+    <button onclick="document.getElementById('csv').click()">📂 CSV</button>
+    <input type="file" id="csv" style="display:none">
 </div>
 
 <center>
@@ -47,31 +56,32 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>✔ Column Matches</h3>
+        <h3>🎯 Top 3 Jodi</h3>
+        <div id="topJodis" class="stat-box">--</div>
+        <div class="stat-label">Strongest Families</div>
+    </div>
+    <div class="card">
+        <h3>🔢 Top 3 Ank</h3>
+        <div id="topAnks" class="stat-box">--</div>
+        <div class="stat-label">Open / Close</div>
+    </div>
+    <div class="card">
+        <h3>📂 Matches</h3>
         <div id="checks"></div>
-    </div>
-    <div class="card">
-        <h3>🤖 AI Current</h3>
-        <div id="ai" style="font-size: 12px;">Click blank box to analyze...</div>
-    </div>
-    <div class="card">
-        <h3>🔮 Strong Prediction</h3>
-        <div id="future" style="font-size: 12px;">Waiting...</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:red; color:#fff;">X</button>
-    <h3 style="margin:0 0 10px 0; font-size: 14px;">Logic Connection</h3>
-    <div class="table-container" style="border: 1px solid #000;">
+    <button onclick="closePopup()" style="float:right; background:red; color:#fff; border:none; padding:2px 6px;">X</button>
+    <div class="table-container" style="border: 1px solid #000; margin-top:15px;">
         <canvas id="popCanvas"></canvas>
         <div id="popData"></div>
     </div>
 </div>
 
 <script>
-const STORAGE_KEY="pdata_strong_logic";
+const STORAGE_KEY="pdata_top3_logic";
 let targetCol=null;
 const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
@@ -86,13 +96,12 @@ data = data.map(r => r.map(norm));
 let activeMark=null;
 
 function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ let h="<tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>";
  data.forEach((ri_val,ri)=>{
   h+="<tr>";
   ri_val.forEach((c,ci)=>{
    let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
    if(c=="**") cls += " blank";
-   // Base Anchor highlight
    if(activeMark && ri == (activeMark.start + activeMark.baseRowRel) && ci == targetCol) cls += " base-anchor";
    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
   });
@@ -132,39 +141,23 @@ function drawLines(cvsId, tblEl) {
 function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear data?")){ localStorage.clear(); location.reload(); }}
 
 function makePattern(r,c){
- targetCol=c; 
- let base="**"; let baseRowOffset = -1;
- // Find nearest base jodi in the SAME column
- for(let i=r-1; i>=0; i--){ 
-    if(data[i][c]!="**"){
-        base=data[i][c]; 
-        baseRowOffset = i; 
-        break;
-    }
- }
- if(base=="**") { alert("Is column me upar koi Jodi nahi mili!"); return; }
-
- let shape=[];
- let startRow = Math.max(0, r-4);
+ targetCol=c; let base="**"; let baseRowOffset = -1;
+ for(let i=r-1; i>=0; i--){ if(data[i][c]!="**"){ base=data[i][c]; baseRowOffset = i; break; } }
+ if(base=="**") return;
+ let shape=[]; let startRow = Math.max(0, r-4);
  for(let i=startRow; i<=r; i++){
   let row=[];
-  for(let j=0; j<6; j++){ 
-    // Logic: Shape must record the base jodi ONLY in the target column
-    row.push(data[i][j]!="**" && smartMatch(data[i][j], base) ? 1 : 0); 
-  }
+  for(let j=0; j<6; j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j], base) ? 1 : 0); }
   shape.push(row);
  }
- 
  searchPattern(shape, base, baseRowOffset - startRow);
 }
 
 function searchPattern(shape, base, baseRelIdx){
  let lastMatches=[];
  for(let i=0; i<=data.length-shape.length; i++){
-  // Strong Condition: Base jodi must exist at the exact relative column
   if(smartMatch(data[i + baseRelIdx][targetCol], base)){
       let ok=true;
       for(let k=0; k<shape.length; k++){
@@ -180,9 +173,9 @@ function searchPattern(shape, base, baseRelIdx){
 function showChecks(shape, matches, baseRelIdx){
  let container = document.getElementById("checks");
  container.innerHTML="";
- matches.slice(0,5).forEach((m,i)=>{
+ matches.slice(0,3).forEach((m,i)=>{
   let d = document.createElement("div");
-  d.innerHTML = `<b>Match ${i+1}:</b> Row ${m.index + 1} <br><small>Anchor Found in Col ${targetCol+1}</small>`;
+  d.innerHTML = `Match ${i+1} (Row ${m.index + 1})`;
   d.onclick = () => { activeMark={start:m.index, shape:shape, baseRowRel: baseRelIdx}; draw(); showOne(shape, m.index, baseRelIdx); };
   container.appendChild(d);
  });
@@ -209,23 +202,18 @@ function showOne(shape, idx, baseRelIdx){
 function updateAI(shape, matches, baseRelIdx){
  let jc={}, dc={};
  matches.forEach(m=>{
-  for(let i=0; i<shape.length; i++){
-   for(let j=0; j<6; j++){
-    if(shape[i][j]){
-     let v = data[m.index+i][j];
+  let nextR = m.index + shape.length;
+  if(nextR < data.length && data[nextR][targetCol] != "**"){
+     let v = data[nextR][targetCol];
      jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
-    }
-   }
   }
  });
- document.getElementById("ai").innerHTML = `<b>Hot Jodis:</b> ${Object.keys(jc).slice(0,3).join(", ")}`;
- 
- let pool = [];
- matches.forEach(m => {
-  let nextR = m.index + shape.length;
-  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
- });
- document.getElementById("future").innerHTML = pool.length ? `<b>Predicted:</b> ${[...new Set(pool)].join(", ")}` : "Need more data";
+ // Sort and take top 3
+ let topJ = Object.entries(jc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+ let topA = Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+
+ document.getElementById("topJodis").innerHTML = topJ.length ? topJ.join(", ") : "--";
+ document.getElementById("topAnks").innerHTML = topA.length ? topA.join(", ") : "--";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
