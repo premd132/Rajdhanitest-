@@ -2,32 +2,29 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Pattern Table – Final</title>
+<title>Pattern Table – Stage 1</title>
 
 <style>
-body{
-  font-family: Arial;
-  background:#f5f5f5;
-}
+body{font-family:Arial;background:#f5f5f5}
 h2{margin:6px 0}
 .controls{margin-bottom:10px}
-
-table{
-  border-collapse:collapse;
+.panel{
   background:#fff;
+  padding:6px;
+  margin-bottom:8px;
+  border:1px solid #ccc;
   font-size:13px;
 }
+
+table{border-collapse:collapse;background:#fff;font-size:13px}
 td{
   border:1px solid #999;
   padding:6px;
   text-align:center;
   min-width:42px;
   font-weight:600;
-  cursor:pointer;
 }
-td[contenteditable]{
-  background:#fffbe6;
-}
+td[contenteditable]{background:#fffbe6}
 .blank{background:#eee}
 
 .circle{
@@ -38,16 +35,19 @@ td[contenteditable]{
   box-shadow: inset 0 -4px red;
 }
 
-button{
-  padding:6px 10px;
-  margin-right:5px;
-}
+button{padding:5px 10px;margin-right:5px}
 </style>
 </head>
 
 <body>
 
-<h2>Pattern Table (Manual + Auto)</h2>
+<h2>Pattern Table (Family – Stage 1)</h2>
+
+<div class="panel">
+  <label><input type="checkbox" id="famOn" checked> Family Pattern</label>
+  &nbsp;&nbsp;
+  <label><input type="checkbox" id="paltiOn" checked> Palti Pattern</label>
+</div>
 
 <div class="controls">
   <input type="file" id="csvFile">
@@ -58,35 +58,58 @@ button{
 <div id="tableWrap"></div>
 
 <script>
-/* ========= HELPERS ========= */
+/* ================= FAMILY DATA (A) ================= */
+const families = {
+  "12":["12","17","21","26","62","67","71","76"],
+  "13":["13","18","31","36","63","68","81","86"],
+  "14":["14","19","41","46","64","69","91","96"],
+  "15":["01","06","10","15","51","56","60","65"],
+  "23":["23","28","32","37","73","78","82","87"],
+  "24":["24","29","42","47","74","79","92","97"],
+  "25":["02","07","20","25","52","57","70","75"],
+  "34":["34","39","43","48","84","89","93","98"],
+  "35":["03","08","30","35","53","58","80","85"],
+  "45":["04","09","40","45","54","59","90","95"],
+  "half":["05","16","27","38","49","50","61","72","83","94"],
+  "full":["00","11","22","33","44","55","66","77","88","99"]
+};
+
+function fam(v){
+  for(let k in families){
+    if(families[k].includes(v)) return k;
+  }
+  return "";
+}
+function palti(v){
+  if(v=="**") return "**";
+  return v[1]+v[0];
+}
 function norm(v){
   if(v==null) return "**";
   v=String(v).trim();
-  if(v=="" || v=="**") return "**";
-  return v.length==1 ? "0"+v : v;
+  if(v==""||v=="**") return "**";
+  return v.length==1?"0"+v:v;
 }
 
-/* ========= DATA ========= */
+/* ================= DATA ================= */
 let data = JSON.parse(localStorage.getItem("csvData")) || [];
-let marks = JSON.parse(localStorage.getItem("marks")) || {}; 
-// marks: {"r-c":"circle|line"}
+let marks = JSON.parse(localStorage.getItem("marks")) || {};
 
-/* ========= CSV LOAD ========= */
-csvFile.onchange = e=>{
+/* ================= CSV LOAD ================= */
+csvFile.onchange=e=>{
   let f=e.target.files[0];
   if(!f) return;
   let r=new FileReader();
   r.onload=()=>{
-    data = r.result.trim().split(/\r?\n/)
+    data=r.result.trim().split(/\r?\n/)
       .map(r=>r.split(",").map(norm));
     marks={};
-    save();
-    draw();
+    save(); draw();
   };
   r.readAsText(f);
 };
 
-/* ========= DRAW ========= */
+/* ================= DRAW ================= */
 function draw(){
   let html="<table><tbody>";
   for(let r=0;r<data.length;r++){
@@ -95,40 +118,66 @@ function draw(){
       let v=data[r][c];
       let k=r+"-"+c;
       let cls=(v=="**"?"blank ":"")+(marks[k]||"");
-      html+=`<td class="${cls}" 
-        data-r="${r}" data-c="${c}" contenteditable>${v}</td>`;
+      html+=`<td class="${cls}" contenteditable
+        data-r="${r}" data-c="${c}">${v}</td>`;
     }
     html+="</tr>";
   }
   html+="</tbody></table>";
   tableWrap.innerHTML=html;
   bind();
+  autoPatterns();
 }
 
-/* ========= EVENTS ========= */
+/* ================= EVENTS ================= */
 function bind(){
   document.querySelectorAll("td").forEach(td=>{
-    // edit
     td.onblur=()=>{
       let r=+td.dataset.r,c=+td.dataset.c;
       data[r][c]=norm(td.innerText);
       save(); draw();
     };
-
-    // manual marking (VIDEO STYLE)
     td.onclick=e=>{
       if(e.shiftKey){
         let k=td.dataset.r+"-"+td.dataset.c;
-        if(marks[k]=="circle") marks[k]="line";
-        else if(marks[k]=="line") delete marks[k];
-        else marks[k]="circle";
+        marks[k]=marks[k]=="circle"?"line":marks[k]=="line"?"": "circle";
+        if(marks[k]=="") delete marks[k];
         save(); draw();
       }
     };
   });
 }
 
-/* ========= STORAGE ========= */
+/* ================= AUTO FAMILY + PALTI ================= */
+function autoPatterns(){
+  let famOn=document.getElementById("famOn").checked;
+  let palOn=document.getElementById("paltiOn").checked;
+
+  if(data.length<3) return;
+  let cols=data[0].length;
+
+  for(let c=0;c<cols;c++){
+    let a=data[data.length-2][c];
+    let b=data[data.length-1][c];
+
+    for(let r=0;r<data.length-2;r++){
+      if(famOn && fam(a) && fam(a)==fam(data[r][c]) &&
+         fam(b)==fam(data[r+1][c])){
+        marks[r+"-"+c]="circle";
+        marks[(r+1)+"-"+c]="line";
+      }
+
+      if(palOn && palti(a)==data[r][c] &&
+         palti(b)==data[r+1][c]){
+        marks[r+"-"+c]="circle";
+        marks[(r+1)+"-"+c]="line";
+      }
+    }
+  }
+  save();
+}
+
+/* ================= STORAGE ================= */
 function save(){
   localStorage.setItem("csvData",JSON.stringify(data));
   localStorage.setItem("marks",JSON.stringify(marks));
@@ -141,7 +190,7 @@ function clearAll(){
   }
 }
 
-/* ========= CSV EXPORT ========= */
+/* ================= CSV EXPORT ================= */
 function exportCSV(){
   let csv=data.map(r=>r.join(",")).join("\n");
   let b=new Blob([csv],{type:"text/csv"});
@@ -151,42 +200,23 @@ function exportCSV(){
   a.click();
 }
 
-/* ========= AUTO BASIC PATTERN ========= */
-function autoPattern(){
-  if(data.length<4) return;
-  let cols=data[0].length;
-
-  for(let c=0;c<cols;c++){
-    let a=data[data.length-2][c];
-    let b=data[data.length-1][c];
-    for(let r=0;r<data.length-2;r++){
-      if(data[r][c]==a && data[r+1][c]==b){
-        marks[r+"-"+c]="circle";
-        marks[(r+1)+"-"+c]="line";
-      }
-    }
-  }
-  save();
-}
-
-/* ========= INIT ========= */
+/* ================= INIT ================= */
 if(data.length==0){
   data=[
-    ["01","12","23","34"],
-    ["02","21","32","43"],
-    ["01","12","23","34"],
-    ["02","21","32","43"]
+    ["12","23","34","45"],
+    ["21","32","43","54"],
+    ["12","23","34","45"],
+    ["21","32","43","54"]
   ];
-  autoPattern();
 }
 draw();
 </script>
 
-<p>
+<p style="font-size:13px">
 <b>USE:</b><br>
-• Cell edit → normal click<br>
-• <b>SHIFT + click</b> → Circle → Line → Remove (video jaisa)<br>
-• Reload → sab save rahega
+• Edit cell → normal click<br>
+• <b>SHIFT + click</b> → Circle → Line → Remove<br>
+• Checkbox se Family / Palti ON-OFF
 </p>
 
 </body>
