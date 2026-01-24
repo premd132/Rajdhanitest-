@@ -206,49 +206,64 @@ function search(){
   let baseJ = norm(base.value);
   if(baseJ==="**") return alert("Base jodi likho");
 
-  let ctx=lineCanvas.getContext("2d");
-  let tableRect=chart.getBoundingClientRect();
+  let ctx = lineCanvas.getContext("2d");
+  let tableRect = chart.getBoundingClientRect();
 
   data.forEach((row,ri)=>{
     row.forEach((cell,ci)=>{
-      if(cell===baseJ){
-        let start=Math.max(0,ri-top.value);
-        let end=Math.min(data.length-1,ri+bottom.value);
-        let pat=[];
+      if(cell === baseJ){
 
-        for(let r=start;r<=end;r++){
-          for(let c=0;c<row.length;c++){
-            let v=data[r][c];
-            if(v!=="**" && sameNature(cell,v)){
-              pat.push({r,c});
+        let pattern = [{r:ri, c:ci, v:cell}];
+        let lastCol = ci;
+
+        // walk downward (photo style)
+        for(let step=1; step<=bottom.value; step++){
+          let r = ri + step;
+          if(r >= data.length) break;
+
+          let found = false;
+          for(let dc of [0,-1,1]){
+            let c = lastCol + dc;
+            if(c < 0 || c >= data[r].length) continue;
+
+            let v = data[r][c];
+            if(v !== "**" && sameNature(pattern.at(-1).v, v)){
+              pattern.push({r,c,v});
+              lastCol = c;
+              found = true;
+              break;
             }
           }
+          if(!found) break;
         }
 
-        if(pat.length>=2){
+        // draw only if 2 or 3 touch
+        if(pattern.length >= 2){
           ctx.beginPath();
-          pat.forEach((p,i)=>{
-            let td=document.querySelectorAll("#chart tr")[p.r].children[p.c];
+          pattern.forEach((p,i)=>{
+            let td = document.querySelectorAll("#chart tr")[p.r].children[p.c];
             td.classList.add("circle");
-            let rect=td.getBoundingClientRect();
-            let x=rect.left-tableRect.left+rect.width/2;
-            let y=rect.top-tableRect.top+rect.height/2;
+
+            let rect = td.getBoundingClientRect();
+            let x = rect.left - tableRect.left + rect.width/2;
+            let y = rect.top - tableRect.top + rect.height/2;
+
             if(i===0) ctx.moveTo(x,y);
             else ctx.lineTo(x,y);
           });
-          ctx.strokeStyle="#0b5cff";
-          ctx.lineWidth=2;
+          ctx.strokeStyle = "#0b5cff";
+          ctx.lineWidth = 2;
           ctx.stroke();
 
-          popup.innerHTML+=`
+          popup.innerHTML += `
             <div class="popup">
               <b>Pattern Found</b><br>
               Base Jodi: ${baseJ}<br>
-              Touch: ${pat.length}<br><br>
+              Touch: ${pattern.length}<br>
               <button onclick="this.parentElement.remove()">Close</button>
-            </div>
-          `;
+            </div>`;
         }
+
       }
     });
   });
