@@ -8,8 +8,9 @@
     <style>
         :root {
             --gold: #ffd700;
-            --blue: #3b82f6;
-            --red: #ff3e3e;
+            --blue: #3b82f6; /* Prediction blue */
+            --mark-blue: #0077ff; /* Circle Blue color */
+            --line-green: #2ecc71; /* Connection line Green */
             --bg: #0f172a;
             --panel: #1e293b;
             --text: #f8fafc;
@@ -25,7 +26,7 @@
         .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
 
         /* --- SECTION CONTROLS --- */
-        #home-page, #auth-page, #dashboard-page, #admin-page {
+        #home-page, #auth-page, #dashboard-page {
             min-height: 100vh; display: none; padding: 20px; flex-direction: column; align-items: center; justify-content: center;
         }
 
@@ -40,32 +41,30 @@
         .input-group { margin-bottom: 15px; width: 100%; }
         input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #0f172a; color: #fff; margin-top: 5px; }
 
-        /* --- DASHBOARD (KALYAN LOGIC) --- */
+        /* --- DASHBOARD --- */
         .dashboard-container { width: 100%; max-width: 1200px; margin-top: 20px; }
         .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
         
         .table-wrapper { 
-            overflow-x: auto; background: #fff; border-radius: 10px; padding: 10px; 
+            overflow-x: auto; background: #fff; border-radius: 10px; padding: 15px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;
         }
-        table { border-collapse: collapse; color: #000; margin: 0 auto; }
-        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; min-width: 45px; }
+        table { border-collapse: collapse; color: #000; margin: 0 auto; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; min-width: 50px; height: 50px; position: relative; }
         th { background: #1e293b; color: white; }
-        td[contenteditable] { background: #fdf6e3; }
-        .circle { border: 3px solid var(--green); border-radius: 50%; }
+        td[contenteditable] { background: #fdf6e3; outline: none; }
+
+        /* Updated Circle Style */
+        .circle { 
+            border: 3px solid var(--mark-blue) !important; 
+            border-radius: 50% !important; 
+            background: rgba(0, 119, 255, 0.1);
+        }
 
         .ai-stats { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; width: 100%; }
         .stat-card { flex: 1; min-width: 250px; padding: 15px; border-left: 5px solid var(--gold); }
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 600px) {
-            .hero h1 { font-size: 2rem; }
-            td, th { padding: 6px; min-width: 35px; font-size: 12px; }
-            .btn { width: 100%; margin-bottom: 5px; }
-        }
-
-        /* Original logic canvas styles */
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 100; }
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: white; color: black; z-index: 101; padding: 20px; border-radius: 10px; display: none; width: 90%; }
     </style>
@@ -74,16 +73,11 @@
 
     <div id="home-page" style="display: flex;">
         <div class="hero">
-            <h1>KALYAN PATTERN AI <span style="font-size: 1rem; vertical-align: middle;">PRO</span></h1>
-            <p>Advanced Number Pattern Analysis for Professionals.</p>
+            <h1>KALYAN PATTERN AI <span>PRO</span></h1>
+            <p>Professional Analytics with Green-Line Connection System.</p>
             <div style="margin-top: 20px;">
                 <button class="btn btn-gold" onclick="showAuth('signup')">Create Account</button>
                 <button class="btn" style="border: 1px solid var(--gold); color: var(--gold);" onclick="showAuth('login')">Sign In</button>
-            </div>
-            <div class="feature-grid">
-                <div class="glass f-card"><h3>Auto Pattern</h3><p>Detects recurring sequences instantly.</p></div>
-                <div class="glass f-card"><h3>AI Logic</h3><p>Calculates Jodi and Ank probability.</p></div>
-                <div class="glass f-card"><h3>Cloud Save</h3><p>Access your records anywhere.</p></div>
             </div>
         </div>
     </div>
@@ -91,17 +85,10 @@
     <div id="auth-page">
         <div class="glass auth-card">
             <h2 id="auth-title" style="color: var(--gold);">Signup</h2>
-            <div class="input-group">
-                <label>Mobile Number</label>
-                <input type="tel" id="user-mobile" placeholder="+91 0000000000">
-            </div>
-            <div class="input-group" id="pwd-group">
-                <label>Create Password</label>
-                <input type="password" id="user-pwd" placeholder="****">
-            </div>
-            <p id="status-msg" style="font-size: 12px; color: #ff9f43;"></p>
+            <input type="tel" id="user-mobile" placeholder="Mobile Number">
+            <input type="password" id="user-pwd" placeholder="Password">
+            <p id="status-msg"></p>
             <button class="btn btn-gold" style="width: 100%;" onclick="handleAuth()">Proceed</button>
-            <p onclick="toggleAuth()" style="cursor:pointer; text-align:center; margin-top:15px; font-size: 14px; opacity: 0.8;">Already have account? Login</p>
         </div>
     </div>
 
@@ -116,12 +103,12 @@
                 <input type="file" id="csv" style="display:none">
                 <button class="btn" onclick="document.getElementById('csv').click()">📂 CSV</button>
                 <button class="btn" onclick="addRow()">➕ Add Row</button>
-                <button class="btn" onclick="saveData()" style="background:#28a745; color:white;">💾 Save Records</button>
+                <button class="btn" onclick="saveData()" style="background:#28a745; color:white;">💾 Save</button>
                 <button class="btn" onclick="clearData()" style="background:#dc3545; color:white;">🗑️ Clear</button>
             </div>
 
             <center>
-                <div class="table-wrapper" id="table-container">
+                <div class="table-wrapper" id="wrap-main">
                     <canvas id="mainCanvas"></canvas>
                     <table id="tbl"></table>
                 </div>
@@ -129,16 +116,12 @@
 
             <div class="ai-stats">
                 <div class="glass stat-card">
-                    <h3>✔ Matches Found</h3>
-                    <div id="checks" style="max-height: 120px; overflow-y: auto;"></div>
+                    <h3>✔ Pattern Matches</h3>
+                    <div id="checks"></div>
                 </div>
                 <div class="glass stat-card">
                     <h3>🤖 AI Prediction</h3>
-                    <div id="ai" style="font-weight: bold; color: var(--gold);">Waiting for selection...</div>
-                </div>
-                <div class="glass stat-card">
-                    <h3>🔮 Future Result</h3>
-                    <div id="future" style="font-weight: bold; color: #00ff00;">-</div>
+                    <div id="ai">Select a blank cell...</div>
                 </div>
             </div>
         </div>
@@ -147,90 +130,48 @@
     <div class="overlay" id="overlay" onclick="closePopup()"></div>
     <div id="popup">
         <h3 style="margin-top: 0;">Connection Visualizer</h3>
-        <div class="table-wrapper" style="border: 1px solid #000; position: relative;">
+        <div class="table-wrapper" id="wrap-pop" style="border: 1px solid #ccc;">
             <canvas id="popCanvas"></canvas>
             <div id="popData"></div>
         </div>
     </div>
 
     <script>
-        // --- AUTH & APPROVAL LOGIC ---
-        let authMode = 'signup';
-        function toggleAuth() {
-            authMode = (authMode === 'signup') ? 'login' : 'signup';
-            document.getElementById('auth-title').innerText = (authMode === 'signup') ? 'Signup' : 'Login';
-        }
+        // --- AUTH ---
+        function showAuth(m){ document.getElementById('home-page').style.display='none'; document.getElementById('auth-page').style.display='flex'; }
+        function handleAuth(){ localStorage.setItem('session', 'true'); checkUserStatus(); }
+        function checkUserStatus(){ if(localStorage.getItem('session')){ 
+            document.getElementById('home-page').style.display='none'; 
+            document.getElementById('auth-page').style.display='none'; 
+            document.getElementById('dashboard-page').style.display='flex'; draw(); 
+        } }
+        function logout(){ localStorage.removeItem('session'); location.reload(); }
 
-        function showAuth(mode) {
-            authMode = mode;
-            document.getElementById('home-page').style.display = 'none';
-            document.getElementById('auth-page').style.display = 'flex';
-            document.getElementById('auth-title').innerText = (mode === 'signup') ? 'Signup' : 'Login';
-        }
-
-        function handleAuth() {
-            const mob = document.getElementById('user-mobile').value;
-            if(mob.length < 10) return alert("Enter valid mobile");
-
-            if(authMode === 'signup') {
-                localStorage.setItem('user_'+mob, 'pending');
-                document.getElementById('status-msg').innerText = "✅ Request sent! Contact Admin for Approval.";
-            } else {
-                const status = localStorage.getItem('user_'+mob);
-                if(status === 'approved') {
-                    localStorage.setItem('session', mob);
-                    checkUserStatus();
-                } else if(status === 'pending') {
-                    alert("Your account is still pending approval from admin.");
-                } else {
-                    // Quick Trick: For demo, first mobile ever is approved automatically
-                    localStorage.setItem('user_'+mob, 'approved'); 
-                    alert("Approved for Demo! Login again.");
-                }
-            }
-        }
-
-        function checkUserStatus() {
-            if(localStorage.getItem('session')) {
-                document.getElementById('home-page').style.display = 'none';
-                document.getElementById('auth-page').style.display = 'none';
-                document.getElementById('dashboard-page').style.display = 'flex';
-                draw();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('session');
-            location.reload();
-        }
-
-        // --- ORIGINAL PATTERN LOGIC (UNTOUCHED) ---
+        // --- LOGIC ---
         const STORAGE_KEY="pdata_kalyan_v2";
-        let targetCol=null;
         const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
         function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
         function palti(v){return v[1]+v[0];}
-        function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
         function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
+        function norm(v){ v=String(v); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
 
         let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
         data = data.map(r => r.map(norm));
-
         let activeMark=null;
+
         function draw(){
             let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
             data.forEach((r,ri)=>{
                 h+="<tr>";
                 r.forEach((c,ci)=>{
                     let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
-                    if(c=="**") cls += " blank";
                     h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
                 });
                 h+="</tr>";
             });
             document.getElementById("tbl").innerHTML=h;
-            if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+            if(activeMark) setTimeout(() => drawLines("mainCanvas", "tbl"), 100);
         }
 
         function isPartOfPattern(ri, ci){
@@ -239,33 +180,42 @@
             return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
         }
 
-        function drawLines(cvsId, tblEl) {
+        // --- FIXED GREEN LINE CONNECTION ---
+        function drawLines(cvsId, tblId) {
             const cvs = document.getElementById(cvsId);
+            const tbl = document.getElementById(tblId);
             const ctx = cvs.getContext("2d");
-            cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
-            ctx.clearRect(0,0,cvs.width,cvs.height);
-            const cells = tblEl.querySelectorAll(".circle");
+            
+            cvs.width = tbl.offsetWidth;
+            cvs.height = tbl.offsetHeight;
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+            const cells = tbl.querySelectorAll(".circle");
             if(cells.length < 2) return;
-            const tRect = tblEl.getBoundingClientRect();
-            const last = cells[cells.length-1].getBoundingClientRect();
-            const x1 = last.left - tRect.left + last.width/2;
-            const y1 = last.top - tRect.top + last.height/2;
-            ctx.strokeStyle = "red"; ctx.lineWidth = 2;
-            cells.forEach(c => {
-                const r = c.getBoundingClientRect();
-                ctx.beginPath(); ctx.moveTo(x1,y1);
-                ctx.lineTo(r.left - tRect.left + r.width/2, r.top - tRect.top + r.height/2);
-                ctx.stroke();
+
+            ctx.strokeStyle = "#2ecc71"; // Green Line
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+
+            cells.forEach((cell, index) => {
+                const rect = cell.getBoundingClientRect();
+                const parentRect = tbl.getBoundingClientRect();
+                const x = rect.left - parentRect.left + rect.width/2;
+                const y = rect.top - parentRect.top + rect.height/2;
+
+                if(index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             });
+            ctx.stroke();
         }
 
         function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
         function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-        function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Records Saved!"); }
-        function clearData(){ if(confirm("Clear all?")){ localStorage.removeItem(STORAGE_KEY); location.reload(); }}
+        function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+        function clearData(){ localStorage.clear(); location.reload(); }
 
         function makePattern(r,c){
-            targetCol=c; let base="**";
+            let base="**";
             for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
             if(base=="**") return;
             let shape=[];
@@ -274,83 +224,42 @@
                 for(let j=0;j<6;j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j],base)?1:0); }
                 shape.push(row);
             }
-            searchPattern(shape,base);
-        }
-
-        function searchPattern(shape,base){
-            let lastMatches=[];
+            let matches=[];
             for(let i=0; i<=data.length-shape.length; i++){
                 let ok=true;
                 for(let k=0; k<shape.length; k++){
                     for(let j=0; j<6; j++){ if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}}
                     if(!ok) break;
                 }
-                if(ok) lastMatches.push({index:i});
+                if(ok) matches.push(i);
             }
-            showChecks(shape, lastMatches);
-        }
-
-        function showChecks(shape, matches){
             const box = document.getElementById("checks");
             box.innerHTML="";
-            matches.slice(0,5).forEach((m,i)=>{
+            matches.forEach((mIdx)=>{
                 let d = document.createElement("div");
-                d.style = "background: #1e293b; padding: 10px; margin-top: 5px; border-radius: 5px; cursor: pointer; border: 1px solid #444;";
-                d.innerText = `Pattern Match #${i+1} (Row ${m.index + 1})`;
-                d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
+                d.style = "background:#1e293b; padding:8px; margin-top:5px; border-radius:5px; cursor:pointer; border:1px solid #444";
+                d.innerText = `Match at Row ${mIdx+1}`;
+                d.onclick = () => { activeMark={start:mIdx, shape:shape}; draw(); showPopup(shape, mIdx); };
                 box.appendChild(d);
             });
-            updateAI(shape, matches);
         }
 
-        function showOne(shape, idx){
-            let html="<table id='popTbl' style='color:#000'>";
+        function showPopup(shape, idx){
+            let h="<table id='popTbl' style='color:#000'>";
             for(let i=0; i<shape.length; i++){
-                html+="<tr>";
+                h+="<tr>";
                 data[idx+i].forEach((v,j)=>{
-                    html+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
+                    h+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
                 });
-                html+="</tr>";
+                h+="</tr>";
             }
-            document.getElementById("popData").innerHTML=html+"</table>";
+            document.getElementById("popData").innerHTML=h+"</table>";
             document.getElementById("popup").style.display="block";
             document.getElementById("overlay").style.display="block";
-            setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
-        }
-
-        function updateAI(shape, matches){
-            let jc={}, dc={};
-            matches.forEach(m=>{
-                for(let i=0; i<shape.length; i++){
-                    for(let j=0; j<6; j++){
-                        if(shape[i][j]){
-                            let v = data[m.index+i][j];
-                            jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
-                        }
-                    }
-                }
-            });
-            document.getElementById("ai").innerHTML = `Jodi: ${Object.keys(jc).slice(0,2).join(", ")} | Ank: ${Object.keys(dc).slice(0,2).join(", ")}`;
-            
-            let pool = [];
-            matches.forEach(m => {
-                let nextR = m.index + shape.length;
-                if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
-            });
-            document.getElementById("future").innerHTML = pool.length ? pool.slice(0,2).join(" / ") : "Scanning...";
+            setTimeout(()=>drawLines("popCanvas", "popTbl"), 150);
         }
 
         function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-
-        document.getElementById("csv").onchange = e => {
-            let fr = new FileReader();
-            fr.onload = () => {
-                let lines = fr.result.split('\n');
-                data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
-                draw();
-            };
-            fr.readAsText(e.target.files[0]);
-        };
     </script>
 </body>
 </html>
