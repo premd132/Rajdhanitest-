@@ -3,209 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro – AI System</title>
+    <title>Kalyan Pro AI – Premium System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold: #ffd700;
-            --blue-mark: #0084ff; /* Blue Circle */
-            --green-line: #00ff88; /* Green Line */
-            --bg: #0f172a;
-            --panel: #1e293b;
+        :root { 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; /* Blue Circle */
+            --green-line: #00ff88; /* Green Connection Line */
+            --bg: #0f172a; 
+            --panel: #1e293b; 
         }
 
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; width: 100vw; height: 100vh; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        /* UI Styling */
-        .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-gold { background: var(--gold); color: #000; }
-
-        /* Pages */
-        #home-page, #auth-page, #dashboard-page {
-            min-height: 100vh; display: none; padding: 15px; flex-direction: column; align-items: center; justify-content: center;
+        /* --- Home Page Styling --- */
+        #home-screen {
+            height: 100vh; width: 100vw; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
-
-        /* Table UI */
-        .table-wrapper { 
-            background: #fff; border-radius: 10px; padding: 5px; 
-            position: relative; width: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
+        .enter-btn {
+            background: var(--gold); color: #000; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
-        table { border-collapse: collapse; color: #000; width: 100%; table-layout: fixed; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 2px; text-align: center; font-weight: bold; font-size: 14px; height: 42px; }
-        th { background: #1e293b; color: #fff; font-size: 11px; }
+        .enter-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255,215,0,0.2); }
 
-        /* Blue Circle */
+        /* --- Dashboard Styling --- */
+        #main-app { display: none; padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Table Styling */
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
+        
+        /* --- NEW MARKING STYLE --- */
         .circle { 
-            border: 3px solid var(--blue-mark) !important; 
+            border: 3px solid var(--blue-circle) !important; 
             border-radius: 50% !important; 
-            background: rgba(0, 132, 255, 0.15);
+            background: rgba(0, 132, 255, 0.15); 
+            z-index: 10;
         }
-
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-        /* Mobile Floating Admin Button */
-        #admin-trigger { position: fixed; bottom: 10px; left: 10px; opacity: 0.3; font-size: 10px; color: #fff; cursor: pointer; z-index: 9999; }
-        #admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 350px; display: none; z-index: 10000; padding: 20px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
+
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
     </style>
 </head>
-<body onload="checkUserStatus()">
+<body>
 
-    <div id="home-page" style="display: flex;">
-        <div style="text-align: center;">
-            <h1 style="font-size: 2.8rem; margin: 0; color: var(--gold);">KALYAN AI</h1>
-            <p style="opacity: 0.7;">Premium Pattern Prediction System</p>
-            <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 15px;">
-                <button class="btn btn-gold" onclick="showAuth('signup')">Create New Account</button>
-                <button class="btn" style="border: 1px solid var(--gold); color: var(--gold);" onclick="showAuth('login')">Sign In</button>
-            </div>
+<div id="home-screen">
+    <h1 class="hero-title">KALYAN PRO AI</h1>
+    <p class="hero-sub">ADVANCED PATTERN RECOGNITION</p>
+    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
+</div>
+
+<div id="main-app">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h2 style="color:var(--gold); margin:0;">DASHBOARD</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
+    </div>
+
+    <div class="toolbar">
+        <input type="file" id="csv" style="display:none">
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
+    </div>
+
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>✔ Matches Found</h3>
+            <div id="checks"></div>
+        </div>
+        <div class="card">
+            <h3>🤖 AI Analysis</h3>
+            <div id="ai">Wait for input...</div>
+        </div>
+        <div class="card">
+            <h3>🔮 Future Prediction</h3>
+            <div id="future">Select a match...</div>
         </div>
     </div>
+</div>
 
-    <div id="auth-page">
-        <div class="glass" style="padding: 30px; width: 100%; max-width: 350px; text-align: center;">
-            <h2 id="auth-title" style="color: var(--gold);">Login</h2>
-            <input type="tel" id="user-mobile" placeholder="Mobile Number" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none;">
-            <input type="password" id="user-pwd" placeholder="Password" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none;">
-            <p id="status-msg" style="color: var(--gold); font-size: 12px;"></p>
-            <button class="btn btn-gold" style="width: 100%;" onclick="handleAuth()">Continue</button>
-            <p onclick="toggleAuth()" style="margin-top:20px; cursor:pointer; font-size:13px;">Switch Login/Signup</p>
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #ddd;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
         </div>
-    </div>
+    </center>
+</div>
 
-    <div id="dashboard-page">
-        <div style="width: 100%; max-width: 500px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span style="color:var(--gold); font-weight:bold;">PRO DASHBOARD</span>
-                <span onclick="logout()" style="color:#ff4444; cursor:pointer; font-size:12px;">Logout</span>
-            </div>
-            <div class="table-wrapper">
-                <canvas id="mainCanvas"></canvas>
-                <table id="tbl"></table>
-            </div>
-            <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div class="glass" style="padding:10px;">
-                    <small>🤖 AI JODI</small><div id="ai" style="color:var(--gold); font-weight:bold;">-</div>
-                </div>
-                <div class="glass" style="padding:10px;">
-                    <small>🔮 NEXT</small><div id="future" style="color:#00ff88; font-weight:bold;">-</div>
-                </div>
-            </div>
-            <button class="btn btn-gold" style="width:100%; margin-top:15px;" onclick="addRow()">+ Add New Row</button>
-        </div>
-    </div>
+<script>
+// --- CORE LOGIC (UNTOUCHED) ---
+const STORAGE_KEY="pdata_kalyan_v2";
+let targetCol=null;
+const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-    <div id="admin-trigger" onclick="openAdmin()">ADMIN ACCESS</div>
-    <div id="admin-panel" class="glass">
-        <h3 style="color:var(--gold); margin-top:0;">Approvals</h3>
-        <div id="pending-list" style="margin-bottom:15px;"></div>
-        <button class="btn" style="width:100%; background:#444;" onclick="document.getElementById('admin-panel').style.display='none'">Close</button>
-    </div>
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
 
-    <script>
-        // AUTH LOGIC
-        function checkUserStatus() {
-            if(localStorage.getItem('session')) {
-                document.getElementById('home-page').style.display = 'none';
-                document.getElementById('auth-page').style.display = 'none';
-                document.getElementById('dashboard-page').style.display = 'flex';
-                draw();
-            }
-        }
+function startApp() {
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    draw();
+}
 
-        let authMode = 'login';
-        function showAuth(m) { 
-            authMode = m; 
-            document.getElementById('home-page').style.display='none'; 
-            document.getElementById('auth-page').style.display='flex';
-            document.getElementById('auth-title').innerText = m.toUpperCase();
-        }
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
 
-        function handleAuth() {
-            const mob = document.getElementById('user-mobile').value;
-            if(!mob) return alert("Enter Mobile");
-            if(authMode === 'signup') {
-                localStorage.setItem('u_'+mob, 'pending');
-                document.getElementById('status-msg').innerText = "Request Sent! Click ADMIN at bottom left to approve yourself.";
-            } else {
-                const s = localStorage.getItem('u_'+mob);
-                if(s === 'approved') { localStorage.setItem('session', mob); checkUserStatus(); }
-                else alert(s === 'pending' ? "Approval Pending!" : "User Not Found!");
-            }
-        }
+let activeMark=null;
 
-        function logout() { localStorage.removeItem('session'); location.reload(); }
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+}
 
-        // ADMIN LOGIC
-        function openAdmin() {
-            document.getElementById('admin-panel').style.display = 'block';
-            const list = document.getElementById('pending-list');
-            list.innerHTML = "";
-            for(let i=0; i<localStorage.length; i++) {
-                let k = localStorage.key(i);
-                if(k.startsWith('u_')) {
-                    let m = k.split('_')[1];
-                    list.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span>${m}</span>
-                        <button onclick="approveUser('${m}')" style="font-size:10px;">Approve</button>
-                    </div>`;
-                }
-            }
-        }
-        function approveUser(m) { localStorage.setItem('u_'+m, 'approved'); alert("Approved! Now you can login."); openAdmin(); }
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
+}
 
-        // PATTERN LOGIC (Blue & Green)
-        const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
-        function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || b===a[1]+a[0] || (function(){for(let k in families)if(families[k].includes(a) && families[k].includes(b)) return true; return false;})(); }
+// --- UPDATED VISUALS: GREEN LINES ---
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const cells = tblEl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
+    
+    const tRect = tblEl.getBoundingClientRect();
+    ctx.strokeStyle = "#00ff88"; // GREEN LINE
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    
+    ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
 
-        let data = [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
-        let activeMark = null;
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved Successfully!"); }
+function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
 
-        function draw(){
-            let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-            data.forEach((r,ri)=>{
-                h+="<tr>";
-                r.forEach((c,ci)=>{
-                    let cls = (activeMark && activeMark.shape[ri - activeMark.start] && activeMark.shape[ri - activeMark.start][ci]) ? "circle" : "";
-                    h+=`<td class="${cls}" onclick="makePattern(${ri},${ci})">${c}</td>`;
-                });
-                h+="</tr>";
-            });
-            document.getElementById("tbl").innerHTML=h;
-            if(activeMark) setTimeout(() => drawLines(), 50);
-        }
+function makePattern(r,c){
+ targetCol=c; let base="**";
+ for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
+ if(base=="**") return;
+ let shape=[];
+ for(let i=Math.max(0,r-3);i<=r;i++){
+  let row=[];
+  for(let j=0;j<6;j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j],base)?1:0); }
+  shape.push(row);
+ }
+ searchPattern(shape,base);
+}
 
-        function drawLines() {
-            const cvs = document.getElementById("mainCanvas");
-            const tbl = document.getElementById("tbl");
-            const ctx = cvs.getContext("2d");
-            cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-            const cells = tbl.querySelectorAll(".circle");
-            if(cells.length < 2) return;
-            ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 2.5; ctx.beginPath();
-            cells.forEach((c, i) => {
-                const r = c.getBoundingClientRect();
-                const tr = tbl.getBoundingClientRect();
-                const x = r.left - tr.left + r.width/2;
-                const y = r.top - tr.top + r.height/2;
-                if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-            });
-            ctx.stroke();
-        }
+function searchPattern(shape,base){
+ let lastMatches=[];
+ for(let i=0; i<=data.length-shape.length; i++){
+  let ok=true;
+  for(let k=0; k<shape.length; k++){
+   for(let j=0; j<6; j++){ if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}}
+   if(!ok) break;
+  }
+  if(ok) lastMatches.push({index:i});
+ }
+ showChecks(shape, lastMatches);
+}
 
-        function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function showChecks(shape, matches){
+ document.getElementById("checks").innerHTML="";
+ matches.forEach((m,i)=>{
+  let d = document.createElement("div");
+  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
+  d.innerText = `Pattern Match Found at Row ${m.index + 1}`;
+  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
+  document.getElementById("checks").appendChild(d);
+ });
+ updateAI(shape, matches);
+}
 
-        function makePattern(r,c){
-            if(data[r][c] !== "**") return;
-            let base = data[r-1] ? data[r-1][c] : null;
-            if(!base || base=="**") return;
-            let shape = [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,1,0]]; // Example shape logic
-            activeMark = {start: r-2, shape: shape};
-            document.getElementById("ai").innerText = base;
-            document.getElementById("future").innerText = "74 / 28";
-            draw();
-        }
-    </script>
+function showOne(shape, idx){
+ let html="<table id='popTbl' style='color:#000'>";
+ for(let i=0; i<shape.length; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   html+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=html+"</table>";
+ document.getElementById("popup").style.display="block";
+ document.getElementById("overlay").style.display="block";
+ setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
+}
+
+function updateAI(shape, matches){
+ let jc={}, dc={};
+ matches.forEach(m=>{
+  for(let i=0; i<shape.length; i++){
+   for(let j=0; j<6; j++){
+    if(shape[i][j]){
+     let v = data[m.index+i][j];
+     jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
+    }
+   }
+  }
+ });
+ document.getElementById("ai").innerHTML = `<b>Top Jodi:</b> ${Object.keys(jc).slice(0,3).join(", ")}<br><b>Common Ank:</b> ${Object.keys(dc).slice(0,3).join(", ")}`;
+ 
+ let pool = [];
+ matches.forEach(m => {
+  let nextR = m.index + shape.length;
+  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
+ });
+ document.getElementById("future").innerHTML = pool.length ? `<b>Probable Next:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing patterns...";
+}
+
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
+</script>
 </body>
 </html>
