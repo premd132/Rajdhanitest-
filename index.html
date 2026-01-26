@@ -104,14 +104,44 @@ function isPartOfPattern(ri, ci){
     return (i>=0 && i<activeMark.shape.length && activeMark.shape[i][ci]);
 }
 
-function drawLines(cvsId, tblEl) {
-    const cvs = document.getElementById(cvsId);
-    const ctx = cvs.getContext("2d");
-    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    const cells = tblEl.querySelectorAll(".circle, .base-yellow");
-    if(cells.length < 2) return;
-    const tRect = tblEl.getBoundingClientRect();
+/* CSV FIX */
+csv.onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        try {
+            // सभी डॉट (.) को कोमा (,) में बदलें और फालतू स्पेस हटाएं
+            let rawData = fr.result.replace(/\./g, ",").trim();
+            let rows = rawData.split("\n");
+
+            // अगर पहली लाइन में 'Mon' या 'Date' लिखा है तो उसे हटा दें (Header Filter)
+            if (rows[0].toLowerCase().match(/[a-z]/)) rows.shift();
+
+            data = rows.map(r => {
+                // कोमा के आधार पर डेटा बाटें
+                let cols = r.split(",").map(v => {
+                    v = v.trim();
+                    // अगर खाली है या स्टार है तो ** कर दें
+                    if (v == "" || v == "*" || v == "**") return "**";
+                    return norm(v);
+                });
+                
+                // अगर कॉलम 6 से कम हैं तो बाकी में ** भर दें
+                while(cols.length < 6) cols.push("**");
+                return cols.slice(0, 6); // सिर्फ 6 दिन का डेटा लें
+            });
+
+            if (data.length > 0) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                draw();
+                alert("CSV File Uploaded Successfully!");
+            }
+        } catch (err) {
+            alert("Error: File format sahi nahi hai!");
+            console.error(err);
+        }
+    };
+    fr.readAsText(e.target.files[0]);
+};
     
     ctx.strokeStyle = "#2196f3"; ctx.lineWidth = 2;
     let base = tblEl.querySelector(".base-yellow").getBoundingClientRect();
