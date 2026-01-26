@@ -1,63 +1,60 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan AI Pattern Master - Pro</title>
+<title>Kalyan Pro AI – Ultimate Pattern Sensor</title>
 <style>
     :root { 
-        --gold: #ffcc00; --red: #ff3131; --bg: #0b0c10; 
-        --panel: #1f2833; --text: #c5c6c7; --green: #00ff41;
+        --gold: #ffcc00; --red: #ff3e3e; --bg: #0d0d0d; 
+        --panel: #1a1a1a; --border: #333; --green: #00ff41;
     }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
     
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { color: var(--gold); margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; letter-spacing: 2px; margin: 10px 0; text-shadow: 0 0 10px rgba(255,204,0,0.3); }
     
-    .toolbar { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; background: var(--panel); padding: 15px; border-radius: 12px; border: 1px solid #45a29e; }
+    .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
     
-    /* Premium Table Design */
-    .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 0 30px rgba(102, 252, 241, 0.2); display: inline-block; }
-    table { border-collapse: collapse; color: #000; font-weight: bold; }
-    td, th { border: 1.5px solid #dee2e6; width: 45px; height: 45px; text-align: center; position: relative; }
-    th { background: #1f2833; color: var(--gold); font-size: 11px; }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 8px; padding: 5px; box-shadow: 0 0 25px rgba(255,204,0,0.1); max-width: 100%; border: 2px solid var(--gold); }
+    table { border-collapse: collapse; font-size: 14px; position: relative; z-index: 2; color: #000; }
+    td, th { border: 1px solid #ddd; padding: 10px 5px; text-align: center; font-weight: bold; width: 42px; height: 42px; transition: 0.2s; }
+    th { background: #800000; color: white; font-size: 11px; text-transform: uppercase; }
     
-    .blank { background: #fdf2e9 !important; border: 2px dashed var(--red) !important; cursor: pointer; }
-    .circle { background: var(--red) !important; color: #fff !important; border-radius: 50%; box-shadow: 0 0 10px var(--red); z-index: 5; }
-    .base-mark { background: var(--gold) !important; color: #000 !important; border-radius: 50%; border: 2px solid #000; }
-
-    /* UI Components */
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 25px; }
-    .card { background: var(--panel); padding: 20px; border-radius: 15px; border-top: 4px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-    .card h3 { color: var(--gold); margin-top: 0; border-bottom: 1px solid #45a29e; padding-bottom: 10px; font-size: 16px; }
+    .blank { background: #fff4e6 !important; cursor: pointer; border: 2px dashed var(--red) !important; color: #999; }
+    .circle { border: 2.5px solid var(--red) !important; border-radius: 50%; background: rgba(255, 62, 62, 0.2); z-index: 10; position: relative; color: #000; }
+    .base-hit { background: var(--gold) !important; border-radius: 50%; color: #000 !important; box-shadow: 0 0 10px var(--gold); }
     
-    .match-item { background: #0b0c10; border: 1px solid #45a29e; margin: 8px 0; padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-    .match-item:hover { transform: scale(1.02); border-color: var(--gold); }
-    .strong-tag { color: var(--green); font-weight: bold; float: right; font-size: 10px; text-transform: uppercase; }
-
-    .prediction-value { font-size: 48px; font-weight: bold; color: var(--gold); text-align: center; text-shadow: 0 0 15px rgba(255, 204, 0, 0.5); }
+    .dashboard { display: flex; flex-direction: row; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+    .card { background: var(--panel); padding: 15px; border-radius: 12px; border-left: 5px solid var(--gold); flex: 1; min-width: 280px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; display: flex; justify-content: space-between; }
     
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-    button { background: var(--gold); color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; }
-    #csvInput { display: none; }
+    #checks { max-height: 150px; overflow-y: auto; }
+    .match-item { background: #262626; margin: 5px 0; padding: 10px; cursor: pointer; border-radius: 6px; border: 1px solid transparent; transition: 0.3s; }
+    .match-item:hover { border-color: var(--gold); background: #333; }
+    .strong-badge { color: var(--green); font-size: 10px; font-weight: bold; border: 1px solid var(--green); padding: 2px 5px; border-radius: 4px; }
+    
+    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 4px solid var(--gold); display: none; z-index: 100; padding: 15px; border-radius: 15px; color: #000; width: 90%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 90; }
+    
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+    button { background: var(--gold); color: #000; border: none; padding: 10px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+    button:hover { opacity: 0.8; transform: translateY(-1px); }
 </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>🎯 AI Pattern Master Pro</h1>
-</div>
+<h2>🏆 Kalyan Pattern Pro AI</h2>
 
 <div class="toolbar">
-    <button onclick="document.getElementById('csvInput').click()">📂 लोड CSV</button>
-    <input type="file" id="csvInput">
-    <button onclick="addRow()">➕ रो जोड़ें</button>
-    <button onclick="saveData()" style="background: var(--green);">💾 सेव चार्ट</button>
-    <button onclick="clearData()" style="background: var(--red); color: #fff;">🗑️ क्लियर</button>
+    <input type="file" id="csv" style="display:none">
+    <button onclick="document.getElementById('csv').click()">📂 LOAD CSV</button>
+    <button onclick="addRow()">➕ ADD ROW</button>
+    <button onclick="saveData()" style="background:var(--green); color:#000;">💾 SAVE CHART</button>
+    <button onclick="clearData()" style="background:var(--red); color:white;">🗑️ CLEAR</button>
 </div>
 
 <center>
-    <div class="table-container" id="mainWrap">
+    <div class="table-container">
         <canvas id="mainCanvas"></canvas>
         <table id="tbl"></table>
     </div>
@@ -65,145 +62,193 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>📍 सटीक मैचिंग (Matches)</h3>
-        <div id="checks">खाली बॉक्स (**) पर क्लिक करें...</div>
+        <h3>✔ Verified Matches <span style="font-size:10px; color:#aaa;">Click Match to view</span></h3>
+        <div id="checks"></div>
     </div>
     
     <div class="card">
-        <h3>🔮 भविष्यवाणी (Strong Prediction)</h3>
-        <div id="result" class="prediction-value">--</div>
-        <div id="status" style="text-align: center; color: var(--green); font-weight: bold; font-size: 12px;"></div>
+        <h3>🤖 Logic Engine</h3>
+        <div id="ai" style="font-size: 14px; color: #ddd;">Waiting for selection...</div>
+    </div>
+    
+    <div class="card">
+        <h3>🔮 Strong Future</h3>
+        <div id="future" style="font-size: 40px; color: var(--gold); text-align: center; font-weight: bold;">--</div>
     </div>
 </div>
 
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#800000; color:white; border-radius:50%; width:30px; height:30px; border:none;">X</button>
+    <h3 style="margin: 0 0 15px 0; color:#800000; font-family:Arial;">Connection Visualizer</h3>
+    <center>
+        <div class="table-container" style="border: 2px solid #000;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
+</div>
+
 <script>
-const rashi = {'1':'6','6':'1','2':'7','7':'2','3':'8','8':'3','4':'9','9':'4','5':'0','0':'5'};
-function getFamily(jodi) {
-    if(!jodi || jodi=="**") return [];
-    let a=jodi[0], b=jodi[1];
-    let ra=rashi[a], rb=rashi[b];
-    return [a+b, b+a, a+rb, ra+b, ra+rb, rb+ra, b+ra, rb+a];
+const STORAGE_KEY="pdata_kalyan_v3_pro";
+let targetCol=null;
+const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
+
+function getFamily(v){for(let k in families) if(families[k].includes(v)) return families[k]; return [v];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return getFamily(a).includes(b); }
+
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
+data = data.map(r => r.map(norm));
+
+let activeMark=null;
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = "";
+   if(activeMark && isPartOfPattern(ri, ci)) cls = "circle";
+   if(activeMark && activeMark.baseR === ri && activeMark.baseC === ci) cls += " base-hit";
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-let data = JSON.parse(localStorage.getItem("kalyan_pro_v3")) || [
-    ["12","46","78","88","88","45"],
-    ["33","19","90","05","12","67"],
-    ["**","**","**","**","**","**"]
-];
-
-let activePattern = null;
-let currentTargetCol = null;
-
-function render(){
-    let h="<tr><th>सोम</th><th>मंगल</th><th>बुध</th><th>गुरु</th><th>शुक्र</th><th>शनि</th></tr>";
-    data.forEach((r, ri) => {
-        h += "<tr>";
-        r.forEach((c, ci) => {
-            let cls = "";
-            if(c=="**") cls = "blank";
-            if(activePattern && activePattern.points.some(p=>p.r==ri && p.c==ci)) cls = "circle";
-            if(activePattern && activePattern.base.r==ri && activePattern.base.c==ci) cls = "base-mark";
-            h += `<td class="${cls}" contenteditable="${c!='**'}" oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'analyze('+ri+','+ci+')':'' }">${c}</td>`;
-        });
-        h += "</tr>";
-    });
-    document.getElementById("tbl").innerHTML = h;
-    if(activePattern) setTimeout(drawPatternLines, 50);
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
 }
 
-function analyze(r, c){
-    currentTargetCol = c;
-    let baseJodi = "";
-    // अपने कॉलम में सबसे नजदीकी ऊपर वाली जोड़ी को "Base" मानें
-    for(let i=r-1; i>=0; i--){ if(data[i][c]!="**"){ baseJodi=data[i][c]; break; } }
-    if(!baseJodi) return;
-
-    let matches = [];
-    let baseFam = getFamily(baseJodi);
-
-    // पूरे चार्ट में स्कैन करें
-    for(let i=1; i < data.length - 1; i++){
-        // "SAME DAY SAME COLUMN" Logic:
-        // अगर पुराने रिकॉर्ड में उसी दिन/कॉलम में बेस जोड़ी की फैमिली मिलती है
-        if(baseFam.includes(data[i][c])){
-            let score = 0;
-            let pPoints = [];
-            // आसपास के 2 हफ़्तों का पैटर्न देखें
-            for(let rowOff=-2; rowOff<=0; rowOff++){
-                for(let colOff=-2; colOff<=2; colOff++){
-                    let currR = r + rowOff, currC = c + colOff;
-                    let histR = i + rowOff, histC = c + colOff;
-                    if(data[currR] && data[histR] && data[currR][currC]!="**" && 
-                       getFamily(data[currR][currC]).includes(data[histR][histC])){
-                        score++;
-                        pPoints.push({r: histR, c: histC});
-                    }
-                }
-            }
-            if(score >= 2) matches.push({index: i, score: score, points: pPoints, base: {r:i, c:c}});
-        }
-    }
-    showMatches(matches, r, c);
-}
-
-function showMatches(matches, targetR, targetC){
-    let div = document.getElementById("checks");
-    div.innerHTML = "";
-    matches.sort((a,b)=>b.score - a.score).forEach(m => {
-        let item = document.createElement("div");
-        item.className = "match-item";
-        let isStrong = m.score >= 4 ? "<span class='strong-tag'>🔥 STRONG</span>" : "";
-        item.innerHTML = `रो: ${m.index+1} | मैच स्कोर: ${m.score} ${isStrong}`;
-        item.onclick = () => {
-            activePattern = m;
-            render();
-            let pred = data[m.index + 1] ? data[m.index + 1][targetC] : "??";
-            document.getElementById("result").innerText = pred;
-            document.getElementById("status").innerText = m.score >= 4 ? "HIGH CONFIDENCE MATCH FOUND!" : "Normal Match";
-        };
-        div.appendChild(item);
-    });
-}
-
-function drawPatternLines(){
-    const cvs = document.getElementById("mainCanvas");
-    const tbl = document.getElementById("tbl");
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
     const ctx = cvs.getContext("2d");
-    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    
-    let rect = tbl.getBoundingClientRect();
-    let circles = document.querySelectorAll(".circle, .base-mark");
+    const circles = tblEl.querySelectorAll(".circle, .base-hit");
     if(circles.length < 2) return;
-    
-    ctx.strokeStyle = "rgba(0, 255, 65, 0.5)";
-    ctx.lineWidth = 1.5;
-    let base = document.querySelector(".base-mark").getBoundingClientRect();
-    
+    const tRect = tblEl.getBoundingClientRect();
+    const baseCell = tblEl.querySelector(".base-hit") || circles[circles.length-1];
+    const bRect = baseCell.getBoundingClientRect();
+    const x1 = bRect.left - tRect.left + bRect.width/2;
+    const y1 = bRect.top - tRect.top + bRect.height/2;
+
+    ctx.strokeStyle = "rgba(255, 62, 62, 0.6)"; ctx.lineWidth = 2;
     circles.forEach(c => {
-        let r = c.getBoundingClientRect();
-        ctx.beginPath();
-        ctx.moveTo(base.left - rect.left + base.width/2, base.top - rect.top + base.height/2);
-        ctx.lineTo(r.left - rect.left + r.width/2, r.top - rect.top + r.height/2);
+        const r = c.getBoundingClientRect();
+        ctx.beginPath(); ctx.moveTo(x1,y1);
+        ctx.lineTo(r.left - tRect.left + r.width/2, r.top - tRect.top + r.height/2);
         ctx.stroke();
     });
 }
 
-function edit(r,c,el){ data[r][c] = el.innerText.trim(); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem("kalyan_pro_v3", JSON.stringify(data)); alert("डेटा सुरक्षित कर दिया गया!"); }
-function clearData(){ if(confirm("सब मिटा दें?")){ localStorage.clear(); location.reload(); } }
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Chart Saved Successfully!"); }
+function clearData(){ if(confirm("Clear all data permanently?")){ localStorage.clear(); location.reload(); }}
 
-document.getElementById("csvInput").onchange = e => {
+function makePattern(r,c){
+ targetCol=c; let baseJodi="**"; let baseRow=-1;
+ for(let i=r-1;i>=0;i--){ if(data[i][c]!="**"){baseJodi=data[i][c]; baseRow=i; break;}}
+ if(baseRow === -1) return;
+
+ let shape=[];
+ for(let i=Math.max(0,r-3);i<=r;i++){
+  let row=[];
+  for(let j=0;j<6;j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j],baseJodi)?1:0); }
+  shape.push(row);
+ }
+ searchPattern(shape, baseJodi, baseRow, c);
+}
+
+function searchPattern(shape, baseJodi, baseRow, bCol){
+ let lastMatches=[];
+ for(let i=0; i<=data.length-shape.length; i++){
+  let isStrong = smartMatch(data[i + (baseRow - (Math.max(0, baseRow-3)))][bCol], baseJodi);
+  let score = 0;
+  for(let k=0; k<shape.length; k++){
+   for(let j=0; j<6; j++){ if(shape[k][j] && smartMatch(data[i+k][j], baseJodi)) score++; }
+  }
+  if(score >= 1) lastMatches.push({index:i, strong: isStrong, score: score});
+ }
+ showChecks(shape, lastMatches, baseRow, bCol);
+}
+
+function showChecks(shape, matches, bRow, bCol){
+ let list = document.getElementById("checks");
+ list.innerHTML="";
+ matches.sort((a,b)=>b.strong - a.strong || b.score - a.score).slice(0,8).forEach((m,i)=>{
+  let d = document.createElement("div");
+  d.className = "match-item";
+  d.innerHTML = `<b>Match #${i+1}</b> (Score: ${m.score}) ${m.strong?'<span class="strong-badge">STRONG BASE</span>':''}`;
+  d.onclick = () => { 
+    activeMark={start:m.index, shape:shape, baseR: m.index+(bRow - Math.max(0,bRow-3)), baseC: bCol}; 
+    draw(); 
+    showOne(shape, m.index); 
+  };
+  list.appendChild(d);
+ });
+ updateAI(shape, matches);
+}
+
+function showOne(shape, idx){
+ let html="<table id='popTbl' style='width:100%'>";
+ for(let i=0; i<shape.length; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let isBase = (activeMark && idx+i === activeMark.baseR && j === activeMark.baseC);
+   html+=`<td class="${shape[i][j]?'circle':''} ${isBase?'base-hit':''}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=html+"</table>";
+ document.getElementById("popup").style.display="block";
+ document.getElementById("overlay").style.display="block";
+ setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 150);
+}
+
+function updateAI(shape, matches){
+ let jc={}, dc={};
+ matches.forEach(m=>{
+  for(let i=0; i<shape.length; i++){
+   for(let j=0; j<6; j++){
+    if(shape[i][j]){
+     let v = data[m.index+i][j];
+     jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
+    }
+   }
+  }
+ });
+ document.getElementById("ai").innerHTML = `<b>Top Jodi:</b> ${Object.keys(jc).slice(0,3).join(", ")}<br><b>Top Ank:</b> ${Object.keys(dc).slice(0,3).join(", ")}`;
+ 
+ let best = matches.find(m => m.strong) || matches[0];
+ if(best){
+    let nextR = best.index + shape.length;
+    if(nextR < data.length && data[nextR][targetCol] != "**") {
+        document.getElementById("future").innerText = data[nextR][targetCol];
+    } else { document.getElementById("future").innerText = "??"; }
+ }
+}
+
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.replace(/\./g, ',').split(',').map(v => v.trim()));
-        render();
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim().replace(/\./g, ''))));
+        draw();
     };
     fr.readAsText(e.target.files[0]);
 };
 
-render();
+draw();
 </script>
 </body>
 </html>
