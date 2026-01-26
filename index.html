@@ -3,87 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan Pro - AI Table Logic Master</title>
+<title>Kalyan Master AI - Professional Pattern System</title>
 <style>
     :root { 
-        --gold: #ffcc00; --red: #e60000; --bg: #0d0d0d; 
-        --panel: #1a1a1a; --border: #333; --green: #00ff41; --white: #ffffff;
+        --primary: #800000; --gold: #ffcc00; --bg: #121212; 
+        --panel: #1e1e1e; --text: #ffffff; --green: #00ff41; 
     }
-    body { font-family: 'Roboto', Arial, sans-serif; background: var(--bg); color: var(--white); margin: 0; padding: 10px; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
     
-    h2 { color: var(--gold); text-align: center; text-transform: uppercase; border-bottom: 2px solid var(--gold); display: inline-block; padding: 0 20px 5px; margin: 10px auto; width: 100%; box-sizing: border-box; }
+    .site-header { text-align: center; border-bottom: 3px solid var(--gold); padding: 10px; margin-bottom: 20px; background: var(--panel); }
+    .site-header h1 { margin: 0; color: var(--gold); text-transform: uppercase; font-size: 22px; letter-spacing: 2px; }
+
+    .menu-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
     
-    .toolbar { background: var(--panel); padding: 15px; border-radius: 5px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    /* DPBoss Style Table Logic */
+    .chart-wrapper { position: relative; display: inline-block; background: #fff; padding: 5px; border: 2px solid #555; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    table { border-collapse: collapse; font-size: 14px; color: #000; font-weight: bold; }
+    td, th { border: 1px solid #999; width: 42px; height: 42px; text-align: center; cursor: pointer; position: relative; }
+    th { background: var(--primary); color: #fff; font-size: 11px; }
     
-    /* DPBoss Style Table */
-    .table-container { position: relative; background: #fff; border-radius: 4px; padding: 5px; display: inline-block; border: 2px solid #555; }
-    table { border-collapse: collapse; font-size: 14px; color: #000; }
-    td, th { border: 1px solid #999; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
-    th { background: #800000; color: white; font-size: 11px; }
-    
-    .blank { background: #ffffcc !important; border: 2px dashed var(--red) !important; color: #f00; }
-    .circle { border: 2px solid var(--red) !important; border-radius: 50%; background: rgba(255, 0, 0, 0.2); position: relative; z-index: 10; }
-    .table-hit { background: #00ff41 !important; color: #000 !important; border-radius: 4px; }
-    .base-hit { background: var(--gold) !important; border-radius: 50%; color: #000 !important; border: 2px solid #000; }
-    
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
-    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-top: 3px solid var(--gold); }
-    .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px; }
-    
-    .match-item { background: #262626; padding: 10px; margin-bottom: 8px; border-radius: 4px; cursor: pointer; font-size: 13px; border-left: 3px solid var(--red); transition: 0.3s; }
-    .match-item:hover { background: #333; border-left-color: var(--green); }
-    
-    .prediction-box { font-size: 50px; color: var(--gold); text-align: center; font-weight: bold; padding: 10px; border: 2px dashed #444; margin-top: 10px; border-radius: 10px; text-shadow: 0 0 10px rgba(255,204,0,0.5); }
+    .blank { background: #fffde6 !important; border: 2px dashed #ff0000 !important; }
+    .marked { border: 2px solid #ff0000 !important; border-radius: 50%; background: rgba(255,0,0,0.15); z-index: 10; position: relative; }
+    .base-point { background: var(--gold) !important; border-radius: 50%; color: #000 !important; box-shadow: 0 0 8px var(--gold); }
+
+    /* Dashboard Logic */
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 20px; }
+    .card { background: var(--panel); padding: 15px; border-radius: 8px; border-left: 5px solid var(--gold); }
+    .card h3 { color: var(--gold); margin: 0 0 10px 0; font-size: 15px; border-bottom: 1px solid #444; }
+
+    #match-results { max-height: 150px; overflow-y: auto; }
+    .match-btn { background: #333; padding: 10px; margin: 5px 0; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.3s; border-left: 3px solid transparent; }
+    .match-btn:hover { background: #444; border-left-color: var(--green); }
+    .strong-tag { color: var(--green); font-weight: bold; font-size: 10px; border: 1px solid var(--green); padding: 1px 4px; border-radius: 3px; margin-left: 10px; }
+
+    .prediction-value { font-size: 50px; color: var(--gold); text-align: center; font-weight: bold; margin-top: 10px; }
 
     canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-    button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 12px; }
-    button:hover { filter: brightness(1.2); }
+    button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
 </style>
 </head>
 <body>
 
-<h2>🏆 KALYAN PRO AI MASTER (V11)</h2>
+<div class="site-header">
+    <h1>KALYAN MASTER AI (V12)</h1>
+</div>
 
-<div class="toolbar">
-    <input type="file" id="csv" style="display:none">
-    <button onclick="document.getElementById('csv').click()">📂 CSV Import</button>
+<div class="menu-bar">
+    <input type="file" id="csv-file" style="display:none" accept=".csv,.txt">
+    <button onclick="document.getElementById('csv-file').click()">📂 CSV Import</button>
     <button onclick="addRow()">➕ Add Row</button>
-    <button onclick="saveData()" style="background:var(--green);">💾 Save</button>
-    <button onclick="clearData()" style="background:var(--red); color:#fff;">🗑️ Reset</button>
+    <button onclick="saveChart()" style="background:var(--green)">💾 Save Chart</button>
+    <button onclick="resetChart()" style="background:#ff3e3e; color:#fff;">🗑️ Reset</button>
 </div>
 
 <center>
-    <div class="table-container" id="chartArea">
-        <canvas id="mainCanvas"></canvas>
-        <table id="tbl"></table>
+    <div class="chart-wrapper">
+        <canvas id="lineCanvas"></canvas>
+        <table id="mainChart"></table>
     </div>
 </center>
 
 <div class="dashboard">
     <div class="card">
-        <h3>📍 Table Matches (DPBoss Logic)</h3>
-        <div id="matchList">Select any (**) to scan...</div>
+        <h3>📍 DPBoss Style Table Matches</h3>
+        <div id="match-results">Click on (**) to scan history...</div>
     </div>
     
     <div class="card">
-        <h3>🤖 AI Analysis Report</h3>
-        <div id="aiReport" style="font-size: 13px; line-height: 1.6;">Upload data to start.</div>
+        <h3>🤖 AI Analysis Result</h3>
+        <div id="ai-status" style="font-size: 13px; color: #ccc;">Select a blank box to analyze connections.</div>
     </div>
     
     <div class="card">
-        <h3>🔮 Future AI Jodi</h3>
-        <div id="prediction" class="prediction-box">--</div>
+        <h3>🔮 Strong Future Jodi</h3>
+        <div id="future-jodi" class="prediction-value">--</div>
     </div>
 </div>
 
 <script>
-const STORAGE_KEY = "kalyan_v11_pro";
-const families = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
+const DB_KEY = "kalyan_master_v12";
+const rashiMap = {'1':'6','6':'1','2':'7','7':'2','3':'8','8':'3','4':'9','9':'4','5':'0','0':'5'};
 
-function getFamily(v){ for(let k in families) if(families[k].includes(v)) return families[k]; return [v]; }
-function norm(v){ v=String(v).trim(); if(v=="" || v=="**") return "**"; return v.length==1?"0"+v:v; }
+function getFamily(j) {
+    if(!j || j=="**") return [];
+    let a=j[0], b=j[1], ra=rashiMap[a], rb=rashiMap[b];
+    return [a+b, b+a, a+rb, ra+b, ra+rb, rb+ra, b+ra, rb+a];
+}
 
-let chartData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+let chart = JSON.parse(localStorage.getItem(DB_KEY)) || [
     ["12","46","78","88","88","45"],
     ["05","90","74","06","19","63"],
     ["**","**","**","**","**","**"]
@@ -92,86 +99,76 @@ let chartData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
 let activePattern = null;
 
 function render() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    chartData.forEach((row, ri) => {
-        h += "<tr>";
-        row.forEach((cell, ci) => {
-            let cls = "";
-            if(cell == "**") cls = "blank";
-            if(activePattern && activePattern.points.some(p => p.r == ri && p.c == ci)) cls += " circle";
-            if(activePattern && activePattern.baseR == ri && activePattern.baseC == ci) cls += " base-hit";
+    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    chart.forEach((row, ri) => {
+        html += "<tr>";
+        row.forEach((val, ci) => {
+            let cls = (val == "**") ? "blank" : "";
+            if(activePattern && activePattern.points.some(p => p.r == ri && p.c == ci)) cls += " marked";
+            if(activePattern && activePattern.baseR == ri && activePattern.baseC == ci) cls += " base-point";
             
-            h += `<td class="${cls}" contenteditable="${cell!='**'}" oninput="update(${ri},${ci},this)" onclick="${cell=='**'?`runAI(${ri},${ci})`:''}"> ${cell} </td>`;
+            html += `<td class="${cls}" contenteditable="${val!='**'}" oninput="editCell(${ri},${ci},this)" onclick="${val=='**'?`runDPBossLogic(${ri},${ci})`:''}"> ${val} </td>`;
         });
-        h += "</tr>";
+        html += "</tr>";
     });
-    document.getElementById("tbl").innerHTML = h;
-    if(activePattern) setTimeout(drawLines, 50);
+    document.getElementById("mainChart").innerHTML = html;
+    if(activePattern) setTimeout(drawConnections, 50);
 }
 
-function update(r, c, el) { chartData[r][c] = norm(el.innerText); }
-function addRow() { chartData.push(["**","**","**","**","**","**"]); render(); }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(chartData)); alert("Data Saved!"); }
-function clearData() { if(confirm("Clear Everything?")) { localStorage.clear(); location.reload(); } }
+function runDPBossLogic(r, c) {
+    let baseJodi = ""; let bRow = -1;
+    for(let i=r-1; i>=0; i--) { if(chart[i][c] != "**") { baseJodi=chart[i][c]; bRow=i; break; } }
+    if(bRow == -1) return;
 
-// --- DPBoss AI Logic ---
-function runAI(rowIdx, colIdx) {
     let matches = [];
-    let baseJodi = "";
-    // Table Logic: ऊपर की जोड़ी से दूरी
-    for(let i=rowIdx-1; i>=0; i--) { if(chartData[i][colIdx] != "**") { baseJodi = chartData[i][colIdx]; break; } }
-    if(!baseJodi) return;
+    let fam = getFamily(baseJodi);
 
-    let baseFam = getFamily(baseJodi);
-
-    for(let i=0; i < rowIdx - 1; i++) {
-        // Table Trick: Same column/day relation
-        if(baseFam.includes(chartData[i][colIdx])) {
-            let score = 0;
-            let pts = [{r: i, c: colIdx}];
-            
-            // Cross Check Logic
-            if(chartData[i-1] && chartData[rowIdx-1]) {
-                if(getFamily(chartData[rowIdx-1][colIdx]).includes(chartData[i-1][colIdx])) { score += 2; pts.push({r: i-1, c: colIdx}); }
+    for(let i=0; i < r - 1; i++) {
+        // Table Trick: Checking Same Column & Same Day pattern
+        if(fam.includes(chart[i][c])) {
+            let score = 0; let pts = [{r: i, c: c}];
+            // Cross Logic (Checking neighboring cells)
+            if(chart[i-1] && chart[r-1] && getFamily(chart[r-1][c]).includes(chart[i-1][c])) {
+                score += 5; pts.push({r: i-1, c: c});
             }
-            matches.push({index: i, score: score, points: pts, baseR: i, baseC: colIdx});
+            matches.push({index: i, score: score, points: pts, baseR: i, baseC: c});
         }
     }
-    displayMatches(matches, colIdx);
+    displayMatches(matches, c);
 }
 
-function displayMatches(matches, targetCol) {
-    let list = document.getElementById("matchList");
-    list.innerHTML = "";
-    matches.sort((a,b) => b.score - a.score).slice(0, 5).forEach(m => {
+function displayMatches(matches, col) {
+    let res = document.getElementById("match-results");
+    res.innerHTML = "";
+    matches.sort((a,b) => b.score - a.score).slice(0, 6).forEach(m => {
         let div = document.createElement("div");
-        div.className = "match-item";
-        div.innerHTML = `Table Match at Row ${m.index + 1} (Score: ${m.score})`;
+        div.className = "match-btn";
+        div.innerHTML = `Match at Row ${m.index + 1} (Score: ${m.score}) ${m.score >= 5 ? '<span class="strong-tag">STRONG</span>' : ''}`;
         div.onclick = () => {
             activePattern = m;
             render();
-            let pred = chartData[m.index + 1] ? chartData[m.index + 1][targetCol] : "--";
-            document.getElementById("prediction").innerText = pred;
-            document.getElementById("aiReport").innerHTML = `Found a Table-Cross connection from row ${m.index+1}. This jodi matches the distance of your current base jodi.`;
+            let nextVal = chart[m.index + 1] ? chart[m.index + 1][col] : "??";
+            document.getElementById("future-jodi").innerText = nextVal;
+            document.getElementById("ai-status").innerText = `Found a confirmed ${m.score >= 5 ? 'Strong' : 'Normal'} Table Trick connection.`;
         };
-        list.appendChild(div);
+        res.appendChild(div);
     });
 }
 
-function drawLines() {
-    const cvs = document.getElementById("mainCanvas");
-    const tbl = document.getElementById("tbl");
+function drawConnections() {
+    const cvs = document.getElementById("lineCanvas");
+    const tbl = document.getElementById("mainChart");
     const ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
     let rect = tbl.getBoundingClientRect();
-    let targets = document.querySelectorAll(".circle, .base-hit");
+    let targets = document.querySelectorAll(".marked, .base-point");
     if(targets.length < 2) return;
     
     ctx.strokeStyle = "rgba(255, 204, 0, 0.7)";
     ctx.lineWidth = 2;
-    let base = document.querySelector(".base-hit").getBoundingClientRect();
+    let base = document.querySelector(".base-point").getBoundingClientRect();
 
     targets.forEach(t => {
         let r = t.getBoundingClientRect();
@@ -182,11 +179,15 @@ function drawLines() {
     });
 }
 
-document.getElementById("csv").onchange = e => {
+function editCell(r, c, el) { chart[r][c] = el.innerText.trim(); }
+function addRow() { chart.push(["**","**","**","**","**","**"]); render(); }
+function saveChart() { localStorage.setItem(DB_KEY, JSON.stringify(chart)); alert("Chart Saved!"); }
+function resetChart() { if(confirm("Are you sure?")) { localStorage.clear(); location.reload(); } }
+
+document.getElementById("csv-file").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        let lines = fr.result.split('\n');
-        chartData = lines.filter(l=>l.trim()).map(l => l.replace(/\./g, ',').split(',').map(v => norm(v.trim())));
+        chart = fr.result.split('\n').filter(l=>l.trim()).map(l => l.replace(/\./g, ',').split(',').map(v => v.trim()));
         render();
     };
     fr.readAsText(e.target.files[0]);
