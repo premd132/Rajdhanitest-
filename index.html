@@ -54,9 +54,6 @@
 <h3>✔ Check Lines (Top 3)</h3>
 <div id="checks"></div>
 
-<h3>🤖 AI Suggestions</h3>
-<div id="ai"></div>
-
 <h3>🔮 Future AI (Table Trick)</h3>
 <div id="future"></div>
 
@@ -214,8 +211,6 @@ function showChecks(shape){
   d.onclick=()=>showOne(shape,i);
   checks.appendChild(d);
  });
- showAISuggestions(shape);
-}
 
 /* POPUP */
 function showOne(shape,n){
