@@ -3,60 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS MASTER PRO</title>
+    <title>DPBOSS MASTER - VISUAL TRACE</title>
     <style>
-        :root { --gold: #ffd700; --red: #ff4444; --blue: #2196f3; --bg: #000; }
+        :root { --gold: #ffd700; --red: #ff4444; --blue: #2196f3; --green: #00ff00; --bg: #000; }
         body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 10px; text-align: center; }
-        h1 { color: var(--gold); margin: 10px 0; font-size: 22px; }
+        h1 { color: var(--gold); margin: 10px 0; font-size: 20px; text-transform: uppercase; }
         
-        .toolbar { background: #1a1a1a; padding: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 2px solid var(--gold); }
-        button { padding: 12px 18px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        .toolbar { background: #1a1a1a; padding: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 2px solid var(--gold); }
+        button { padding: 10px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
         
         .btn-up { background: #fff; color: #000; }
         .btn-add { background: var(--gold); color: #000; }
         .btn-save { background: #4CAF50; color: #fff; }
         .btn-reset { background: var(--red); color: #fff; }
         
-        .chart-box { overflow-x: auto; margin: 20px 0; }
-        table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 800px; margin: 0 auto; table-layout: fixed; }
-        th, td { border: 1px solid #999; height: 45px; text-align: center; font-weight: bold; font-size: 18px; position: relative; }
-        th { background: #800000; color: #fff; font-size: 13px; }
+        .chart-box { overflow-x: auto; margin: 15px 0; }
+        table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 850px; margin: 0 auto; table-layout: fixed; }
+        th, td { border: 1px solid #999; height: 45px; text-align: center; font-weight: bold; font-size: 17px; position: relative; outline: none; }
+        th { background: #800000; color: #fff; font-size: 12px; }
 
-        .base-jodi { background: #ffebee !important; border: 4px solid var(--red) !important; color: var(--red); box-sizing: border-box; }
-        .pattern-mark::after { content: ''; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; box-sizing: border-box; }
-        .blank-cell { background: #f9f9f9; color: #bbb; }
+        /* Highlights */
+        .base-jodi { background: #ffebee !important; border: 3px solid var(--red) !important; color: var(--red); z-index: 5; }
+        .pattern-mark::after { content: ''; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 2px solid var(--blue); border-radius: 50%; pointer-events: none; }
+        
+        /* Trace History Pattern (Jab purani line milegi) */
+        .trace-base { background: #ffff00 !important; border: 2px dashed #000 !important; }
+        .trace-pattern { background: #e3f2fd !important; border: 2px solid var(--blue) !important; }
+        .trace-result { background: #c8e6c9 !important; border: 3px solid var(--green) !important; }
 
-        .res-panel { background: #1a1a1a; border-left: 5px solid var(--gold); padding: 15px; text-align: left; max-width: 800px; margin: 20px auto; }
-        .match-row { padding: 10px; border-bottom: 1px solid #333; color: var(--gold); font-size: 18px; }
+        .blank-cell { background: #f9f9f9; color: #ccc; }
+        .res-panel { background: #1a1a1a; border-left: 5px solid var(--gold); padding: 15px; text-align: left; max-width: 850px; margin: 15px auto; }
+        .match-row { padding: 10px; border-bottom: 1px solid #333; color: var(--gold); font-size: 17px; }
+        #status { color: var(--green); margin-bottom: 5px; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <h1>DPBOSS KING MASTER LOGIC</h1>
-    <div id="status" style="color: #00ff00; margin-bottom: 10px;">Status: System Ready</div>
+    <h1>DPBOSS MASTER LOGIC</h1>
+    <div id="status">System Ready</div>
 
     <div class="toolbar">
         <input type="file" id="csvIn" accept=".csv, .txt" style="display:none">
-        <button class="btn-up" onclick="document.getElementById('csvIn').click()">Upload CSV</button>
-        <button class="btn-add" onclick="addRow()">+ Add Row</button>
-        <button class="btn-save" onclick="saveData()">Save Record</button>
-        <button class="btn-reset" onclick="resetSys()">Reset All</button>
+        <button class="btn-up" onclick="document.getElementById('csvIn').click()">UPLOAD CSV</button>
+        <button class="btn-add" onclick="addRow()">+ ROW</button>
+        <button class="btn-save" onclick="saveData()">SAVE</button>
+        <button class="btn-reset" onclick="resetSys()">RESET</button>
     </div>
 
-    <div class="chart-box">
-        <table id="mainChart"></table>
-    </div>
+    <div class="chart-box"><table id="mainChart"></table></div>
 
     <div class="res-panel">
-        <h3 style="color: var(--gold); margin: 0 0 10px 0;">Search Results:</h3>
-        <div id="out">Patterns select karke blank cell par click karein.</div>
+        <h3 style="color: var(--gold); margin: 0;">Pattern Search Results:</h3>
+        <div id="out" style="font-size: 14px; margin-top: 10px;">Base chunein, pattern banayein aur blank pe click karein.</div>
     </div>
 
     <script>
-        const KEY = "DP_MASTER_FINAL_FIX";
-        let data = JSON.parse(localStorage.getItem(KEY)) || Array(12).fill().map(() => Array(6).fill("**"));
+        const KEY = "DP_MASTER_TRACE_V1";
+        let data = JSON.parse(localStorage.getItem(KEY)) || Array(15).fill().map(() => Array(6).fill("**"));
         let base = null;
         let patterns = [];
+        let tracedCells = []; // Purani line highlight karne ke liye
 
         const families = { "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"], "44":["44","49","94","99"], "55":["00","05","50","55"], "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"], "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"] };
 
@@ -66,21 +72,18 @@
             return s;
         }
 
-        // CSV UPLOAD FIX
         document.getElementById('csvIn').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = function(ev) {
-                const rows = ev.target.result.split(/\r?\n/).filter(l => l.trim());
-                data = rows.map(l => {
+                const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+                data = lines.map(l => {
                     let c = l.split(/[,\t;]/);
                     while(c.length < 6) c.push("**");
                     return c.slice(0,6).map(x => x.trim() || "**");
                 });
-                base = null; patterns = [];
-                render();
-                alert("Data Loaded! 'Save Record' dabana na bhoolein.");
+                resetSys();
             };
             reader.readAsText(file);
         });
@@ -91,52 +94,65 @@
                 html += `<tr>`;
                 row.forEach((val, c) => {
                     let v = val || "**";
-                    let cls = v === "**" ? "blank-cell" : "";
+                    let cls = (v === "**") ? "blank-cell" : "";
+                    
                     if(base && base.r === r && base.c === c) cls += " base-jodi";
-                    if(patterns.some(p => base.r+p.dr===r && base.c+p.dc===c)) cls += " pattern-mark";
-                    html += `<td class="${cls}" onclick="handle(${r},${c},'${v}')" contenteditable="true" onblur="upd(${r},${c},this.innerText)">${v}</td>`;
+                    if(patterns.some(p => base && (base.r + p.dr === r) && (base.c + p.dc === c))) cls += " pattern-mark";
+                    
+                    // Trace logic (History pattern highlight)
+                    let trace = tracedCells.find(t => t.r === r && t.c === c);
+                    if(trace) cls += " " + trace.type;
+
+                    html += `<td class="${cls}" onclick="handle(${r},${c})">${v}</td>`;
                 });
                 html += `</tr>`;
             });
             document.getElementById("mainChart").innerHTML = html;
         }
 
-        function handle(r, c, val) {
-            if((val === "**" || val === "") && base) { search(r, c); return; }
-            if(val !== "**" && val !== "") {
-                if(!base) {
-                    base = {r, c, val, fam: getFam(val)};
-                    document.getElementById("status").innerText = "Base Fixed: " + val;
+        function handle(r, c) {
+            let val = data[r][c];
+            if(!base && val !== "**") {
+                base = {r, c, val, fam: getFam(val)};
+                document.getElementById("status").innerText = "Base: " + val;
+            } else if(base) {
+                if(val === "**" && patterns.length > 0) {
+                    search(r, c);
                 } else {
-                    if(base.r === r && base.c === c) return;
                     patterns.push({dr: r - base.r, dc: c - base.c});
                 }
-                render();
             }
+            render();
         }
 
         function search(tr, tc) {
             let res = [];
+            tracedCells = []; // Reset previous trace
             let drB = tr - base.r, dcB = tc - base.c;
+
             data.forEach((row, i) => {
                 row.forEach((val, j) => {
-                    if(getFam(val) === base.fam) {
+                    if(getFam(val) === base.fam && (i !== base.r || j !== base.c)) {
                         let ok = patterns.every(p => data[i+p.dr] && data[i+p.dr][j+p.dc] !== "**");
                         if(ok) {
-                            let rR = i+drB, rC = j+dcB;
-                            if(data[rR] && data[rR][rC] !== "**") res.push({v: data[rR][rC], row: rR+1});
+                            let resR = i + drB, resC = j + dcB;
+                            if(data[resR] && data[resR][resC] !== "**") {
+                                res.push({v: data[resR][resC], row: resR + 1});
+                                // Add to Trace
+                                tracedCells.push({r: i, c: j, type: 'trace-base'});
+                                patterns.forEach(p => tracedCells.push({r: i+p.dr, c: j+p.dc, type: 'trace-pattern'}));
+                                tracedCells.push({r: resR, c: resC, type: 'trace-result'});
+                            }
                         }
                     }
                 });
             });
-            document.getElementById("out").innerHTML = res.length ? 
-                res.map(m => `<div class="match-row">Found: <b>${m.v}</b> (Old Row ${m.row})</div>`).join('') : "No History Match.";
+            document.getElementById("out").innerHTML = res.map(m => `<div class="match-row">Found: <b>${m.v}</b> (Old Row ${m.row})</div>`).join('') || "No Match.";
         }
 
-        function upd(r, c, v) { data[r][c] = v.trim() || "**"; }
         function addRow() { data.push(Array(6).fill("**")); render(); }
-        function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("Data Saved Locally!"); }
-        function resetSys() { base = null; patterns = []; render(); document.getElementById("status").innerText = "Ready"; }
+        function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("Saved!"); }
+        function resetSys() { base = null; patterns = []; tracedCells = []; render(); document.getElementById("status").innerText = "Ready"; }
 
         render();
     </script>
