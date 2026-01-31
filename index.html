@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS MASTER PRO</title>
+    <title>DPBOSS KING MASTER PRO</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,19 +11,19 @@
 
     <div class="toolbar">
         <input type="file" id="csvFileInput" style="display:none" accept=".csv">
-        <button onclick="document.getElementById('csvFileInput').click()">1. Upload CSV</button>
-        <button onclick="togglePasteBox()">2. Paste CSV Data</button>
+        <button onclick="document.getElementById('csvFileInput').click()">1. Upload CSV File</button>
+        <button onclick="togglePasteBox()">2. Manual Paste (Backup)</button>
         <button onclick="addRow()">+ Add Row</button>
         <button onclick="saveData()">Save Record</button>
         <button onclick="resetEngine()" style="background:red;color:white;">Reset</button>
     </div>
 
-    <div id="pasteBox" style="display:none; margin:10px auto; max-width:800px;">
-        <textarea id="csvTextArea" placeholder="Yahan CSV data paste karein (e.g. 12,34,**,56...)" style="width:100%; height:100px; background:#222; color:#fff; padding:10px;"></textarea>
-        <button onclick="loadFromText()" style="width:100%; background:#4CAF50;">Load Pasted Data</button>
+    <div id="pasteBox" style="display:none; margin:10px auto; max-width:900px; background:#1a1a1a; padding:15px; border-radius:8px;">
+        <textarea id="csvTextArea" placeholder="Excel se data copy karein aur yahan paste karein..." style="width:100%; height:120px; background:#333; color:#fff; border:1px solid #ffd700; padding:10px;"></textarea>
+        <button onclick="loadFromText()" style="width:100%; margin-top:10px; background:#4CAF50; color:white;">Load Data Now</button>
     </div>
 
-    <div id="status" style="text-align:center; color:#ffd700; margin:10px;">Ready: Select Base Jodi</div>
+    <div id="status" style="text-align:center; color:#ffd700; margin:10px; font-weight:bold;">Ready: Select Base Jodi</div>
 
     <div class="chart-box"><table id="mainChart"></table></div>
 
