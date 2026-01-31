@@ -1,11 +1,25 @@
-body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 10px; }
-.header { text-align: center; color: #ffd700; border-bottom: 2px solid #ffd700; padding: 10px; }
-.toolbar { background: #1a1a1a; padding: 15px; text-align: center; border-radius: 8px; }
-button { background: #ffd700; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; margin: 5px; }
+:root { --gold: #ffd700; --red: #ff4444; --blue: #2196f3; --bg: #000; }
+body { background: var(--bg); color: #fff; font-family: 'Arial', sans-serif; margin: 0; padding: 10px; }
+.header { text-align: center; border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
+h1 { color: var(--gold); font-size: 22px; margin-bottom: 5px; }
+#status { font-size: 14px; color: #00ff00; }
+
+.toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 15px 0; }
+button { padding: 10px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.btn-upload { background: #fff; color: #000; }
+.btn-action { background: var(--gold); color: #000; }
+.btn-save { background: #4CAF50; color: #fff; }
+.btn-reset { background: var(--red); color: #fff; }
+
+.chart-container { overflow-x: auto; margin-top: 10px; }
 table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 900px; margin: 0 auto; }
-td, th { border: 1px solid #999; height: 45px; text-align: center; font-weight: bold; width: 16%; }
-th { background: #800000; color: #fff; }
-.base-jodi { border: 4px solid red !important; background: #ffebee !important; }
-.pattern-mark { border: 3px solid blue !important; border-radius: 50%; }
-.blank-cell { background: #f9f9f9; color: #999; }
-.result-panel { background: #1a1a1a; padding: 15px; margin-top: 20px; border-left: 5px solid #ffd700; }
+th, td { border: 1px solid #999; height: 50px; text-align: center; font-weight: bold; font-size: 18px; position: relative; }
+th { background: #800000; color: #fff; font-size: 14px; }
+
+/* Pattern UI from your Photos */
+.base-jodi { background: #ffebee !important; border: 4px solid var(--red) !important; color: var(--red); z-index: 2; }
+.pattern-mark::after { content: ''; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
+.blank-cell { background: #f0f0f0; color: #ccc; cursor: text; }
+
+.result-panel { background: #1a1a1a; padding: 15px; margin-top: 20px; border-left: 5px solid var(--gold); border-radius: 4px; }
+.match-item { padding: 12px; border-bottom: 1px solid #333; font-size: 18px; color: var(--gold); }
