@@ -3,27 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS KING MASTER LOGIC</title>
+    <title>DPBOSS MASTER PRO</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header">
-        <h1>DPBOSS KING MASTER LOGIC</h1>
-    </div>
+    <div class="header"><h1>DPBOSS KING MASTER LOGIC</h1></div>
 
     <div class="toolbar">
         <input type="file" id="csvFileInput" style="display:none" accept=".csv">
-        <button onclick="document.getElementById('csvFileInput').click()">Upload CSV</button>
-        
-        <button onclick="addRow()">+ Add New Row</button>
+        <button onclick="document.getElementById('csvFileInput').click()">1. Upload CSV</button>
+        <button onclick="togglePasteBox()">2. Paste CSV Data</button>
+        <button onclick="addRow()">+ Add Row</button>
         <button onclick="saveData()">Save Record</button>
-        <button onclick="resetEngine()" style="background:#f44336; color:white;">Reset Engine</button>
-        <p id="status">Select a Base Jodi (Red Box)</p>
+        <button onclick="resetEngine()" style="background:red;color:white;">Reset</button>
     </div>
 
-    <div class="chart-box">
-        <table id="mainChart"></table>
+    <div id="pasteBox" style="display:none; margin:10px auto; max-width:800px;">
+        <textarea id="csvTextArea" placeholder="Yahan CSV data paste karein (e.g. 12,34,**,56...)" style="width:100%; height:100px; background:#222; color:#fff; padding:10px;"></textarea>
+        <button onclick="loadFromText()" style="width:100%; background:#4CAF50;">Load Pasted Data</button>
     </div>
+
+    <div id="status" style="text-align:center; color:#ffd700; margin:10px;">Ready: Select Base Jodi</div>
+
+    <div class="chart-box"><table id="mainChart"></table></div>
 
     <div class="result-panel">
         <h3>Historical Pattern Matches:</h3>
