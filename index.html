@@ -3,42 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS MASTER PRO SYSTEM</title>
-    <link rel="stylesheet" href="style.css">
+    <title>DPBOSS MASTER PRO</title>
     <style>
-        /* Kuch zaruri fixes jo css file miss kar sakti hai */
-        .toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px; background: #111; border-bottom: 2px solid #ffd700; }
-        .chart-container { width: 100%; overflow-x: auto; padding: 10px; box-sizing: border-box; }
-        #status { background: #ffd700; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; display: inline-block; }
+        :root { --gold: #ffd700; --red: #ff4444; --blue: #2196f3; --bg: #000; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 10px; text-align: center; }
+        h1 { color: var(--gold); margin: 10px 0; font-size: 22px; }
+        
+        .toolbar { background: #1a1a1a; padding: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 2px solid var(--gold); }
+        button { padding: 12px 18px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        
+        .btn-up { background: #fff; color: #000; }
+        .btn-add { background: var(--gold); color: #000; }
+        .btn-save { background: #4CAF50; color: #fff; }
+        .btn-reset { background: var(--red); color: #fff; }
+        
+        .chart-box { overflow-x: auto; margin: 20px 0; }
+        table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 800px; margin: 0 auto; table-layout: fixed; }
+        th, td { border: 1px solid #999; height: 45px; text-align: center; font-weight: bold; font-size: 18px; position: relative; }
+        th { background: #800000; color: #fff; font-size: 13px; }
+
+        .base-jodi { background: #ffebee !important; border: 4px solid var(--red) !important; color: var(--red); box-sizing: border-box; }
+        .pattern-mark::after { content: ''; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; box-sizing: border-box; }
+        .blank-cell { background: #f9f9f9; color: #bbb; }
+
+        .res-panel { background: #1a1a1a; border-left: 5px solid var(--gold); padding: 15px; text-align: left; max-width: 800px; margin: 20px auto; }
+        .match-row { padding: 10px; border-bottom: 1px solid #333; color: var(--gold); font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <div style="text-align: center; padding: 10px;">
-        <h1 style="color: #ffd700; margin-bottom: 5px;">DPBOSS KING MASTER LOGIC</h1>
-        <div id="status">Ready: Click a Number to set Base</div>
-    </div>
+    <h1>DPBOSS KING MASTER LOGIC</h1>
+    <div id="status" style="color: #00ff00; margin-bottom: 10px;">Status: System Ready</div>
 
     <div class="toolbar">
-        <input type="file" id="csvFileInput" accept=".csv, .txt" style="display: none;">
-        <button onclick="document.getElementById('csvFileInput').click()" style="background: #fff; color: #000;">1. UPLOAD CSV</button>
-        
-        <button onclick="addRow()" style="background: #ffd700; color: #000;">+ ADD NEW ROW</button>
-        <button onclick="saveData()" style="background: #4CAF50; color: #fff;">SAVE RECORD</button>
-        <button onclick="resetEngine()" style="background: #f44336; color: #fff;">RESET ALL</button>
-        <button onclick="downloadCSV()" style="background: #2196F3; color: #fff;">DOWNLOAD DATA</button>
+        <input type="file" id="csvIn" accept=".csv, .txt" style="display:none">
+        <button class="btn-up" onclick="document.getElementById('csvIn').click()">Upload CSV</button>
+        <button class="btn-add" onclick="addRow()">+ Add Row</button>
+        <button class="btn-save" onclick="saveData()">Save Record</button>
+        <button class="btn-reset" onclick="resetSys()">Reset All</button>
     </div>
 
-    <div class="chart-container">
-        <table id="mainChart">
-            </table>
+    <div class="chart-box">
+        <table id="mainChart"></table>
     </div>
 
-    <div class="result-panel" style="margin: 20px; padding: 15px; background: #1a1a1a; border-left: 5px solid #ffd700;">
-        <h3 style="color: #ffd700; margin-top: 0;">Historical Pattern Matches:</h3>
-        <div id="matchOutput" style="color: #ddd;">Patterns select karne ke baad results yahan dikhenge...</div>
+    <div class="res-panel">
+        <h3 style="color: var(--gold); margin: 0 0 10px 0;">Search Results:</h3>
+        <div id="out">Patterns select karke blank cell par click karein.</div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const KEY = "DP_MASTER_FINAL_FIX";
+        let data = JSON.parse(localStorage.getItem(KEY)) || Array(12).fill().map(() => Array(6).fill("**"));
+        let base = null;
+        let patterns = [];
+
+        const families = { "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"], "44":["44","49","94","99"], "55":["00","05","50","55"], "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"], "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"] };
+
+        function getFam(v) {
+            let s = String(v).trim();
+            for(let f in families) if(families[f].includes(s)) return f;
+            return s;
+        }
+
+        // CSV UPLOAD FIX
+        document.getElementById('csvIn').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const rows = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+                data = rows.map(l => {
+                    let c = l.split(/[,\t;]/);
+                    while(c.length < 6) c.push("**");
+                    return c.slice(0,6).map(x => x.trim() || "**");
+                });
+                base = null; patterns = [];
+                render();
+                alert("Data Loaded! 'Save Record' dabana na bhoolein.");
+            };
+            reader.readAsText(file);
+        });
+
+        function render() {
+            let html = `<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>`;
+            data.forEach((row, r) => {
+                html += `<tr>`;
+                row.forEach((val, c) => {
+                    let v = val || "**";
+                    let cls = v === "**" ? "blank-cell" : "";
+                    if(base && base.r === r && base.c === c) cls += " base-jodi";
+                    if(patterns.some(p => base.r+p.dr===r && base.c+p.dc===c)) cls += " pattern-mark";
+                    html += `<td class="${cls}" onclick="handle(${r},${c},'${v}')" contenteditable="true" onblur="upd(${r},${c},this.innerText)">${v}</td>`;
+                });
+                html += `</tr>`;
+            });
+            document.getElementById("mainChart").innerHTML = html;
+        }
+
+        function handle(r, c, val) {
+            if((val === "**" || val === "") && base) { search(r, c); return; }
+            if(val !== "**" && val !== "") {
+                if(!base) {
+                    base = {r, c, val, fam: getFam(val)};
+                    document.getElementById("status").innerText = "Base Fixed: " + val;
+                } else {
+                    if(base.r === r && base.c === c) return;
+                    patterns.push({dr: r - base.r, dc: c - base.c});
+                }
+                render();
+            }
+        }
+
+        function search(tr, tc) {
+            let res = [];
+            let drB = tr - base.r, dcB = tc - base.c;
+            data.forEach((row, i) => {
+                row.forEach((val, j) => {
+                    if(getFam(val) === base.fam) {
+                        let ok = patterns.every(p => data[i+p.dr] && data[i+p.dr][j+p.dc] !== "**");
+                        if(ok) {
+                            let rR = i+drB, rC = j+dcB;
+                            if(data[rR] && data[rR][rC] !== "**") res.push({v: data[rR][rC], row: rR+1});
+                        }
+                    }
+                });
+            });
+            document.getElementById("out").innerHTML = res.length ? 
+                res.map(m => `<div class="match-row">Found: <b>${m.v}</b> (Old Row ${m.row})</div>`).join('') : "No History Match.";
+        }
+
+        function upd(r, c, v) { data[r][c] = v.trim() || "**"; }
+        function addRow() { data.push(Array(6).fill("**")); render(); }
+        function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("Data Saved Locally!"); }
+        function resetSys() { base = null; patterns = []; render(); document.getElementById("status").innerText = "Ready"; }
+
+        render();
+    </script>
 </body>
 </html>
