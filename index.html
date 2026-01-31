@@ -3,30 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS KING MASTER LOGIC - PRO</title>
+    <title>DPBOSS MASTER PRO SYSTEM</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Kuch zaruri fixes jo css file miss kar sakti hai */
+        .toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px; background: #111; border-bottom: 2px solid #ffd700; }
+        .chart-container { width: 100%; overflow-x: auto; padding: 10px; box-sizing: border-box; }
+        #status { background: #ffd700; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; display: inline-block; }
+    </style>
 </head>
 <body>
-    <div class="header">
-        <h1>DPBOSS KING MASTER LOGIC</h1>
-        <div id="status">Status: Ready. Please select a Base Jodi.</div>
+
+    <div style="text-align: center; padding: 10px;">
+        <h1 style="color: #ffd700; margin-bottom: 5px;">DPBOSS KING MASTER LOGIC</h1>
+        <div id="status">Ready: Click a Number to set Base</div>
     </div>
 
     <div class="toolbar">
-        <input type="file" id="csvFileInput" accept=".csv, .txt" style="display:none">
-        <button onclick="document.getElementById('csvFileInput').click()" class="btn-upload">1. Upload Any CSV</button>
-        <button onclick="addRow()" class="btn-action">+ Add Row</button>
-        <button onclick="saveData()" class="btn-save">Save Record</button>
-        <button onclick="resetEngine()" class="btn-reset">Reset Engine</button>
+        <input type="file" id="csvFileInput" accept=".csv, .txt" style="display: none;">
+        <button onclick="document.getElementById('csvFileInput').click()" style="background: #fff; color: #000;">1. UPLOAD CSV</button>
+        
+        <button onclick="addRow()" style="background: #ffd700; color: #000;">+ ADD NEW ROW</button>
+        <button onclick="saveData()" style="background: #4CAF50; color: #fff;">SAVE RECORD</button>
+        <button onclick="resetEngine()" style="background: #f44336; color: #fff;">RESET ALL</button>
+        <button onclick="downloadCSV()" style="background: #2196F3; color: #fff;">DOWNLOAD DATA</button>
     </div>
 
     <div class="chart-container">
-        <table id="mainChart"></table>
+        <table id="mainChart">
+            </table>
     </div>
 
-    <div class="result-panel">
-        <h3>Historical Pattern Matches (Dpboss Style):</h3>
-        <div id="matchOutput">Patterns select karne ke baad results yahan dikhenge.</div>
+    <div class="result-panel" style="margin: 20px; padding: 15px; background: #1a1a1a; border-left: 5px solid #ffd700;">
+        <h3 style="color: #ffd700; margin-top: 0;">Historical Pattern Matches:</h3>
+        <div id="matchOutput" style="color: #ddd;">Patterns select karne ke baad results yahan dikhenge...</div>
     </div>
 
     <script src="script.js"></script>
