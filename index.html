@@ -3,60 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Position System Pro</title>
+<title>Rajdhani AI – Photo Pattern Match</title>
 <style>
     :root { --gold: #ffd700; --bg: #121212; --panel: #1e1e1e; }
     body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 10px 0; font-size: 1.2rem; }
-    table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 800px; margin: 0 auto; text-align: center; table-layout: fixed; }
-    th, td { border: 1px solid #999; width: 16.66%; height: 45px; font-weight: bold; font-size: 14px; cursor: pointer; position: relative; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; font-size: 1.2rem; }
+    
+    .table-container { overflow-x: auto; margin-top: 10px; }
+    table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 800px; margin: 0 auto; }
+    th, td { border: 1px solid #999; width: 50px; height: 50px; font-weight: bold; font-size: 15px; text-align: center; position: relative; }
     th { background: #800000; color: #fff; }
-    .selected-base { background: #4CAF50 !important; color: white !important; box-shadow: inset 0 0 10px #000; }
-    .pattern-member { border: 3px solid #007bff; background: rgba(0, 123, 255, 0.1); }
-    .blank { background: #f0f0f0; color: #999; }
+
+    /* Photo jaisa marking */
+    .base-box { border: 4px solid #ff0000 !important; background: #ffebee !important; } /* Lal box 47 jaisa */
+    .pattern-circle { border: 3px solid #0000ff !important; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; margin: auto; }
+    .blank { background: #f9f9f9; color: #ccc; cursor: pointer; }
+
     .card { background: var(--panel); border-left: 5px solid var(--gold); padding: 12px; border-radius: 5px; margin-top: 15px; }
     button { background: var(--gold); border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; margin: 5px; }
-    #checks div { background: #333; padding: 12px; margin-top: 8px; border-radius: 4px; border: 1px solid #555; cursor: pointer; }
-    #popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 15px; border-radius: 8px; display: none; z-index: 1000; width: 95%; max-width: 500px; box-shadow: 0 0 30px #000; }
-    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 900; }
+    #checks div { background: #333; padding: 15px; margin-top: 10px; border-radius: 6px; border: 1px solid #555; cursor: pointer; border-left: 4px solid var(--gold); }
+    
+    #popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; padding: 15px; border-radius: 8px; display: none; z-index: 1000; width: 95%; max-width: 600px; box-shadow: 0 0 40px #000; }
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 900; }
 </style>
 </head>
 <body>
 
-<h2>RAJDHANI POSITION SYSTEM</h2>
+<h2>RAJDHANI PHOTO SYSTEM</h2>
 
-<div style="text-align:center; margin-bottom:15px;">
-    <input type="file" id="csv" style="display:none" onchange="loadCSV(this)">
-    <button onclick="document.getElementById('csv').click()">Load CSV</button>
-    <button onclick="addRow()">+ Row</button>
+<div style="text-align:center;">
+    <button onclick="addRow()">+ Add Row</button>
     <button onclick="saveData()">Save Data</button>
-    <button onclick="resetAll()" style="background:red; color:white;">Reset</button>
+    <button onclick="resetAll()" style="background:red; color:white;">Clear Selection</button>
 </div>
 
-<table id="mainTable"></table>
+<div class="table-container">
+    <table id="mainTable"></table>
+</div>
 
 <div class="card">
-    <h3 style="margin:0; color:var(--gold)">Pattern Logic (Images ke anusaar):</h3>
-    <p style="font-size:13px; margin:5px 0;">
-        1. Base Jodi (jaise 47) select karein -> <b>Green</b>.<br>
-        2. Baki pattern jodis select karein -> <b>Blue Border</b>.<br>
-        3. Kisi bhi <b>** (Blank)</b> par click karein search ke liye.
+    <h3 style="margin:0; color:var(--gold); font-size: 14px;">IMAGE LOGIC STEPS:</h3>
+    <p style="font-size:12px; margin:5px 0;">
+        1. Click <b>Base Jodi</b> (jaise 47) -> Red Box banega. <br>
+        2. Click <b>Pattern Jodis</b> (tirchi line wali) -> Blue Circle banega. <br>
+        3. Click <b>** (Blank)</b> jahan prediction chahiye.
     </p>
 </div>
 
-<div id="checks" class="card">Results yahan dikhenge...</div>
+<div id="checks" class="card">Results...</div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <div id="popContent" style="overflow-x:auto"></div>
-    <button onclick="closePopup()" style="width:100%; margin-top:10px; background:#444; color:#fff">Close Preview</button>
+    <button onclick="closePopup()" style="width:100%; margin-top:10px; background:#222; color:#fff; padding:10px;">CLOSE PREVIEW</button>
 </div>
 
 <script>
-const STORAGE_KEY = "raj_pos_v5";
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(12).fill().map(() => Array(6).fill("**"));
+const STORAGE_KEY = "raj_photo_v6";
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill().map(() => Array(6).fill("**"));
 let basePos = null; 
-let patternOffsets = []; 
+let patternPoints = []; 
 
 const families = { "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"], "44":["44","49","94","99"], "55":["00","05","50","55"], "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"] };
 
@@ -68,47 +74,47 @@ function renderTable() {
     data.forEach((row, r) => {
         html += `<tr>`;
         row.forEach((val, c) => {
-            let cls = val === "**" ? "blank" : "";
-            if(basePos && basePos.r === r && basePos.c === c) cls += " selected-base";
-            if(patternOffsets.some(p => (basePos.r + p.dr === r) && (basePos.c + p.dc === c))) cls += " pattern-member";
-            html += `<td class="${cls}" onclick="handleCellClick(${r}, ${c}, '${val}')" contenteditable="${val!=='**'}" onblur="editCell(${r},${c},this.innerText)">${val}</td>`;
+            let tdClass = val === "**" ? "blank" : "";
+            let inner = val;
+            
+            if(basePos && basePos.r === r && basePos.c === c) tdClass += " base-box";
+            if(patternPoints.some(p => p.r === r && p.c === c)) inner = `<div class="pattern-circle">${val}</div>`;
+            
+            html += `<td class="${tdClass}" onclick="handleClick(${r}, ${c}, '${val}')" contenteditable="${val!=='**'}" onblur="editCell(${r},${c},this.innerText)">${inner}</td>`;
         });
         html += `</tr>`;
     });
     table.innerHTML = html;
 }
 
-function handleCellClick(r, c, val) {
+function handleClick(r, c, val) {
     if(val !== "**") {
         if(!basePos) {
             basePos = {r, c, val, fam: getFam(val)};
         } else {
-            if(basePos.r === r && basePos.c === c) return;
-            let dr = r - basePos.r;
-            let dc = c - basePos.c;
-            let index = patternOffsets.findIndex(p => p.dr === dr && p.dc === dc);
-            if(index > -1) patternOffsets.splice(index, 1);
-            else patternOffsets.push({dr, dc});
+            let idx = patternPoints.findIndex(p => p.r === r && p.c === c);
+            if(idx > -1) patternPoints.splice(idx, 1);
+            else patternPoints.push({r, c, dr: r - basePos.r, dc: c - basePos.c});
         }
         renderTable();
-    } else if(basePos) {
-        searchPatterns(r, c);
+    } else if(basePos && patternPoints.length > 0) {
+        searchPhotoPattern(r, c);
     }
 }
 
-function searchPatterns(targetR, targetC) {
+function searchPhotoPattern(targetR, targetC) {
     let results = [];
     let drBlank = targetR - basePos.r;
     let dcBlank = targetC - basePos.c;
 
     for(let i=0; i < data.length; i++) {
         for(let j=0; j < 6; j++) {
-            // Step 1: Base Jodi family match ho (jaise image 2 mein 47)
+            // Photo Match Rule 1: Base Jodi ki family same ho (Jaise 47)
             if(getFam(data[i][j]) === basePos.fam) {
                 let matchPossible = true;
                 
-                // Step 2: Baki pattern positions par koi bhi jodi honi chahiye (Empty nahi)
-                for(let p of patternOffsets) {
+                // Photo Match Rule 2: Pattern points ki relative position par koi bhi number ho
+                for(let p of patternPoints) {
                     let checkR = i + p.dr;
                     let checkC = j + p.dc;
                     if(!data[checkR] || data[checkR][checkC] === "**") {
@@ -121,7 +127,7 @@ function searchPatterns(targetR, targetC) {
                     let predR = i + drBlank;
                     let predC = j + dcBlank;
                     if(data[predR] && data[predR][predC] !== "**") {
-                        results.push({base: {r:i, c:j, val:data[i][j]}, pred: data[predR][predC], predR, predC});
+                        results.push({baseR: i, baseC: j, baseVal: data[i][j], predVal: data[predR][predC], predR, predC});
                     }
                 }
             }
@@ -132,27 +138,36 @@ function searchPatterns(targetR, targetC) {
 
 function displayResults(res) {
     const div = document.getElementById("checks");
-    div.innerHTML = res.length ? "" : "No position matches found.";
+    div.innerHTML = res.length ? "" : "No Photo-Match found.";
     res.forEach(item => {
         let d = document.createElement("div");
-        d.innerHTML = `Base Match: <b>${item.base.val}</b> (Row ${item.base.r+1}) -> Predicted: <b style="color:var(--gold)">${item.pred}</b>`;
+        d.innerHTML = `Found at Row ${item.baseR+1} | Base: <b>${item.baseVal}</b> <br> Resulting Jodi: <b style="color:var(--gold); font-size:20px;">${item.predVal}</b>`;
         d.onclick = () => showPreview(item);
         div.appendChild(d);
     });
 }
 
 function showPreview(item) {
-    let html = `<table>`;
-    let start = Math.max(0, item.base.r - 2);
-    let end = Math.min(data.length - 1, Math.max(item.base.r, item.predR) + 2);
+    let html = `<table style="width:100%">`;
+    let start = Math.max(0, Math.min(item.baseR, item.predR) - 4);
+    let end = Math.min(data.length - 1, Math.max(item.baseR, item.predR) + 4);
+    
     for(let i=start; i<=end; i++) {
         html += `<tr>`;
         data[i].forEach((v, j) => {
-            let cls = "";
-            if(i === item.base.r && j === item.base.c) cls = "selected-base";
-            if(i === item.predR && j === item.predC) cls = "background: #ffff00; font-size: 1.2rem; border: 2px solid #000;";
-            if(patternOffsets.some(p => (item.base.r + p.dr === i) && (item.base.c + p.dc === j))) cls = "pattern-member";
-            html += `<td style="${cls}">${v}</td>`;
+            let style = "";
+            let inner = v;
+            if(i === item.baseR && j === item.baseC) style = "border: 4px solid red; background:#ffebee;";
+            if(i === item.predR && j === item.predC) style = "background: yellow; border: 2px solid #000;";
+            
+            // Re-apply blue circles for preview
+            patternPoints.forEach(p => {
+                if(i === (item.baseR + p.dr) && j === (item.baseC + p.dc)) {
+                    inner = `<div class="pattern-circle">${v}</div>`;
+                }
+            });
+            
+            html += `<td style="${style}">${inner}</td>`;
         });
         html += `</tr>`;
     }
@@ -162,18 +177,10 @@ function showPreview(item) {
     document.getElementById("overlay").style.display = "block";
 }
 
-function loadCSV(input) {
-    let reader = new FileReader();
-    reader.onload = () => {
-        data = reader.result.split("\n").filter(row => row.trim()).map(row => row.split(",").map(v => v.trim() || "**"));
-        renderTable();
-    };
-    reader.readAsText(input.files[0]);
-}
-function editCell(r,c,v) { data[r][c] = v.trim() || "**"; }
+function editCell(r,c,v) { data[r][c] = v.trim() || "**"; renderTable(); }
 function addRow() { data.push(Array(6).fill("**")); renderTable(); }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Data Saved!"); }
-function resetAll() { basePos = null; patternOffsets = []; renderTable(); document.getElementById("checks").innerHTML = ""; }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Data Updated!"); }
+function resetAll() { basePos = null; patternPoints = []; renderTable(); document.getElementById("checks").innerHTML = ""; }
 function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
 renderTable();
