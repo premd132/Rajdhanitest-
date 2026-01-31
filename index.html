@@ -3,161 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS MASTER - VISUAL CHECK LINE</title>
+    <title>DPBOSS KING PATTERN SEARCHER</title>
     <style>
-        :root { --gold: #ffd700; --red: #ff3333; --blue: #007bff; --bg: #0b0b0b; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 10px; }
-        .header { text-align: center; border-bottom: 2px solid var(--gold); padding: 5px; }
-        .toolbar { display: flex; justify-content: center; gap: 8px; margin: 15px 0; }
-        button { padding: 8px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        :root { --red: #ff0000; --blue: #1e90ff; --gold: #ffd700; --bg: #f8f9fa; --header: #800000; }
+        body { background: #000; color: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; }
         
-        .chart-box { position: relative; overflow-x: auto; margin-top: 10px; }
-        table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 900px; margin: 0 auto; z-index: 2; position: relative; }
-        th, td { border: 1px solid #999; height: 50px; text-align: center; font-weight: bold; font-size: 18px; position: relative; min-width: 60px; }
-        th { background: #800000; color: #fff; font-size: 12px; }
+        /* Top Navigation Bar */
+        .header { background: var(--header); padding: 15px; border-bottom: 3px solid var(--gold); text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Highlights */
-        .base-jodi { background: #ffcdd2 !important; border: 3px solid var(--red) !important; color: var(--red); }
-        .pattern-circle::after { content: ''; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
-        
-        /* Check Line Canvas */
-        #lineCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; width: 100%; height: 100%; }
+        /* Toolbar Section */
+        .controls { background: #222; padding: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        button { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-csv { background: #fff; color: #000; }
+        .btn-reset { background: var(--red); color: #fff; }
+        .btn-save { background: #28a745; color: #fff; }
 
-        /* Popup */
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; border: 2px solid var(--gold); padding: 20px; z-index: 1000; width: 85%; max-width: 400px; border-radius: 10px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
+        /* The Main Chart Area - Exactly like dpbossking.in */
+        .chart-box { position: relative; display: inline-block; margin: 20px auto; background: #fff; padding: 8px; border: 4px solid #555; }
+        table { border-collapse: collapse; background: #fff; color: #000; min-width: 360px; border: 2px solid #000; }
+        th, td { border: 1px solid #000; width: 60px; height: 55px; text-align: center; font-weight: bold; font-size: 22px; position: relative; cursor: crosshair; }
+        th { background: #f0f0f0; font-size: 12px; height: 35px; color: #000; }
+
+        /* Markers & Lines */
+        .base-node::after { content: ''; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 4px solid var(--red); border-radius: 50%; box-sizing: border-box; }
+        .pattern-node::after { content: ''; position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; border: 4px solid var(--blue); border-radius: 50%; box-sizing: border-box; }
+        #svgOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+
+        /* Analysis Panel */
+        .analysis { max-width: 900px; margin: 20px auto; background: #111; border: 1px solid var(--gold); border-radius: 8px; overflow: hidden; }
+        .analysis-header { background: #333; color: var(--gold); padding: 10px; font-weight: bold; border-bottom: 2px solid var(--gold); }
+        .match-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #222; background: #1a1a1a; }
+        .match-jodi { color: var(--gold); font-size: 32px; font-weight: 900; }
+        .match-info { color: #888; font-size: 14px; }
+        #status { padding: 10px; color: #0f0; font-weight: bold; text-align: center; background: #001a00; border-bottom: 1px solid #0f0; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>DPBOSS PATTERN MASTER</h1>
-        <div id="status" style="color:var(--gold)">Select Base Jodi</div>
+    <div class="header"><h1>DPKING MASTER PATTERN SEARCHER</h1></div>
+    <div id="status">Ready: Click Base Number to Start</div>
+
+    <div class="controls">
+        <input type="file" id="fileIn" accept=".csv" style="display:none">
+        <button class="btn-csv" onclick="document.getElementById('fileIn').click()">Upload Record</button>
+        <button class="btn-save" onclick="saveToLocal()">Save Chart</button>
+        <button class="btn-reset" onclick="resetEngine()">Full Reset</button>
     </div>
 
-    <div class="toolbar">
-        <input type="file" id="csvIn" accept=".csv" style="display:none">
-        <button onclick="document.getElementById('csvIn').click()">Upload CSV</button>
-        <button onclick="resetSys()" style="background:var(--red); color:#fff;">Reset All</button>
+    <div style="text-align: center;">
+        <div class="chart-box" id="chartParent">
+            <svg id="svgOverlay"></svg>
+            <table id="targetChart"></table>
+        </div>
     </div>
 
-    <div class="chart-box" id="chartContainer">
-        <svg id="lineCanvas"></svg>
-        <table id="mainChart"></table>
+    <div class="analysis">
+        <div class="analysis-header">SURE LINE ANALYSIS (HISTORY MATCHES)</div>
+        <div id="resultBox">
+            <div style="padding: 20px; color: #666;">Patterns select karne ke baad results yahan aayenge...</div>
+        </div>
     </div>
-
-    <div id="modal" class="modal">
-        <h2 style="color:var(--gold)">Check Line Result</h2>
-        <div id="modalContent" style="font-size: 18px;"></div>
-        <button onclick="closeModal()" style="width:100%; margin-top:15px; background:var(--gold);">Close</button>
-    </div>
-    <div id="overlay" class="overlay" onclick="closeModal()"></div>
 
     <script>
-        const KEY = "MASTER_V10";
-        let data = JSON.parse(localStorage.getItem(KEY)) || Array(15).fill().map(() => Array(6).fill("**"));
-        let base = null;
-        let patternNodes = [];
+        // Data & Logic Setup
+        let chartData = JSON.parse(localStorage.getItem('DP_KING_PRO')) || Array(15).fill().map(() => Array(6).fill("**"));
+        let baseNode = null;
+        let pNodes = [];
 
-        const fams = {"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-        function getFam(v){ let s=String(v).trim(); for(let f in fams) if(fams[f].includes(s)) return f; return s; }
+        const families = {"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+        function getFamily(v){ let s=String(v).trim(); for(let f in families) if(families[f].includes(s)) return f; return s; }
 
-        function render() {
+        function renderChart() {
             let html = `<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>`;
-            data.forEach((row, r) => {
+            chartData.forEach((row, r) => {
                 html += `<tr>`;
                 row.forEach((val, c) => {
                     let cls = "";
-                    if(base && base.r === r && base.c === c) cls = "base-jodi";
-                    if(patternNodes.some(p => p.r === r && p.c === c)) cls = "pattern-circle";
-                    html += `<td id="cell-${r}-${c}" class="${cls}" onclick="handleCell(${r},${c})">${val}</td>`;
+                    if(baseNode && baseNode.r === r && baseNode.c === c) cls = "base-node";
+                    if(pNodes.some(p => p.r === r && p.c === c)) cls = "pattern-node";
+                    html += `<td id="cell-${r}-${c}" class="${cls}" contenteditable="true" onblur="updateVal(${r},${c},this.innerText)" onclick="handleNode(${r},${c})">${val}</td>`;
                 });
                 html += `</tr>`;
             });
-            document.getElementById("mainChart").innerHTML = html;
-            drawLines();
+            document.getElementById("targetChart").innerHTML = html;
+            setTimeout(drawVisualLines, 50);
         }
 
-        function handleCell(r, c) {
-            let val = data[r][c];
-            if(!base && val !== "**") {
-                base = { r, c, day: c, fam: getFam(val) };
-                document.getElementById("status").innerText = "Base Fixed. Select Cross Lines.";
-            } else if(base && val !== "**") {
-                if(r === base.r && c === base.c) return;
-                patternNodes.push({ r, c, dr: r - base.r, dc: c - base.c, fam: getFam(val) });
-            } else if(base && val === "**") {
-                searchHistory(r, c);
+        function handleNode(r, c) {
+            let val = chartData[r][c];
+            if(!baseNode && val !== "**") {
+                baseNode = { r, c, fam: getFamily(val), col: c };
+                document.getElementById("status").innerText = "BASE JODI FIXED. SELECT PATTERN STRUCTURE.";
+            } else if(baseNode && val !== "**") {
+                if(r === baseNode.r && c === baseNode.c) return;
+                pNodes.push({ r, c, dr: r - baseNode.r, dc: c - baseNode.c, fam: getFamily(val) });
+            } else if(baseNode && (val === "**" || val === "")) {
+                processSearch(r, c);
             }
-            render();
+            renderChart();
         }
 
-        function drawLines() {
-            const svg = document.getElementById("lineCanvas");
-            svg.innerHTML = ""; 
-            if(!base || patternNodes.length === 0) return;
-
-            const bCell = document.getElementById(`cell-${base.r}-${base.c}`);
-            patternNodes.forEach(p => {
-                const pCell = document.getElementById(`cell-${p.r}-${p.c}`);
-                if(bCell && pCell) {
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", bCell.offsetLeft + bCell.offsetWidth/2);
-                    line.setAttribute("y1", bCell.offsetTop + bCell.offsetHeight/2);
-                    line.setAttribute("x2", pCell.offsetLeft + pCell.offsetWidth/2);
-                    line.setAttribute("y2", pCell.offsetTop + pCell.offsetHeight/2);
-                    line.setAttribute("stroke", "rgba(0, 123, 255, 0.7)");
+        function drawVisualLines() {
+            const svg = document.getElementById("svgOverlay");
+            svg.innerHTML = "";
+            if(!baseNode || pNodes.length === 0) return;
+            const b = document.getElementById(`cell-${baseNode.r}-${baseNode.c}`);
+            pNodes.forEach(p => {
+                const target = document.getElementById(`cell-${p.r}-${p.c}`);
+                if(b && target) {
+                    let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", b.offsetLeft + b.offsetWidth/2);
+                    line.setAttribute("y1", b.offsetTop + b.offsetHeight/2);
+                    line.setAttribute("x2", target.offsetLeft + target.offsetWidth/2);
+                    line.setAttribute("y2", target.offsetTop + target.offsetHeight/2);
+                    line.setAttribute("stroke", "rgba(30, 144, 255, 0.5)");
                     line.setAttribute("stroke-width", "3");
                     svg.appendChild(line);
                 }
             });
         }
 
-        function searchHistory(tr, tc) {
+        function processSearch(tr, tc) {
+            let drB = tr - baseNode.r, dcB = tc - baseNode.c;
             let results = [];
-            let drB = tr - base.r, dcB = tc - base.c;
 
-            for(let i=0; i < data.length; i++) {
-                for(let j=0; j < 6; j++) {
-                    if(j === base.day && getFam(data[i][j]) === base.fam && i !== base.r) {
-                        let match = patternNodes.every(p => {
-                            let rP = i + p.dr, cP = j + p.dc;
-                            return data[rP] && getFam(data[rP][cP]) === p.fam;
+            chartData.forEach((row, i) => {
+                row.forEach((val, j) => {
+                    // Search by Fixed Column & Family Match
+                    if(j === baseNode.col && getFamily(val) === baseNode.fam && i !== baseNode.r) {
+                        let isStructureMatch = pNodes.every(p => {
+                            let checkR = i + p.dr, checkC = j + p.dc;
+                            return chartData[checkR] && getFamily(chartData[checkR][checkC]) === p.fam;
                         });
-                        if(match) {
-                            let resVal = data[i+drB] ? data[i+drB][j+dcB] : null;
-                            if(resVal && resVal !== "**") results.push({v: resVal, r: i+drB+1});
+
+                        if(isStructureMatch) {
+                            let resVal = chartData[i + drB] ? chartData[i + drB][j + dcB] : null;
+                            if(resVal && resVal !== "**") {
+                                results.push({ v: resVal, row: i + drB + 1 });
+                            }
                         }
                     }
-                }
-            }
-            showPopup(results);
+                });
+            });
+
+            const resDiv = document.getElementById("resultBox");
+            resDiv.innerHTML = results.length ? results.map(m => `
+                <div class="match-row">
+                    <div class="match-info">Matched Line from Row: ${m.row}</div>
+                    <div class="match-jodi">${m.v}</div>
+                </div>
+            `).join('') : "<div style='padding:20px;'>No Pattern Found in History.</div>";
         }
 
-        function showPopup(res) {
-            const out = document.getElementById("modalContent");
-            out.innerHTML = res.length ? res.map(m => `<div style="padding:10px; border-bottom:1px solid #444;">Strong Line Jodi: <b style="color:var(--gold); font-size:24px;">${m.v}</b> (Row ${m.r})</div>`).join('') : "No strong check lines found.";
-            document.getElementById("modal").style.display = "block";
-            document.getElementById("overlay").style.display = "block";
-        }
+        function updateVal(r, c, v) { chartData[r][c] = v.trim() || "**"; }
+        function saveToLocal() { localStorage.setItem('DP_KING_PRO', JSON.stringify(chartData)); alert("Data Saved!"); }
+        function resetEngine() { baseNode = null; pNodes = []; renderChart(); document.getElementById("status").innerText = "Ready"; }
 
-        function closeModal() { document.getElementById("modal").style.display="none"; document.getElementById("overlay").style.display="none"; }
-        function resetSys() { base = null; patternNodes = []; render(); document.getElementById("status").innerText = "Select Base Jodi"; }
-
-        // Local CSV Loading Support
-        document.getElementById('csvIn').addEventListener('change', function(e){
+        document.getElementById('fileIn').addEventListener('change', function(e){
             const reader = new FileReader();
-            reader.onload = function(ev){
-                data = ev.target.result.split(/\r?\n/).filter(l=>l.trim()).map(l=> {
+            reader.onload = (ev) => {
+                chartData = ev.target.result.split(/\r?\n/).filter(l=>l.trim()).map(l=>{
                     let c = l.split(','); while(c.length<6) c.push("**"); return c.slice(0,6).map(x=>x.trim()||"**");
                 });
-                render();
+                renderChart();
             };
             reader.readAsText(e.target.files[0]);
         });
 
-        window.onresize = render; // Re-draw lines on screen resize
-        render();
+        window.onresize = renderChart;
+        renderChart();
     </script>
 </body>
 </html>
