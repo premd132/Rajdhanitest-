@@ -1,3 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajdhani – AI Pattern System</title>
+<style>
+    :root { --gold: #ffd700; --blue: #ff3e3e; --bg: #121212; --panel: #1e1e1e; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
+    
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 5px 0; font-size: 1.2rem; }
+    
+    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    
+    /* Optimized Table Size for Fit-to-Page */
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); max-width: 100%; }
+    table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 35px; height: 35px; }
+    th { background: #800000; color: white; font-size: 11px; }
+    td[contenteditable] { background: #fffbe6; outline: none; }
+    
+    .blank { background: #e0e0e0 !important; cursor: pointer; color: #888; }
+    .circle { border: 2.5px solid var(--blue); border-radius: 100%; background: rgba(255, 0, 0, 0.15); z-index: 5; }
+    
+    /* Dashboard Layout for Better Fitting */
+    .dashboard { display: flex; flex-direction: row; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); flex: 1; min-width: 250px; }
+    .card h3 { margin: 0 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid #444; padding-bottom: 3px; }
+    
+    #checks { max-height: 100px; overflow-y: auto; }
+    #checks div { background: #2a2a2a; margin: 3px 0; padding: 6px; cursor: pointer; border-radius: 4px; font-size: 12px; }
+    
+    /* Popup Logic */
+    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 10px; border-radius: 8px; color: #000; width: 90%; max-width: 400px; }
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
+    
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+    button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<h2>test – Pattern System</h2>
+<input type="file" id="csv">
+<button onclick="addRow()">Add Row</button>
+<button onclick="saveData()">Save</button>
+
+<table id="tbl"></table>
+
+<h3>✔ Check Lines (Top 3)</h3>
+<div id="checks"></div>
+
+<h3>🔮 Future AI (Table Trick)</h3>
+<div id="future"></div>
+
+<div id="popup">
+ <button onclick="popup.style.display='none'">Close</button>
+ <div id="popData"></div>
+</div>
+
+<script>
+const STORAGE_KEY="pdata_test";
 /* IMPROVED SEARCH LOGIC */
 function searchPattern(shape, base) {
     lastMatches = [];
@@ -62,4 +128,215 @@ function showAISuggestions(shape) {
     let fD = Object.entries(dc).sort((a, b) => b[1] - a[1]).slice(0, 2).map(x => x[0]).join(", ");
 
     future.innerHTML = `<b>Strong Jodi:</b> ${fJ}<br><b>Single Ank:</b> ${fD}`;
+                    }
+
+/* FAMILY */
+const families={  
+"22":["22","27","72","77"],
+"11":["11","61","66","16"],
+"33":["33","83","88","38"],
+"99":["99","44","49","94"],
+"55":["50","00","05","55"],
+"12":["12","17","21","26","62","67","71","76"],  
+"13":["13","18","31","36","63","68","81","86"],  
+"14":["14","19","41","46","64","69","91","96"],  
+"15":["01","06","10","15","51","56","60","65"],  
+"23":["23","28","32","37","73","78","82","87"],  
+"24":["24","29","42","47","74","79","92","97"],  
+"25":["02","07","20","25","52","57","70","75"],  
+"34":["34","39","43","48","84","89","93","98"],  
+"35":["03","08","30","35","53","58","80","85"],  
+"45":["04","09","40","45","54","59","90","95"],
+};  
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function famClass(v){let f=fam(v);return f=="NA"?"":"f"+f;}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**";v=String(v);return v.length==1?"0"+v:v;}
+function smartMatch(a,b){
+ if(a=="**"||b=="**") return false;
+ if(a===b) return true;
+ if(palti(a)===b||palti(b)===a) return true;
+ return fam(a)===fam(b);
 }
+
+/* DATA */
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+if(!data){
+ data=[
+ ["51","91","41","57","19","95"],
+ ["05","90","74","06","19","63"],
+ ["90","34","82","09","28","19"],
+ ["**","**","**","**","**","**"]
+ ];
+}
+data=data.map(r=>r.map(norm));
+
+/* DRAW */
+let activeMark=null;
+function draw(){
+ let h="<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls="";
+   if(activeMark){
+    let {start,shape}=activeMark;
+    let i=ri-start;
+    if(i>=0&&i<shape.length&&shape[i][ci]) cls="circle "+famClass(c);
+   }
+   if(c=="**")
+    h+=`<td class="blank" contenteditable oninput="edit(${ri},${ci},this)" onclick="makePattern(${ri},${ci})">**</td>`;
+   else
+    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ tbl.innerHTML=h;
+}
+draw();
+
+function edit(r,c,el){data[r][c]=norm(el.innerText.trim());}
+function addRow(){data.push(["","","","","",""].map(norm));draw();}
+function saveData(){
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ alert("Saved onlpdata_test page");
+}
+
+/* CSV */
+csv.onchange=e=>{
+ let fr=new FileReader();
+ fr.onload=()=>{
+  let rows=fr.result.replace(/\r/g,"").trim().split("\n");
+  if(rows[0].toLowerCase().includes("mon")) rows.shift();
+  data=rows.map(r=>r.split(",").map(v=>{
+    v=v.trim(); if(v==""||v=="*"||v=="**") return "**"; return norm(v);
+  }));
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  draw();
+ };
+ fr.readAsText(e.target.files[0]);
+};
+
+/* ===== Tumhara original pattern + AI + future AI code (unchanged) ===== */
+
+/* PATTERN */
+let lastMatches=[],topMatches=[];
+function makePattern(r,c){
+ targetCol=c;
+ let base="**";
+ for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c];break;}}
+ if(base=="**") return;
+
+ let shape=[];
+ for(let i=Math.max(0,r-4);i<=r;i++){
+  let row=[];
+  for(let j=0;j<6;j++){
+   let v=data[i][j];
+   row.push(v!="**" && smartMatch(v,base)?1:0);
+  }
+  shape.push(row);
+ }
+ searchPattern(shape,base);
+}
+
+/* SEARCH */
+function searchPattern(shape,base){
+ lastMatches=[];
+ let h=shape.length;
+ for(let i=0;i<=data.length-h;i++){
+  let ok=true;
+  for(let k=0;k<h;k++){
+   for(let j=0;j<6;j++){
+    if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false;break;}
+   }
+   if(!ok) break;
+  }
+  if(ok) lastMatches.push({index:i});
+ }
+ showChecks(shape);
+}
+
+/* CHECK LINES */
+function showChecks(shape){
+ checks.innerHTML="";
+ if(lastMatches.length==0){checks.innerHTML="<i>No match</i>";ai.innerHTML="";future.innerHTML="";return;}
+ topMatches=lastMatches.slice(0,4);
+ topMatches.forEach((m,i)=>{
+  let d=document.createElement("div");
+  d.innerText=(i+1)+". Match (click)";
+  d.onclick=()=>showOne(shape,i);
+  checks.appendChild(d);
+ });
+
+/* POPUP */
+function showOne(shape,n){
+ let idx=topMatches[n].index;
+ activeMark={start:idx,shape:shape};
+ draw();
+ let h=shape.length,html="<table>";
+ for(let i=0;i<h;i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let cls=shape[i][j]?"circle "+famClass(v):"";
+   html+=`<td class="${cls}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ html+="</table>";
+ popData.innerHTML=html;
+ popup.style.display="block";
+}
+
+/* AI + FUTURE AI */
+ function showAISuggestions(shape){
+ let digitCount={},jodiCount={};
+
+ topMatches.forEach(m=>{
+  let idx=m.index;
+  for(let i=0;i<shape.length;i++){
+   for(let j=0;j<6;j++){
+    if(shape[i][j]){
+     let v=data[idx+i][j];
+     if(v!="**"){
+      jodiCount[v]=(jodiCount[v]||0)+1;
+      digitCount[v[0]]=(digitCount[v[0]]||0)+1;
+      digitCount[v[1]]=(digitCount[v[1]]||0)+1;
+     }
+    }
+   }
+  }
+ });
+
+ let topD=Object.entries(digitCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
+ let topJ=Object.entries(jodiCount).sort((a,b)=>b[1]-a[1]).slice(0,2);
+
+ ai.innerHTML="Top 2 Single Ank:<br>"+topD.map(d=>d[0]).join(",")+
+              "<br><br>Top 2 Jodi:<br>"+topJ.map(j=>j[0]).join(",");
+
+ let pool=[],h=shape.length;
+ topMatches.forEach(m=>{
+  let nr=m.index+h;
+  if(nr<data.length){
+   let v=data[nr][targetCol];
+   if(v!="**") pool.push(v);
+  }
+ });
+
+ if(!pool.length){future.innerHTML="No future data";return;}
+
+ let jc={},dc={};
+ pool.forEach(v=>{
+  jc[v]=(jc[v]||0)+1;
+  dc[v[0]]=(dc[v[0]]||0)+1;
+  dc[v[1]]=(dc[v[1]]||0)+1;
+ });
+
+ let fJ=Object.entries(jc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
+ let fD=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(",");
+
+ future.innerHTML="Strong 2 Jodi:<br>"+fJ+
+                  "<br><br>Strong 2 Single Ank:<br>Open to close<br>"+fD;
+}
+</script>
+</body>
+</html>
