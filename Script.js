@@ -1,4 +1,4 @@
-const STORAGE_KEY = "dpboss_pro_data_v2";
+const STORAGE_KEY = "dpboss_master_v3";
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill().map(() => Array(6).fill("**"));
 let base = null; 
 let patternLine = []; 
@@ -15,24 +15,29 @@ const families = {
 
 function getFamily(v) { 
     let s = String(v).trim();
+    if (s === "**" || s === "") return null;
     for(let f in families) if(families[f].includes(s)) return f; 
     return s; 
 }
 
-// CSV Upload Logic
+// CSV Loader FIX: Isse ab CSV ka har row aur column load hoga
 document.getElementById('csvFileInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const text = e.target.result;
-        const rows = text.split('\n');
-        data = rows.filter(r => r.trim() !== "").map(row => {
-            let cols = row.split(',');
-            return cols.map(c => c.trim() || "**");
+    reader.onload = function(event) {
+        const content = event.target.result;
+        // Lines ko split karke data array mein convert karna
+        const rows = content.split(/\r?\n/);
+        data = rows.filter(row => row.trim() !== "").map(row => {
+            return row.split(',').map(cell => cell.trim() || "**");
         });
-        render();
-        alert("CSV Data Loaded Successfully!");
+        
+        base = null; // Purana selection clear
+        patternLine = [];
+        render(); // Table ko naye data se refresh karna
+        alert("CSV File Successfully Loaded!");
     };
     reader.readAsText(file);
 });
@@ -40,41 +45,44 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
 function render() {
     const table = document.getElementById("mainChart");
     let html = `<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>`;
+    
     data.forEach((row, r) => {
         html += `<tr>`;
         row.forEach((val, c) => {
-            let cls = (val === "**" || val === "") ? "blank-cell" : "";
+            let cellValue = val || "**";
+            let cls = (cellValue === "**") ? "blank-cell" : "";
+            
+            // Highlight Logic
             if(base && base.r === r && base.c === c) cls += " base-jodi";
             let isMarked = patternLine.some(p => (base.r + p.dr === r) && (base.c + p.dc === c));
             if(isMarked) cls += " pattern-mark";
             
-            // contenteditable="true" allows direct editing
             html += `<td class="${cls}" 
-                        onclick="handleLogic(${r},${c},'${val}')" 
+                        onclick="handleClick(${r},${c},'${cellValue}')" 
                         contenteditable="true" 
-                        oninput="updateValue(${r},${c},this.innerText)">${val}</td>`;
+                        oninput="updateValue(${r},${c},this.innerText)">${cellValue}</td>`;
         });
         html += `</tr>`;
     });
     table.innerHTML = html;
 }
 
-function handleLogic(r, c, val) {
-    // If clicking on a blank cell to find pattern
-    if((val === "**" || val === "") && base) {
+function handleClick(r, c, val) {
+    // Agar blank par click kiya aur base set hai -> Search chalao
+    if(val === "**" && base) {
         search(r, c);
         return;
     }
     
-    // Logic for setting Base or Pattern Marks
-    if(val !== "**" && val !== "") {
+    // Agar Jodi par click kiya -> Selection logic
+    if(val !== "**") {
         if(!base) {
             base = {r, c, val, fam: getFamily(val)};
-            document.getElementById("status").innerText = `Base Set: ${val}. Now select pattern members.`;
+            document.getElementById("status").innerText = "Base Fixed! Now select pattern (Blue Circles).";
         } else {
-            let dr = r - base.r, dc = c - base.c;
-            if(dr === 0 && dc === 0) return;
-            patternLine.push({dr, dc});
+            // Check if already selected
+            if(base.r === r && base.c === c) return;
+            patternLine.push({dr: r - base.r, dc: c - base.c});
         }
         render();
     }
@@ -82,33 +90,39 @@ function handleLogic(r, c, val) {
 
 function search(tr, tc) {
     let results = [];
-    let drB = tr - base.r, dcB = tc - base.c;
+    let drB = tr - base.r;
+    let dcB = tc - base.c;
 
     for(let i=0; i<data.length; i++) {
         for(let j=0; j<6; j++) {
-            // Anchor matching by family
+            // Anchor matching
             if(getFamily(data[i][j]) === base.fam) {
+                // Check if structural pattern exists there
                 let ok = patternLine.every(p => {
-                    return data[i+p.dr] && data[i+p.dr][j+p.dc] !== "**" && data[i+p.dr][j+p.dc] !== "";
+                    let targetR = i + p.dr;
+                    let targetC = j + p.dc;
+                    return data[targetR] && data[targetR][targetC] !== "**";
                 });
                 
-                if(ok && data[i+drB] && data[i+drB][j+dcB] !== "**") {
-                    results.push({val: data[i+drB][j+dcB], row: i + drB + 1});
+                if(ok) {
+                    let resR = i + drB;
+                    let resC = j + dcB;
+                    if(data[resR] && data[resR][resC] !== "**") {
+                        results.push({v: data[resR][resC], row: resR + 1});
+                    }
                 }
             }
         }
     }
     
     const output = document.getElementById("matchOutput");
-    if(results.length > 0) {
-        output.innerHTML = results.map(res => `<div>Row ${res.row} Match: <b>${res.val}</b></div>`).join('');
-    } else {
-        output.innerHTML = "<div>No Logic Matches Found in History.</div>";
-    }
+    output.innerHTML = results.length ? 
+        results.map(res => `<div>Row ${res.row} Result: <b>${res.v}</b></div>`).join('') : 
+        "<div>No Logic Match found in this position.</div>";
 }
 
 function updateValue(r, c, v) { 
-    data[r][c] = v.trim(); 
+    data[r][c] = v.trim() || "**"; 
 }
 
 function addRow() { 
@@ -118,14 +132,13 @@ function addRow() {
 
 function saveData() { 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
-    alert("Record Saved Successfully!"); 
+    alert("Record Saved!"); 
 }
 
 function resetEngine() { 
     base = null; 
     patternLine = []; 
     document.getElementById("status").innerText = "Select a Base Jodi (Red Box)";
-    document.getElementById("matchOutput").innerText = "No pattern selected.";
     render(); 
 }
 
