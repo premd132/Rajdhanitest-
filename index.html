@@ -3,156 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPBOSS MASTER - VISUAL TRACE</title>
+    <title>DPBOSS PATTERN MASTER</title>
     <style>
-        :root { --gold: #ffd700; --red: #ff4444; --blue: #2196f3; --green: #00ff00; --bg: #000; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 10px; text-align: center; }
-        h1 { color: var(--gold); margin: 10px 0; font-size: 20px; text-transform: uppercase; }
+        :root { --gold: #ffd700; --red: #ff3333; --blue: #007bff; --bg: #0b0b0b; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
+        .header { text-align: center; border-bottom: 2px solid var(--gold); padding: 10px; margin-bottom: 15px; }
+        .toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        button { padding: 10px 18px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-up { background: #fff; } .btn-save { background: #28a745; color: #fff; } .btn-reset { background: var(--red); color: #fff; }
         
-        .toolbar { background: #1a1a1a; padding: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 2px solid var(--gold); }
-        button { padding: 10px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        
-        .btn-up { background: #fff; color: #000; }
-        .btn-add { background: var(--gold); color: #000; }
-        .btn-save { background: #4CAF50; color: #fff; }
-        .btn-reset { background: var(--red); color: #fff; }
-        
-        .chart-box { overflow-x: auto; margin: 15px 0; }
-        table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 850px; margin: 0 auto; table-layout: fixed; }
-        th, td { border: 1px solid #999; height: 45px; text-align: center; font-weight: bold; font-size: 17px; position: relative; outline: none; }
-        th { background: #800000; color: #fff; font-size: 12px; }
+        .chart-box { overflow-x: auto; margin-bottom: 20px; }
+        table { border-collapse: collapse; background: #fff; color: #000; width: 100%; max-width: 900px; margin: 0 auto; }
+        th, td { border: 1px solid #444; height: 50px; text-align: center; font-weight: bold; font-size: 18px; position: relative; min-width: 60px; }
+        th { background: #600; color: #fff; font-size: 12px; }
 
-        /* Highlights */
-        .base-jodi { background: #ffebee !important; border: 3px solid var(--red) !important; color: var(--red); z-index: 5; }
-        .pattern-mark::after { content: ''; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 2px solid var(--blue); border-radius: 50%; pointer-events: none; }
+        /* UI Indicators */
+        .base-jodi { background: #ffcdd2 !important; border: 3px solid var(--red) !important; color: var(--red); }
+        .pattern-circle { z-index: 10; }
+        .pattern-circle::after { content: ''; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 3px solid var(--blue); border-radius: 50%; pointer-events: none; }
         
-        /* Trace History Pattern (Jab purani line milegi) */
-        .trace-base { background: #ffff00 !important; border: 2px dashed #000 !important; }
-        .trace-pattern { background: #e3f2fd !important; border: 2px solid var(--blue) !important; }
-        .trace-result { background: #c8e6c9 !important; border: 3px solid var(--green) !important; }
+        /* Check Lines */
+        .line-draw { position: absolute; height: 3px; background: rgba(0, 123, 255, 0.5); transform-origin: top left; pointer-events: none; z-index: 1; }
+        .trace-match { background: #e3f2fd !important; border: 2px solid var(--blue) !important; }
+        .result-blink { background: #ccff90 !important; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
-        .blank-cell { background: #f9f9f9; color: #ccc; }
-        .res-panel { background: #1a1a1a; border-left: 5px solid var(--gold); padding: 15px; text-align: left; max-width: 850px; margin: 15px auto; }
-        .match-row { padding: 10px; border-bottom: 1px solid #333; color: var(--gold); font-size: 17px; }
-        #status { color: var(--green); margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        /* Pop-up Style */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; border: 2px solid var(--gold); padding: 20px; z-index: 1000; border-radius: 10px; box-shadow: 0 0 20px #000; width: 80%; max-width: 400px; }
+        .modal h2 { color: var(--gold); margin-top: 0; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
     </style>
 </head>
 <body>
 
-    <h1>DPBOSS MASTER LOGIC</h1>
-    <div id="status">System Ready</div>
+    <div class="header">
+        <h1>DPBOSS PATTERN ENGINE</h1>
+        <div id="status">Select a Base Jodi to start</div>
+    </div>
 
     <div class="toolbar">
-        <input type="file" id="csvIn" accept=".csv, .txt" style="display:none">
-        <button class="btn-up" onclick="document.getElementById('csvIn').click()">UPLOAD CSV</button>
-        <button class="btn-add" onclick="addRow()">+ ROW</button>
-        <button class="btn-save" onclick="saveData()">SAVE</button>
-        <button class="btn-reset" onclick="resetSys()">RESET</button>
+        <input type="file" id="csvIn" accept=".csv" style="display:none">
+        <button class="btn-up" onclick="document.getElementById('csvIn').click()">Upload Chart</button>
+        <button class="btn-save" onclick="saveData()">Save Record</button>
+        <button class="btn-reset" onclick="resetSys()">Reset All</button>
     </div>
 
     <div class="chart-box"><table id="mainChart"></table></div>
 
-    <div class="res-panel">
-        <h3 style="color: var(--gold); margin: 0;">Pattern Search Results:</h3>
-        <div id="out" style="font-size: 14px; margin-top: 10px;">Base chunein, pattern banayein aur blank pe click karein.</div>
+    <div id="modal" class="modal">
+        <h2>Strong Check Lines</h2>
+        <div id="modalContent"></div>
+        <button onclick="closeModal()" style="width: 100%; margin-top: 15px; background: var(--gold);">OK, Close</button>
     </div>
+    <div id="overlay" class="overlay" onclick="closeModal()"></div>
 
     <script>
-        const KEY = "DP_MASTER_TRACE_V1";
-        let data = JSON.parse(localStorage.getItem(KEY)) || Array(15).fill().map(() => Array(6).fill("**"));
+        const KEY = "MASTER_PATTERN_PRO";
+        let data = JSON.parse(localStorage.getItem(KEY)) || Array(12).fill().map(() => Array(6).fill("**"));
         let base = null;
-        let patterns = [];
-        let tracedCells = []; // Purani line highlight karne ke liye
+        let patternNodes = [];
+        let familyGroups = {};
 
-        const families = { "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"], "44":["44","49","94","99"], "55":["00","05","50","55"], "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"], "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"] };
+        // Family Logic initialization
+        const fams = {"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+        function getFam(v){ let s=String(v).trim(); for(let f in fams) if(fams[f].includes(s)) return f; return s; }
 
-        function getFam(v) {
-            let s = String(v).trim();
-            for(let f in families) if(families[f].includes(s)) return f;
-            return s;
-        }
-
-        document.getElementById('csvIn').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
+        document.getElementById('csvIn').addEventListener('change', function(e){
             const reader = new FileReader();
-            reader.onload = function(ev) {
-                const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
-                data = lines.map(l => {
-                    let c = l.split(/[,\t;]/);
-                    while(c.length < 6) c.push("**");
-                    return c.slice(0,6).map(x => x.trim() || "**");
+            reader.onload = function(ev){
+                data = ev.target.result.split(/\r?\n/).filter(l=>l.trim()).map(l=> {
+                    let c = l.split(','); while(c.length<6) c.push("**"); return c.slice(0,6).map(x=>x.trim()||"**");
                 });
-                resetSys();
+                render();
             };
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         });
 
-        function render() {
+        function render(){
             let html = `<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>`;
             data.forEach((row, r) => {
                 html += `<tr>`;
                 row.forEach((val, c) => {
-                    let v = val || "**";
-                    let cls = (v === "**") ? "blank-cell" : "";
-                    
+                    let cls = val === "**" ? "blank-cell" : "";
                     if(base && base.r === r && base.c === c) cls += " base-jodi";
-                    if(patterns.some(p => base && (base.r + p.dr === r) && (base.c + p.dc === c))) cls += " pattern-mark";
-                    
-                    // Trace logic (History pattern highlight)
-                    let trace = tracedCells.find(t => t.r === r && t.c === c);
-                    if(trace) cls += " " + trace.type;
-
-                    html += `<td class="${cls}" onclick="handle(${r},${c})">${v}</td>`;
+                    if(patternNodes.some(p => p.r === r && p.c === c)) cls += " pattern-circle";
+                    html += `<td class="${cls}" onclick="handleCell(${r},${c})">${val}</td>`;
                 });
                 html += `</tr>`;
             });
             document.getElementById("mainChart").innerHTML = html;
         }
 
-        function handle(r, c) {
+        function handleCell(r, c) {
             let val = data[r][c];
+            // 1. Set Base
             if(!base && val !== "**") {
-                base = {r, c, val, fam: getFam(val)};
-                document.getElementById("status").innerText = "Base: " + val;
-            } else if(base) {
-                if(val === "**" && patterns.length > 0) {
-                    search(r, c);
-                } else {
-                    patterns.push({dr: r - base.r, dc: c - base.c});
-                }
+                base = { r, c, val, day: c, fam: getFam(val) };
+                document.getElementById("status").innerText = "Base Fixed. Now click family cross lines.";
+            } 
+            // 2. Set Pattern
+            else if(base && val !== "**") {
+                if(r === base.r && c === base.c) return;
+                patternNodes.push({ r, c, dr: r - base.r, dc: c - base.c, fam: getFam(val) });
+            }
+            // 3. Result on Blank
+            else if(base && val === "**") {
+                findMatches(r, c);
             }
             render();
         }
 
-        function search(tr, tc) {
-            let res = [];
-            tracedCells = []; // Reset previous trace
+        function findMatches(tr, tc) {
+            let results = [];
             let drB = tr - base.r, dcB = tc - base.c;
 
-            data.forEach((row, i) => {
-                row.forEach((val, j) => {
-                    if(getFam(val) === base.fam && (i !== base.r || j !== base.c)) {
-                        let ok = patterns.every(p => data[i+p.dr] && data[i+p.dr][j+p.dc] !== "**");
-                        if(ok) {
+            // Loop through all data to find similar structure
+            for(let i=0; i < data.length; i++) {
+                for(let j=0; j < 6; j++) {
+                    // Rule 1: Same Column (Day) and Same Family as Base
+                    if(j === base.day && getFam(data[i][j]) === base.fam && i !== base.r) {
+                        
+                        // Rule 2: Check if entire cross pattern family matches
+                        let patternMatch = patternNodes.every(p => {
+                            let checkR = i + p.dr, checkC = j + p.dc;
+                            return data[checkR] && data[checkR][checkC] !== "**" && getFam(data[checkR][checkC]) === p.fam;
+                        });
+
+                        if(patternMatch) {
                             let resR = i + drB, resC = j + dcB;
                             if(data[resR] && data[resR][resC] !== "**") {
-                                res.push({v: data[resR][resC], row: resR + 1});
-                                // Add to Trace
-                                tracedCells.push({r: i, c: j, type: 'trace-base'});
-                                patterns.forEach(p => tracedCells.push({r: i+p.dr, c: j+p.dc, type: 'trace-pattern'}));
-                                tracedCells.push({r: resR, c: resC, type: 'trace-result'});
+                                results.push({ val: data[resR][resC], row: resR + 1 });
                             }
                         }
                     }
-                });
-            });
-            document.getElementById("out").innerHTML = res.map(m => `<div class="match-row">Found: <b>${m.v}</b> (Old Row ${m.row})</div>`).join('') || "No Match.";
+                }
+            }
+
+            showResults(results);
         }
 
-        function addRow() { data.push(Array(6).fill("**")); render(); }
-        function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("Saved!"); }
-        function resetSys() { base = null; patterns = []; tracedCells = []; render(); document.getElementById("status").innerText = "Ready"; }
+        function showResults(res) {
+            const content = document.getElementById("modalContent");
+            if(res.length === 0) {
+                content.innerHTML = "<p>No strong check lines found.</p>";
+            } else {
+                // Showing top 4 strong results
+                let limited = res.slice(0, 4);
+                content.innerHTML = limited.map(m => `
+                    <div style="padding:10px; border-bottom:1px solid #444;">
+                        Strong Jodi: <b style="color:var(--gold); font-size:24px;">${m.val}</b><br>
+                        <small>From Row: ${m.row}</small>
+                    </div>
+                `).join('');
+            }
+            document.getElementById("modal").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        }
+
+        function resetSys() { base = null; patternNodes = []; render(); document.getElementById("status").innerText = "Ready"; }
+        function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("Record Saved!"); }
 
         render();
     </script>
