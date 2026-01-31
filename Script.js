@@ -1,4 +1,4 @@
-const STORAGE_KEY = "dpboss_master_v3";
+const STORAGE_KEY = "dpboss_master_final_v1";
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill().map(() => Array(6).fill("**"));
 let base = null; 
 let patternLine = []; 
@@ -20,25 +20,49 @@ function getFamily(v) {
     return s; 
 }
 
-// CSV Loader FIX: Isse ab CSV ka har row aur column load hoga
+// STRONGER CSV LOADER
 document.getElementById('csvFileInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+        alert("No file selected!");
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = function(event) {
-        const content = event.target.result;
-        // Lines ko split karke data array mein convert karna
-        const rows = content.split(/\r?\n/);
-        data = rows.filter(row => row.trim() !== "").map(row => {
-            return row.split(',').map(cell => cell.trim() || "**");
-        });
-        
-        base = null; // Purana selection clear
-        patternLine = [];
-        render(); // Table ko naye data se refresh karna
-        alert("CSV File Successfully Loaded!");
+        try {
+            const content = event.target.result;
+            // Rows split (handle different OS line breaks)
+            const lines = content.split(/\r\n|\n/);
+            
+            const newData = lines
+                .map(line => line.trim())
+                .filter(line => line.length > 0) // Skip empty lines
+                .map(line => {
+                    let cols = line.split(',');
+                    // Ensure each row has 6 columns
+                    while(cols.length < 6) cols.push("**");
+                    return cols.slice(0, 6).map(c => c.trim() || "**");
+                });
+
+            if(newData.length > 0) {
+                data = newData;
+                base = null;
+                patternLine = [];
+                render();
+                alert("Success: " + data.length + " rows loaded!");
+            } else {
+                alert("CSV file seems empty or corrupted.");
+            }
+        } catch (err) {
+            alert("Error reading CSV: " + err.message);
+        }
     };
+    
+    reader.onerror = function() {
+        alert("Could not read file!");
+    };
+    
     reader.readAsText(file);
 });
 
@@ -49,18 +73,16 @@ function render() {
     data.forEach((row, r) => {
         html += `<tr>`;
         row.forEach((val, c) => {
-            let cellValue = val || "**";
-            let cls = (cellValue === "**") ? "blank-cell" : "";
-            
-            // Highlight Logic
+            let v = val || "**";
+            let cls = (v === "**") ? "blank-cell" : "";
             if(base && base.r === r && base.c === c) cls += " base-jodi";
             let isMarked = patternLine.some(p => (base.r + p.dr === r) && (base.c + p.dc === c));
             if(isMarked) cls += " pattern-mark";
             
             html += `<td class="${cls}" 
-                        onclick="handleClick(${r},${c},'${cellValue}')" 
+                        onclick="handleClick(${r},${c},'${v}')" 
                         contenteditable="true" 
-                        oninput="updateValue(${r},${c},this.innerText)">${cellValue}</td>`;
+                        oninput="updateValue(${r},${c},this.innerText)">${v}</td>`;
         });
         html += `</tr>`;
     });
@@ -68,19 +90,15 @@ function render() {
 }
 
 function handleClick(r, c, val) {
-    // Agar blank par click kiya aur base set hai -> Search chalao
     if(val === "**" && base) {
         search(r, c);
         return;
     }
-    
-    // Agar Jodi par click kiya -> Selection logic
     if(val !== "**") {
         if(!base) {
             base = {r, c, val, fam: getFamily(val)};
-            document.getElementById("status").innerText = "Base Fixed! Now select pattern (Blue Circles).";
+            document.getElementById("status").innerText = "Base: " + val + " (Set). Select patterns.";
         } else {
-            // Check if already selected
             if(base.r === r && base.c === c) return;
             patternLine.push({dr: r - base.r, dc: c - base.c});
         }
@@ -95,51 +113,30 @@ function search(tr, tc) {
 
     for(let i=0; i<data.length; i++) {
         for(let j=0; j<6; j++) {
-            // Anchor matching
             if(getFamily(data[i][j]) === base.fam) {
-                // Check if structural pattern exists there
                 let ok = patternLine.every(p => {
-                    let targetR = i + p.dr;
-                    let targetC = j + p.dc;
-                    return data[targetR] && data[targetR][targetC] !== "**";
+                    let rP = i + p.dr;
+                    let cP = j + p.dc;
+                    return data[rP] && data[rP][cP] !== "**";
                 });
-                
                 if(ok) {
-                    let resR = i + drB;
-                    let resC = j + dcB;
-                    if(data[resR] && data[resR][resC] !== "**") {
-                        results.push({v: data[resR][resC], row: resR + 1});
+                    let rR = i + drB, rC = j + dcB;
+                    if(data[rR] && data[rR][rC] !== "**") {
+                        results.push({v: data[rR][rC], row: rR + 1});
                     }
                 }
             }
         }
     }
-    
     const output = document.getElementById("matchOutput");
     output.innerHTML = results.length ? 
-        results.map(res => `<div>Row ${res.row} Result: <b>${res.v}</b></div>`).join('') : 
-        "<div>No Logic Match found in this position.</div>";
+        results.map(res => `<div>Matched: <b>${res.v}</b> (Row ${res.row})</div>`).join('') : 
+        "<div>No Pattern Found.</div>";
 }
 
-function updateValue(r, c, v) { 
-    data[r][c] = v.trim() || "**"; 
-}
-
-function addRow() { 
-    data.push(Array(6).fill("**")); 
-    render(); 
-}
-
-function saveData() { 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
-    alert("Record Saved!"); 
-}
-
-function resetEngine() { 
-    base = null; 
-    patternLine = []; 
-    document.getElementById("status").innerText = "Select a Base Jodi (Red Box)";
-    render(); 
-}
+function updateValue(r, c, v) { data[r][c] = v.trim() || "**"; }
+function addRow() { data.push(Array(6).fill("**")); render(); }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Data Saved Locally!"); }
+function resetEngine() { base = null; patternLine = []; render(); }
 
 render();
