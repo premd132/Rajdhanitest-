@@ -2,130 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DPBOSS MASTER - DETAILED HISTORY</title>
+    <title>DPBOSS KING - AUTO TRACE PRO</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; }
-        .header { background: #800000; padding: 15px; border-bottom: 3px solid #ffd700; color: #ffd700; font-weight: bold; }
-        .chart-box { background: #fff; display: inline-block; padding: 10px; margin-top: 20px; position: relative; border: 5px solid #444; }
+        :root { --gold: #ffd700; --red: #ff0000; --blue: #1e90ff; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
+        .header { background: #600; padding: 15px; border-bottom: 3px solid var(--gold); text-align: center; position: sticky; top: 0; z-index: 100; }
+        
+        /* Chart Styling */
+        .chart-container { background: #fff; display: inline-block; padding: 10px; margin: 20px; position: relative; }
         table { border-collapse: collapse; color: #000; }
-        td { border: 1px solid #000; width: 55px; height: 50px; font-size: 22px; font-weight: bold; cursor: pointer; position: relative; }
+        td { border: 1px solid #000; width: 50px; height: 45px; font-size: 20px; font-weight: bold; text-align: center; cursor: pointer; position: relative; }
         
-        /* Markers */
-        .base-node::after { content: ''; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 4px solid red; border-radius: 50%; box-sizing: border-box; }
-        .pattern-node::after { content: ''; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; border: 4px solid blue; border-radius: 50%; box-sizing: border-box; }
-        
+        /* Highlights */
+        .base-node { background: #ffcccc !important; outline: 3px solid var(--red); border-radius: 50%; }
+        .pattern-node { background: #cce5ff !important; outline: 3px solid var(--blue); border-radius: 50%; }
+        .history-flash { animation: flash 1s infinite; }
+        @keyframes flash { 50% { background: var(--gold); } }
+
         /* Result Panel */
-        .analysis { max-width: 600px; margin: 20px auto; background: #1a1a1a; border: 2px solid #ffd700; border-radius: 10px; }
-        .match-row { border-bottom: 1px solid #333; padding: 15px; cursor: pointer; transition: 0.3s; }
-        .match-row:hover { background: #333; }
-        .match-header { display: flex; justify-content: space-between; align-items: center; }
-        .match-jodi { color: #ffd700; font-size: 32px; font-weight: bold; }
-        
-        /* Detailed View inside Popup */
-        .history-details { font-size: 14px; color: #ccc; text-align: left; margin-top: 10px; display: none; background: #000; padding: 10px; border-radius: 5px; }
-        .visible { display: block !important; }
+        .result-panel { max-width: 600px; margin: 0 auto; background: #111; border: 2px solid var(--gold); border-radius: 10px; }
+        .match-item { padding: 15px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .match-item:hover { background: #222; }
+        .match-val { color: var(--gold); font-size: 30px; font-weight: bold; }
+        .trace-btn { background: var(--blue); color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">DPKING MASTER - DETAILED PATTERN TRACER</div>
-    
-    <div class="chart-box">
-        <table id="mainChart"></table>
+
+    <div class="header">
+        <h1>DPBOSS PATTERN TRACER</h1>
+        <div id="status" style="font-size:12px;">Click Base -> Click Cross -> Click Blank</div>
     </div>
 
-    <div class="analysis">
-        <div style="background:#333; padding:10px; color:#ffd700; font-weight:bold;">SURE LINE ANALYSIS (Click to see Path)</div>
-        <div id="results">Pattern select karein...</div>
+    <center>
+        <div class="chart-container">
+            <table id="mainChart"></table>
+        </div>
+    </center>
+
+    <div class="result-panel">
+        <div style="padding:10px; background:#333; color:var(--gold);">SURE LINE HISTORY MATCHES</div>
+        <div id="results" style="padding:20px;">Pattern select karein...</div>
     </div>
 
     <script>
-        let data = JSON.parse(localStorage.getItem('DP_DATA')) || Array(20).fill().map(() => Array(6).fill("**"));
+        let data = JSON.parse(localStorage.getItem('DP_MASTER')) || Array(100).fill().map(() => Array(6).fill("**"));
         let base = null;
         let patterns = [];
 
-        const families = {"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-        function getFam(v){ let s=String(v).trim(); for(let f in families) if(families[f].includes(s)) return f; return s; }
+        const fams = {"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+        function getF(v){ for(let f in fams) if(fams[f].includes(v)) return f; return v; }
 
         function render() {
-            let html = `<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>`;
-            data.forEach((row, r) => {
-                html += `<tr>`;
-                row.forEach((val, c) => {
+            let h = `<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>`;
+            data.forEach((r, ri) => {
+                h += `<tr>`;
+                r.forEach((v, ci) => {
                     let cls = "";
-                    if(base && base.r === r && base.c === c) cls = "base-node";
-                    if(patterns.some(p => p.r === r && p.c === c)) cls = "pattern-node";
-                    html += `<td onclick="handle(${r},${c})" class="${cls}">${val}</td>`;
+                    if(base && base.r === ri && base.c === ci) cls = "base-node";
+                    if(patterns.some(p => p.r === ri && p.c === ci)) cls = "pattern-node";
+                    h += `<td id="td-${ri}-${ci}" class="${cls}" onclick="tap(${ri},${ci})">${v}</td>`;
                 });
-                html += `</tr>`;
+                h += `</tr>`;
             });
-            document.getElementById("mainChart").innerHTML = html;
+            document.getElementById("mainChart").innerHTML = h;
         }
 
-        function handle(r, c) {
+        function tap(r, c) {
             let v = data[r][c];
             if(!base && v !== "**") {
-                base = { r, c, val: v, col: c, fam: getFam(v) };
+                base = { r, c, col: c, fam: getF(v) };
             } else if(base && v !== "**") {
-                if(r === base.r && c === base.c) return;
-                patterns.push({ r, c, dr: r - base.r, dc: c - base.c, fam: getFam(v), val: v });
-            } else if(base && (v === "**" || v === "")) {
-                search(r, c);
+                patterns.push({ r, c, dr: r - base.r, dc: c - base.c, fam: getF(v) });
+            } else if(base && v === "**") {
+                find(r, c);
             }
             render();
         }
 
-        function search(tr, tc) {
+        function find(tr, tc) {
             let drB = tr - base.r, dcB = tc - base.c;
-            let finalResults = [];
+            let matches = [];
 
             data.forEach((row, i) => {
-                row.forEach((val, j) => {
-                    if(j === base.col && getFam(val) === base.fam && i !== base.r) {
-                        let path = [];
-                        let ok = patterns.every(p => {
-                            let checkR = i + p.dr, checkC = j + p.dc;
-                            if(data[checkR] && getFam(data[checkR][checkC]) === p.fam) {
-                                path.push({ row: checkR + 1, val: data[checkR][checkC] });
-                                return true;
-                            }
-                            return false;
-                        });
-
+                row.forEach((v, j) => {
+                    if(j === base.col && getF(v) === base.fam && i !== base.r) {
+                        let ok = patterns.every(p => data[i+p.dr] && getF(data[i+p.dr][j+p.dc]) === p.fam);
                         if(ok) {
-                            let resVal = data[i+drB] ? data[i+drB][j+dcB] : null;
-                            if(resVal && resVal !== "**") {
-                                finalResults.push({ result: resVal, baseRow: i+1, baseVal: val, path: path });
-                            }
+                            let res = data[i+drB] ? data[i+drB][j+dcB] : null;
+                            if(res && res !== "**") matches.push({ val: res, r: i, c: j, resR: i+drB });
                         }
                     }
                 });
             });
 
-            display(finalResults);
-        }
-
-        function display(list) {
-            const out = document.getElementById("results");
-            if(list.length === 0) { out.innerHTML = "No matches."; return; }
-
-            out.innerHTML = list.map((m, index) => `
-                <div class="match-row" onclick="toggleDetails(${index})">
-                    <div class="match-header">
-                        <span>Row ${m.baseRow} Match</span>
-                        <span class="match-jodi">${m.result}</span>
-                    </div>
-                    <div id="details-${index}" class="history-details">
-                        <b>History Path:</b><br>
-                        - Base: ${m.baseVal} (Row ${m.baseRow})<br>
-                        ${m.path.map(p => `- Pattern: ${p.val} (Row ${p.row})`).join('<br>')}
-                    </div>
+            document.getElementById("results").innerHTML = matches.map(m => `
+                <div class="match-item" onclick="showPath(${m.r}, ${m.c}, ${m.resR})">
+                    <div><b>Row ${m.r + 1} Match</b><br><small>Click to see line on chart</small></div>
+                    <div class="match-val">${m.val}</div>
+                    <button class="trace-btn">TRACE</button>
                 </div>
-            `).join('');
+            `).join('') || "No History Found.";
         }
 
-        function toggleDetails(idx) {
-            let el = document.getElementById(`details-${idx}`);
-            el.classList.toggle('visible');
+        function showPath(r, c, resR) {
+            // Scroll to the history row
+            document.getElementById(`td-${r}-${c}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Temporary highlight
+            let cells = [`td-${r}-${c}`];
+            patterns.forEach(p => cells.push(`td-${r+p.dr}-${c+p.dc}`));
+            cells.push(`td-${resR}-${c + (patterns[0] ? patterns[0].dc : 0)}`); // Just an estimate for result col
+
+            cells.forEach(id => {
+                let el = document.getElementById(id);
+                if(el) {
+                    el.classList.add('history-flash');
+                    setTimeout(() => el.classList.remove('history-flash'), 3000);
+                }
+            });
         }
 
         render();
