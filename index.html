@@ -1,169 +1,151 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <title>DPBoss King - CSV & 3rd Touch System</title>
-    <style>
-        body { font-family: Arial; background: #1a1a1a; color: #fff; text-align: center; margin: 0; }
-        .header { background: #d32f2f; padding: 15px; font-size: 20px; font-weight: bold; border-bottom: 4px solid #ffeb3b; }
-        
-        .tools { background: #333; padding: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        input, select, button { padding: 10px; border-radius: 5px; border: none; font-weight: bold; }
-        
-        /* Buttons Color */
-        .btn-search { background: #ffeb3b; color: #000; }
-        .btn-csv { background: #2196F3; color: #fff; }
-        .btn-save { background: #4CAF50; color: #fff; }
+<meta charset="UTF-8">
+<style>
+    body { font-family: 'Segoe UI', Arial; background: #121212; color: white; margin: 0; padding: 10px; }
+    .header { background: #b71c1c; padding: 10px; text-align: center; border-bottom: 3px solid #ffd600; font-weight: bold; }
+    
+    .control-panel { background: #212121; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; border-bottom: 1px solid #444; }
+    input, select, button { padding: 10px; border-radius: 4px; border: 1px solid #555; font-weight: bold; }
+    button { cursor: pointer; background: #ffd600; color: black; border: none; }
+    .btn-check { background: #4caf50; color: white; }
 
-        .chart-container { position: relative; margin: 20px auto; display: inline-block; background: #fff; padding: 10px; border-radius: 8px; overflow: auto; max-width: 95%; }
-        table { border-collapse: collapse; color: #000; position: relative; z-index: 2; }
-        th, td { border: 1px solid #ccc; width: 55px; height: 50px; text-align: center; font-weight: bold; }
-        th { background: #f0f0f0; font-size: 12px; }
+    .chart-box { position: relative; margin: 20px auto; display: inline-block; background: white; padding: 5px; border-radius: 4px; }
+    table { border-collapse: collapse; color: black; position: relative; z-index: 2; background: transparent; }
+    td, th { border: 1px solid #ccc; width: 50px; height: 45px; text-align: center; font-weight: bold; position: relative; }
+    th { background: #f5f5f5; font-size: 11px; }
 
-        /* Pattern Styles */
-        .base-box { border: 3px solid red !important; color: red; background: rgba(255,0,0,0.1); }
-        .touch-circle { border: 3px solid blue !important; border-radius: 50%; color: blue; }
-        #lineCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-    </style>
+    /* Highlighting */
+    .base-highlight { border: 3px solid red !important; background: rgba(255,0,0,0.1); color: red; }
+    .pattern-circle { border: 3px solid blue !important; border-radius: 50%; color: blue; }
+    
+    #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+    #checkList { margin: 20px; display: flex; flex-direction: column; gap: 5px; align-items: center; }
+    .check-item { background: #333; padding: 10px; width: 80%; cursor: pointer; border-left: 5px solid #ffd600; text-align: left; }
+</style>
 </head>
 <body>
 
-<div class="header">PRO CHART TOOL - CSV UPLOAD & 3rd TOUCH</div>
+<div class="header">PRO 3rd TOUCH & FAMILY PATTERN SYSTEM</div>
 
-<div class="tools">
-    <div style="border-right: 2px solid #555; padding-right: 15px;">
-        <label>Upload CSV: </label>
-        <input type="file" id="csvFile" accept=".csv" class="btn-csv" onchange="handleCSV()">
-    </div>
-
-    <select id="dayIdx">
+<div class="control-panel">
+    <input type="file" id="csvInp" accept=".csv" onchange="loadCSV()">
+    <select id="daySel">
         <option value="0">Mon</option><option value="1">Tue</option><option value="2">Wed</option>
         <option value="3">Thu</option><option value="4">Fri</option><option value="5">Sat</option>
     </select>
-    <input type="text" id="findJodi" placeholder="Jodi (eg 37)" size="10">
-    <button class="btn-search" onclick="runTouch()">SEARCH TOUCH</button>
-    <button onclick="resetChart()">RESET</button>
+    <input type="text" id="targetJodi" placeholder="Base Jodi" size="8">
+    <button onclick="findFamilyTouch()">SEARCH FAMILY TOUCH</button>
+    <button class="btn-check" onclick="generateCheckLines()">GENERATE CHECK LINES</button>
 </div>
 
-<div class="chart-container" id="chartBox">
-    <canvas id="lineCanvas"></canvas>
-    <table id="matkaTable">
-        <thead>
-            <tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>
-        </thead>
+<div class="chart-box" id="chartContainer">
+    <canvas id="canvas"></canvas>
+    <table id="mainTable">
+        <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<div style="margin-bottom: 50px;">
-    <button class="btn-save" onclick="saveData()">SAVE DATA</button>
-    <button onclick="addRow()">+ ADD ROW</button>
-    <p id="status" style="color: #4caf50;"></p>
-</div>
+<div id="checkList"></div>
 
 <script>
-    let chartData = JSON.parse(localStorage.getItem('dp_data')) || [
-        ["00","00","00","00","00","00"],["00","00","00","00","00","00"]
-    ];
+let data = [
+    ["12","37","45","67","89","00"],["56","23","11","90","44","33"],
+    ["32","82","77","12","05","99"],["10","20","30","40","50","60"],
+    ["87","37","14","25","36","47"],["21","73","00","11","22","33"]
+];
 
-    // --- CSV UPLOAD LOGIC ---
-    function handleCSV() {
-        const file = document.getElementById('csvFile').files[0];
-        const reader = new FileReader();
+const families = {
+    "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"],
+    "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"],
+    "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],
+    "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"],
+    "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"]
+};
 
-        reader.onload = function(e) {
-            const content = e.target.result;
-            const rows = content.split("\n");
-            chartData = rows.map(row => {
-                let cols = row.split(",");
-                // Sirf 6 columns rakhenge (Mon-Sat)
-                return cols.slice(0, 6).map(c => c.trim() || "**");
-            }).filter(row => row.length >= 1);
+function getFamily(j) {
+    for(let k in families) if(families[k].includes(j)) return families[k];
+    return [j, j.split('').reverse().join('')]; // Default Palti
+}
 
-            initTable();
-            document.getElementById('status').innerText = "CSV Uploaded Successfully!";
-        };
-        reader.readAsText(file);
-    }
+function loadTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = data.map((row, r) => `<tr>${row.map((c, i) => `<td contenteditable onblur="data[${r}][${i}]=this.innerText">${c}</td>`).join('')}</tr>`).join('');
+    resizeCanvas();
+}
 
-    function initTable() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        chartData.forEach((row, rIdx) => {
-            let tr = document.createElement('tr');
-            row.forEach((cell, cIdx) => {
-                let td = document.createElement('td');
-                td.innerText = cell;
-                td.contentEditable = true;
-                td.onblur = () => { chartData[rIdx][cIdx] = td.innerText; };
-                tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-        });
-        setTimeout(resizeCanvas, 100);
-    }
+function resizeCanvas() {
+    const c = document.getElementById('canvas');
+    const box = document.getElementById('chartContainer');
+    c.width = box.clientWidth; c.height = box.clientHeight;
+}
 
-    function resizeCanvas() {
-        const canvas = document.getElementById('lineCanvas');
-        const box = document.getElementById('chartBox');
-        canvas.width = box.scrollWidth;
-        canvas.height = box.scrollHeight;
-    }
+function drawTouch(r1, c1, r2, c2) {
+    const ctx = document.getElementById('canvas').getContext('2d');
+    const table = document.getElementById('mainTable');
+    const b1 = table.rows[r1+1].cells[c1];
+    const b2 = table.rows[r2+1].cells[c2];
+    
+    ctx.strokeStyle = "blue"; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(b1.offsetLeft + 25, b1.offsetTop + 22);
+    ctx.lineTo(b2.offsetLeft + 25, b2.offsetTop + 22);
+    ctx.stroke();
+    
+    b1.classList.add('base-highlight');
+    b2.classList.add('pattern-circle');
+}
 
-    function runTouch() {
-        resetChart();
-        const target = document.getElementById('findJodi').value;
-        const day = document.getElementById('dayIdx').value;
-        const ctx = document.getElementById('lineCanvas').getContext('2d');
-        const table = document.getElementById('matkaTable');
-        const container = document.getElementById('chartBox');
-        
-        let matches = [];
-        for(let i=0; i<chartData.length; i++) {
-            if(chartData[i][day] == target) matches.push(i);
+function findFamilyTouch() {
+    clearStyles();
+    const target = document.getElementById('targetJodi').value;
+    const day = parseInt(document.getElementById('daySel').value);
+    const familyMembers = getFamily(target);
+    
+    data.forEach((row, rIdx) => {
+        if(familyMembers.includes(row[day])) {
+            // Pattern: Current row (Base) to Next Row (Pattern)
+            if(rIdx + 1 < data.length) drawTouch(rIdx, day, rIdx + 1, day);
         }
+    });
+}
 
-        if(matches.length < 3) {
-            alert("Kam se kam 3 match chahiye!");
-            return;
-        }
+function generateCheckLines() {
+    const list = document.getElementById('checkList');
+    list.innerHTML = "";
+    // Real data se pattern uthana (Last row logic)
+    const lastRow = data.length - 1;
+    const currentDay = parseInt(document.getElementById('daySel').value);
+    
+    let item = document.createElement('div');
+    item.className = "check-item";
+    item.innerText = `View Real Data Pattern (Touch at Day ${currentDay})`;
+    item.onclick = () => {
+        findFamilyTouch(); 
+        alert("Check Line Active: Sabhi family touches draw ho gaye hain.");
+    };
+    list.appendChild(item);
+}
 
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 3;
+function clearStyles() {
+    document.querySelectorAll('td').forEach(td => td.className = "");
+    const ctx = document.getElementById('canvas').getContext('2d');
+    ctx.clearRect(0, 0, 10000, 10000);
+}
 
-        matches.forEach((rowIndex, index) => {
-            if(index > 2) return; 
+function loadCSV() {
+    const file = document.getElementById('csvInp').files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        data = e.target.result.split("\n").map(r => r.split(",").map(c => c.trim()));
+        loadTable();
+    };
+    reader.readAsText(file);
+}
 
-            let baseCell = table.rows[rowIndex + 1].cells[day];
-            baseCell.classList.add('base-box');
-
-            if(rowIndex + 1 < chartData.length) {
-                let resCell = table.rows[rowIndex + 2].cells[day];
-                resCell.classList.add('touch-circle');
-
-                // Coordinate calculation
-                const x = baseCell.offsetLeft + baseCell.offsetWidth / 2;
-                const y1 = baseCell.offsetTop + baseCell.offsetHeight / 2;
-                const y2 = resCell.offsetTop + resCell.offsetHeight / 2;
-
-                ctx.beginPath();
-                ctx.moveTo(x, y1);
-                ctx.lineTo(x, y2);
-                ctx.stroke();
-            }
-        });
-    }
-
-    function resetChart() {
-        document.querySelectorAll('td').forEach(t => t.className = '');
-        const canvas = document.getElementById('lineCanvas');
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function addRow() { chartData.push(["**","**","**","**","**","**"]); initTable(); }
-    function saveData() { localStorage.setItem('dp_data', JSON.stringify(chartData)); alert("Saved!"); }
-
-    window.onload = initTable;
+window.onload = loadTable;
 </script>
 </body>
 </html>
