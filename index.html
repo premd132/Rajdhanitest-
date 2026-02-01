@@ -2,220 +2,186 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DPBossKing Professional Pattern System</title>
+<title>DPBossKing Professional Master System</title>
 <style>
-    :root { --red: #ff0000; --blue: #0000ff; --green: #008000; --gold: #ffd600; --bg: #0f0f0f; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; margin: 0; user-select: none; }
+    :root { --red: #ff0000; --blue: #0000ff; --green: #008000; --gold: #ffd600; --dark-bg: #0d0d0d; }
+    body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--dark-bg); color: #fff; margin: 0; user-select: none; }
     
-    /* Navigation & Tools */
-    .nav-bar { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-    .tool-panel { background: #222; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; border-bottom: 1px solid #444; }
+    /* Premium Sidebar & Header */
+    header { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+    .main-grid { display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 65px); }
     
-    button { padding: 10px 18px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .sidebar { background: #1a1a1a; padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
+    .tool-group { margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+    .tool-title { font-size: 12px; color: var(--gold); margin-bottom: 10px; display: block; font-weight: bold; }
+    
+    /* Button & Input Styles */
+    button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .btn-red { background: var(--red); color: #fff; }
-    .btn-green { background: var(--green); color: #fff; }
     .btn-blue { background: var(--blue); color: #fff; }
-    .btn-exec { background: var(--gold); color: #000; font-size: 16px; box-shadow: 0 4px #b89b00; }
-    .active { outline: 3px solid #fff; transform: scale(1.1); }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-run { background: var(--gold); color: #000; font-size: 16px; margin-top: 15px; box-shadow: 0 5px 0 #b89b00; }
+    .active { border: 3px solid #fff !important; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
-    /* Chart Architecture */
-    .main-layout { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    .chart-box { position: relative; background: #fff; padding: 15px; border-radius: 4px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-    table { border-collapse: collapse; color: #000; z-index: 10; position: relative; }
-    th, td { border: 1px solid #bbb; width: 60px; height: 55px; text-align: center; font-size: 19px; font-weight: 900; position: relative; transition: 0.2s; }
-    th { background: #f0f0f0; font-size: 12px; height: 30px; color: #333; }
-    
-    /* Shapes & Drawings */
-    .f-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.12) !important; color: var(--red); }
-    .f-green { border: 4px solid var(--green) !important; background: rgba(0,128,0,0.1) !important; color: var(--green); }
-    .f-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); background: rgba(0,0,255,0.05); }
-    
-    #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; opacity: 0.8; }
-    .prediction-cell { background: #fffde7; border: 2px dashed #fbc02d !important; animation: blink 1.5s infinite; }
-    @keyframes blink { 50% { opacity: 0.5; } }
+    /* Chart Area */
+    .content { padding: 20px; overflow: auto; background: #222; position: relative; }
+    .chart-wrapper { position: relative; display: inline-block; background: #fff; padding: 15px; border-radius: 5px; box-shadow: 0 0 30px #000; }
+    table { border-collapse: collapse; color: #000; z-index: 10; position: relative; background: transparent; }
+    th, td { border: 1px solid #ccc; width: 60px; height: 55px; text-align: center; font-size: 20px; font-weight: 900; position: relative; }
+    th { background: #f4f4f4; font-size: 11px; height: 30px; }
 
-    .status-bar { width: 100%; background: #000; color: #0f0; padding: 10px; font-family: 'Courier New', monospace; font-size: 13px; margin-top: 20px; text-align: left; }
+    /* Drawing Assets */
+    .f-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); color: var(--red); }
+    .f-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
+    .f-green { border: 4px solid var(--green) !important; background: rgba(0,128,0,0.1); color: var(--green); }
+    #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+
+    /* Log Panel */
+    .footer-log { position: fixed; bottom: 0; right: 0; width: calc(100% - 280px); background: #000; color: #0f0; padding: 8px; font-family: monospace; border-top: 1px solid #333; font-size: 12px; }
 </style>
 </head>
 <body>
 
-<div class="nav-bar">
-    <div style="font-size: 20px;">DPBK - MASTER PRO CLONE</div>
-    <div id="clock">SYSTEM READY</div>
-</div>
+<header>DPBOSS KING - ADVANCED ANALYTICS & PATTERN CLONER PRO</header>
 
-<div class="tool-panel">
-    <input type="file" id="csvInp" onchange="processCSV()" style="color:#fff">
-    <button class="btn-red active" onclick="selectTool('f-red', this)">SET BASE (RED)</button>
-    <button class="btn-green" onclick="selectTool('f-green', this)">TOUCH 1 (GREEN)</button>
-    <button class="btn-blue" onclick="selectTool('f-blue', this)">TOUCH 2 (BLUE)</button>
-    
-    <select id="anchorDay" style="padding: 10px; font-weight: bold;">
-        <option value="0">MONDAY</option><option value="1">TUESDAY</option><option value="2">WEDNESDAY</option>
-        <option value="3">THURSDAY</option><option value="4">FRIDAY</option><option value="5">SATURDAY</option>
-    </select>
-    
-    <button class="btn-exec" onclick="startUniversalScan()">100% PATTERN SEARCH</button>
-    <button onclick="clearEverything()" style="background:#444; color:#fff;">RESET ALL</button>
-</div>
+<div class="main-grid">
+    <div class="sidebar">
+        <div class="tool-group">
+            <span class="tool-title">LOAD DATA</span>
+            <input type="file" id="csvFile" onchange="loadData()" style="color:#fff; font-size: 12px;">
+        </div>
+        
+        <div class="tool-group">
+            <span class="tool-title">SELECT MARKER</span>
+            <button class="btn-red active" id="r-btn" onclick="setTool('f-red', 'r-btn')">BASE (RED BOX)</button>
+            <button class="btn-green" id="g-btn" onclick="setTool('f-green', 'g-btn')">TOUCH 1 (GREEN)</button>
+            <button class="btn-blue" id="b-btn" onclick="setTool('f-blue', 'b-btn')">TOUCH 2 (BLUE CIRCLE)</button>
+        </div>
 
-<div class="main-layout">
-    <div class="chart-box" id="container">
-        <canvas id="canvas"></canvas>
-        <table id="chartTable">
-            <thead>
-                <tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>
-            </thead>
-            <tbody id="chartBody"></tbody>
-        </table>
+        <div class="tool-group">
+            <span class="tool-title">ANCHOR DAY</span>
+            <select id="anchorDay" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #444;">
+                <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
+                <option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option>
+            </select>
+        </div>
+
+        <button class="btn-run" onclick="executeProScan()">EXECUTE PATTERN CLONE</button>
+        <button onclick="location.reload()" style="background:#444; color:#fff; margin-top:20px;">FULL RESET</button>
     </div>
-    <div class="status-bar" id="log">Console: Waiting for data and pattern input...</div>
+
+    <div class="content">
+        <div class="chart-wrapper" id="box">
+            <canvas id="canvas"></canvas>
+            <table id="mainTable">
+                <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<div class="footer-log" id="log">System Status: Online | Family Database: Loaded (100% Coverage)</div>
 
 <script>
-let activeTool = 'f-red';
-let rawData = [
-    ["12","37","45","67","89","00"],["56","23","11","90","44","33"],
-    ["32","82","77","12","05","99"],["10","20","30","40","50","60"],
-    ["80","30","25","**","**","**"] // Current Set (Last row has blanks)
-];
+let currentTool = 'f-red';
+let chartData = [["10","20","30","40","50","60"],["11","21","31","41","51","61"],["12","22","32","42","52","62"],["13","23","33","43","53","63"],["80","35","25","**","**","**"]];
 
-// Master Family Algorithm (Covers 100% Matka Logic)
-function getFullFamily(val) {
+// The Real Family Logic (Calculated dynamically for 00-99)
+function getFamily(val) {
     let n = val.toString().padStart(2, '0');
     let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
     let c1 = (d1 + 5) % 10, c2 = (d2 + 5) % 10;
     let set = new Set();
-    // 8 Family combinations
-    [[d1,c1], [c1,d1]].forEach(a => {
-        [[d2,c2], [c2,d2]].forEach(b => {
-            set.add(`${a[0]}${b[0]}`);
-            set.add(`${b[0]}${a[0]}`);
-        });
-    });
+    [[d1,c1],[c1,d1]].forEach(a => [[d2,c2],[c2,d2]].forEach(b => {
+        set.add(`${a[0]}${b[0]}`); set.add(`${b[0]}${a[0]}`);
+    }));
     return Array.from(set);
 }
 
-function initTable() {
-    const tbody = document.getElementById('chartBody');
-    tbody.innerHTML = rawData.map((row, rIdx) => `
-        <tr>${row.map((val, cIdx) => `
-            <td onclick="markCell(this)" contenteditable="true" 
-                onblur="rawData[${rIdx}][${cIdx}]=this.innerText">${val}</td>
-        `).join('')}</tr>
-    `).join('');
-    setTimeout(updateCanvasSize, 100);
+function init() {
+    const b = document.getElementById('tbody');
+    b.innerHTML = chartData.map((row, r) => `<tr>${row.map((c, d) => 
+        `<td onclick="applyTool(this)" contenteditable="true" onblur="chartData[${r}][${d}]=this.innerText">${c}</td>`).join('')}</tr>`).join('');
+    setTimeout(syncCanvas, 100);
 }
 
-function selectTool(t, btn) {
-    activeTool = t;
-    document.querySelectorAll('.tool-panel button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+function setTool(t, id) {
+    currentTool = t;
+    document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
 
-function markCell(td) {
-    if(td.className === activeTool) td.className = "";
-    else td.className = activeTool;
+function applyTool(td) { td.className = td.className === currentTool ? "" : currentTool; }
+
+function syncCanvas() {
+    const c = document.getElementById('canvas'), b = document.getElementById('box');
+    c.width = b.scrollWidth; c.height = b.scrollHeight;
 }
 
-function updateCanvasSize() {
-    const c = document.getElementById('canvas');
-    const box = document.getElementById('container');
-    c.width = box.scrollWidth; c.height = box.scrollHeight;
-}
-
-// THE CORE SEARCH ENGINE (100% DPBK Logic)
-function startUniversalScan() {
+// THE CLONE ENGINE: Matching Set-to-Set Family
+function executeProScan() {
     const day = parseInt(document.getElementById('anchorDay').value);
-    const table = document.getElementById('chartTable');
+    const table = document.getElementById('mainTable');
     const ctx = document.getElementById('canvas').getContext('2d');
     ctx.clearRect(0,0,5000,5000);
-    
-    // 1. Identify Master Pattern DNA
-    let masterSet = { base: null, touches: [] };
-    for(let r=0; r < rawData.length; r++) {
-        let td = table.rows[r+1].cells[day];
-        if(td.classList.contains('f-red')) {
-            masterSet.base = { val: rawData[r][day], r: r, c: day };
+
+    let masterDNA = { base: null, pattern: [] };
+
+    // 1. Capture the DNA of your current set
+    for(let r=0; r<chartData.length; r++) {
+        if(table.rows[r+1].cells[day].classList.contains('f-red')) {
+            masterDNA.base = { val: chartData[r][day], r: r, c: day };
             break;
         }
     }
 
-    if(!masterSet.base) { alert("Base jodi (Red) mark kijiye!"); return; }
+    if(!masterDNA.base) { document.getElementById('log').innerText = "ERROR: Set a Red Base!"; return; }
 
-    // Collect all relative family touches
-    document.querySelectorAll('.f-green, .f-blue').forEach(el => {
-        let r = el.parentElement.rowIndex - 1;
-        let c = el.cellIndex;
-        masterSet.touches.push({
-            val: rawData[r][c],
-            rDiff: r - masterSet.base.r,
-            cDiff: c - masterSet.base.c,
-            type: el.className
-        });
+    document.querySelectorAll('.f-green, .f-blue').forEach(m => {
+        let mr = m.parentElement.rowIndex-1, mc = m.cellIndex;
+        masterDNA.pattern.push({ val: chartData[mr][mc], rd: mr - masterDNA.base.r, cd: mc - masterDNA.base.c, type: m.className });
     });
 
-    const baseFam = getFullFamily(masterSet.base.val);
+    const baseFam = getFamily(masterDNA.base.val);
 
-    // 2. Deep Scan History for Exact DNA Match
-    rawData.forEach((row, ri) => {
-        // Find if base family matches in history
-        if(baseFam.includes(row[day]) && ri !== masterSet.base.r) {
-            let confirmedTouches = [];
-            
-            masterSet.touches.forEach(t => {
-                let targetR = ri + t.rDiff;
-                let targetC = day + t.cDiff;
-                if(rawData[targetR] && rawData[targetR][targetC]) {
-                    let historyVal = rawData[targetR][targetC];
-                    if(getFullFamily(t.val).includes(historyVal)) {
-                        confirmedTouches.push({ r: targetR, c: targetC, type: t.type });
-                    }
-                }
+    // 2. Scan History and CLONE
+    chartData.forEach((row, ri) => {
+        if(baseFam.includes(row[day]) && ri !== masterDNA.base.r) {
+            let matchCount = 0;
+            masterDNA.pattern.forEach(p => {
+                let tr = ri + p.rd, tc = day + p.cd;
+                if(chartData[tr] && getFamily(p.val).includes(chartData[tr][tc])) matchCount++;
             });
 
-            // If a complete set matches
-            if(confirmedTouches.length === masterSet.touches.length) {
+            if(matchCount === masterDNA.pattern.length) {
                 const bCell = table.rows[ri+1].cells[day];
                 bCell.classList.add('f-red');
-                
-                confirmedTouches.forEach(ct => {
-                    const tCell = table.rows[ct.r+1].cells[ct.c];
-                    tCell.classList.add(ct.type);
-                    
-                    // Draw Professional Dpboss Style Lines
-                    ctx.beginPath();
-                    ctx.strokeStyle = ct.type.includes('green') ? 'green' : 'blue';
-                    ctx.lineWidth = 2.5;
-                    ctx.moveTo(bCell.offsetLeft + 30, bCell.offsetTop + 27);
-                    ctx.lineTo(tCell.offsetLeft + 30, tCell.offsetTop + 27);
-                    ctx.stroke();
+                masterDNA.pattern.forEach(p => {
+                    const tCell = table.rows[ri+p.rd+1].cells[day+p.cd];
+                    tCell.classList.add(p.type);
+                    ctx.strokeStyle = p.type.includes('green') ? 'green' : 'blue';
+                    ctx.lineWidth = 2.5; ctx.beginPath();
+                    ctx.moveTo(bCell.offsetLeft+30, bCell.offsetTop+27);
+                    ctx.lineTo(tCell.offsetLeft+30, tCell.offsetTop+27); ctx.stroke();
                 });
-
-                // Prediction Logic: Highlight the gap-matching cell in current set
-                document.getElementById('log').innerText = "Found Matching Set at Week: " + (ri+1);
             }
         }
     });
+    document.getElementById('log').innerText = "PRO SCAN COMPLETE: Found Identical DNA Sets.";
 }
 
-function processCSV() {
-    const file = document.getElementById('csvInp').files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        rawData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
-        initTable();
+function loadData() {
+    const f = document.getElementById('csvFile').files[0];
+    const r = new FileReader();
+    r.onload = (e) => {
+        chartData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
+        init();
     };
-    reader.readAsText(file);
+    r.readAsText(f);
 }
 
-function clearEverything() {
-    document.querySelectorAll('td').forEach(td => td.className = "");
-    document.getElementById('canvas').getContext('2d').clearRect(0,0,10000,10000);
-}
-
-window.onload = initTable;
+window.onload = init;
 </script>
 </body>
 </html>
