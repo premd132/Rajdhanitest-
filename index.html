@@ -2,53 +2,55 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
+<title>DPBossKing Style Pro Pattern Tool</title>
 <style>
-    body { font-family: Arial; background: #1a1a1a; color: white; text-align: center; }
-    .header { background: #b71c1c; padding: 10px; border-bottom: 3px solid #ffd600; font-weight: bold; }
-    .controls { background: #333; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    body { font-family: 'Segoe UI', Arial; background: #1a1a1a; color: white; margin: 0; text-align: center; }
+    .header { background: #b71c1c; padding: 15px; border-bottom: 4px solid #ffd600; font-size: 22px; font-weight: bold; }
+    .toolbar { background: #333; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; border-bottom: 1px solid #444; }
     
-    .chart-box { position: relative; margin: 20px auto; display: inline-block; background: white; padding: 5px; border-radius: 4px; }
-    table { border-collapse: collapse; color: black; position: relative; z-index: 2; }
-    td, th { border: 1px solid #ccc; width: 55px; height: 50px; text-align: center; font-weight: bold; position: relative; }
-    
-    /* Box & Circle Styles from Screenshots */
-    .base-box { border: 3px solid red !important; background: rgba(255,0,0,0.1); color: red; }
+    .chart-container { position: relative; margin: 20px auto; display: inline-block; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    table { border-collapse: collapse; color: #000; position: relative; z-index: 2; background: transparent; }
+    th, td { border: 1px solid #ccc; width: 60px; height: 55px; text-align: center; font-weight: bold; font-size: 18px; cursor: cell; position: relative; }
+    th { background: #f0f0f0; font-size: 12px; height: 30px; }
+
+    /* Screenshot Styles */
+    .base-box { border: 3px solid red !important; background: rgba(255, 0, 0, 0.1); color: red; }
     .pattern-circle { border: 3px solid blue !important; border-radius: 50%; color: blue; }
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-    
-    button { padding: 10px; cursor: pointer; background: #ffd600; border: none; font-weight: bold; border-radius: 4px; }
-    .btn-blue { background: #2196F3; color: white; }
+    #lineCanvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+
+    button { padding: 10px 20px; cursor: pointer; background: #ffd600; border: none; font-weight: bold; border-radius: 4px; }
+    .btn-check { background: #2196F3; color: white; }
+    .btn-save { background: #4CAF50; color: white; }
+    input[type="file"] { background: #444; color: white; padding: 5px; }
 </style>
 </head>
 <body>
 
-<div class="header">ISMART GUESSING - 3rd TOUCH PATTERN</div>
+<div class="header">PRO 3rd TOUCH PATTERN - DPBOSS STYLE</div>
 
-<div class="controls">
-    <input type="file" id="csvInp" accept=".csv" onchange="loadCSV()">
+<div class="toolbar">
+    <input type="file" id="csvFile" accept=".csv" onchange="handleCSV()">
     <select id="daySel">
-        <option value="0">Mon</option><option value="1">Tue</option><option value="2">Wed</option>
-        <option value="3">Thu</option><option value="4">Fri</option><option value="5">Sat</option>
+        <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
+        <option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option>
     </select>
-    <button class="btn-blue" onclick="runSmartCheck()">RUN CHECK LINE</button>
-    <button onclick="saveData()">SAVE CHART</button>
+    <button class="btn-check" onclick="applyMasterPattern()">RUN CHECK LINE</button>
+    <button onclick="clearAll()" style="background:#666; color:white;">RESET</button>
+    <button class="btn-save" onclick="saveToLocal()">SAVE DATA</button>
 </div>
 
-<div class="chart-box" id="container">
+<div class="chart-container" id="chartBox">
     <canvas id="lineCanvas"></canvas>
-    <table id="matkaTable">
-        <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
+    <table id="mainTable">
+        <thead>
+            <tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>
+        </thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
 
 <script>
-let chartData = JSON.parse(localStorage.getItem('pro_data')) || [
-    ["12","37","45","67","89","00"],["56","23","11","90","44","33"],
-    ["32","82","77","12","05","99"],["10","20","30","40","50","60"],
-    ["87","37","14","25","36","47"],["21","73","00","11","22","33"]
-];
-
+// Family Matching Logic
 const families = {
     "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"],
     "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"],
@@ -57,77 +59,119 @@ const families = {
     "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"]
 };
 
-function getFamilyMembers(jodi) {
-    for(let key in families) if(families[key].includes(jodi)) return families[key];
-    return [jodi, jodi.split('').reverse().join('')];
+let chartData = JSON.parse(localStorage.getItem('dp_master_data')) || [
+    ["12","37","45","67","89","00"],["56","23","11","90","44","33"],
+    ["32","82","77","12","05","99"],["10","20","30","40","50","60"],
+    ["47","37","14","25","36","47"],["21","73","00","11","22","33"]
+];
+
+function getFamily(val) {
+    for(let k in families) if(families[k].includes(val)) return families[k];
+    return [val, val.split('').reverse().join('')]; 
 }
 
-function initTable() {
+function renderTable() {
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = chartData.map((row, r) => `<tr>${row.map((c, i) => 
-        `<td contenteditable onblur="updateCell(${r},${i},this.innerText)">${c}</td>`).join('')}</tr>`).join('');
-    resizeCanvas();
+    tbody.innerHTML = chartData.map((row, rIdx) => `
+        <tr>${row.map((cell, cIdx) => `
+            <td contenteditable="true" 
+                onclick="manualMark(this)" 
+                onblur="chartData[${rIdx}][${cIdx}]=this.innerText">${cell}</td>
+        `).join('')}</tr>
+    `).join('');
+    setTimeout(resizeCanvas, 100);
 }
 
-function updateCell(r, i, val) { chartData[r][i] = val; }
+// Manual Marking: Click to cycle through Red Box -> Blue Circle -> Clear
+function manualMark(td) {
+    if (td.classList.contains('base-box')) {
+        td.classList.remove('base-box');
+        td.classList.add('pattern-circle');
+    } else if (td.classList.contains('pattern-circle')) {
+        td.classList.remove('pattern-circle');
+    } else {
+        td.classList.add('base-box');
+    }
+}
 
 function resizeCanvas() {
-    const c = document.getElementById('lineCanvas');
-    const box = document.getElementById('container');
-    c.width = box.clientWidth; c.height = box.clientHeight;
+    const canvas = document.getElementById('lineCanvas');
+    const box = document.getElementById('chartBox');
+    canvas.width = box.scrollWidth;
+    canvas.height = box.scrollHeight;
 }
 
-function runSmartCheck() {
-    clearAll();
+// THE MAIN TRICK: Apply Master Pattern from Bottom to History
+function applyMasterPattern() {
     const day = parseInt(document.getElementById('daySel').value);
+    const table = document.getElementById('mainTable');
     const ctx = document.getElementById('lineCanvas').getContext('2d');
-    const table = document.getElementById('matkaTable');
+    
+    // 1. Find the reference (Master) pattern in the current/last rows
+    let masterBaseJodi = "";
+    for(let r = chartData.length-1; r >= 0; r--) {
+        if(table.rows[r+1].cells[day].classList.contains('base-box')) {
+            masterBaseJodi = chartData[r][day];
+            break;
+        }
+    }
 
-    // 1. Niche se Base Jodi uthao (Last Row)
-    const baseJodiValue = chartData[chartData.length - 1][day];
-    const familyMembers = getFamilyMembers(baseJodiValue);
+    if(!masterBaseJodi) {
+        alert("Pehle niche 'Current Set' mein kisi jodi par click karke Red Box banayein!");
+        return;
+    }
 
-    // 2. Scan Chart for Family
+    const targetFamily = getFamily(masterBaseJodi);
+    ctx.clearRect(0, 0, 10000, 10000);
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 2;
+
+    // 2. Clone pattern to every family occurrence in history
     chartData.forEach((row, rIdx) => {
-        if(familyMembers.includes(row[day])) {
-            let baseCell = table.rows[rIdx+1].cells[day];
-            baseCell.classList.add('base-box');
+        if(targetFamily.includes(row[day])) {
+            const currentCell = table.rows[rIdx+1].cells[day];
+            currentCell.classList.add('base-box');
 
-            // 3. Pattern Draw (Base ke thik niche wali row ko circle karega)
+            // Copying the "One row down" circle pattern
             if(rIdx + 1 < chartData.length) {
-                let resCell = table.rows[rIdx+2].cells[day];
-                resCell.classList.add('pattern-circle');
+                const nextCell = table.rows[rIdx+2].cells[day];
+                nextCell.classList.add('pattern-circle');
 
-                // Draw Tirchi Line (Diagonal) as per screenshot
-                ctx.strokeStyle = "blue"; ctx.lineWidth = 2;
+                // Draw connecting line like screenshots
                 ctx.beginPath();
-                ctx.moveTo(baseCell.offsetLeft + 27, baseCell.offsetTop + 25);
-                ctx.lineTo(resCell.offsetLeft + 27, resCell.offsetTop + 25);
+                ctx.moveTo(currentCell.offsetLeft + 30, currentCell.offsetTop + 27);
+                ctx.lineTo(nextCell.offsetLeft + 30, nextCell.offsetTop + 27);
                 ctx.stroke();
             }
         }
     });
 }
 
-function clearAll() {
-    document.querySelectorAll('td').forEach(t => t.className = "");
-    const canvas = document.getElementById('lineCanvas');
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function loadCSV() {
-    const file = document.getElementById('csvInp').files[0];
+function handleCSV() {
+    const file = document.getElementById('csvFile').files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-        chartData = e.target.result.split("\n").map(r => r.split(",").map(c => c.trim()));
-        initTable();
+        chartData = e.target.result.split("\n")
+                    .map(row => row.split(",").map(c => c.trim()))
+                    .filter(r => r.length > 1);
+        renderTable();
     };
     reader.readAsText(file);
 }
 
-function saveData() { localStorage.setItem('pro_data', JSON.stringify(chartData)); alert("Saved!"); }
+function clearAll() {
+    document.querySelectorAll('td').forEach(td => td.className = "");
+    const ctx = document.getElementById('lineCanvas').getContext('2d');
+    ctx.clearRect(0, 0, 10000, 10000);
+}
 
-window.onload = initTable;
+function saveToLocal() {
+    localStorage.setItem('dp_master_data', JSON.stringify(chartData));
+    alert("Data Saved!");
+}
+
+window.onload = renderTable;
+window.onresize = resizeCanvas;
 </script>
 </body>
 </html>
