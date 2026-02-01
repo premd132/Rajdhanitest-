@@ -3,55 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <style>
-    body { font-family: 'Segoe UI', Arial; background: #121212; color: white; margin: 0; padding: 10px; }
-    .header { background: #b71c1c; padding: 10px; text-align: center; border-bottom: 3px solid #ffd600; font-weight: bold; }
+    body { font-family: Arial; background: #1a1a1a; color: white; text-align: center; }
+    .header { background: #b71c1c; padding: 10px; border-bottom: 3px solid #ffd600; font-weight: bold; }
+    .controls { background: #333; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
     
-    .control-panel { background: #212121; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; border-bottom: 1px solid #444; }
-    input, select, button { padding: 10px; border-radius: 4px; border: 1px solid #555; font-weight: bold; }
-    button { cursor: pointer; background: #ffd600; color: black; border: none; }
-    .btn-check { background: #4caf50; color: white; }
-
     .chart-box { position: relative; margin: 20px auto; display: inline-block; background: white; padding: 5px; border-radius: 4px; }
-    table { border-collapse: collapse; color: black; position: relative; z-index: 2; background: transparent; }
-    td, th { border: 1px solid #ccc; width: 50px; height: 45px; text-align: center; font-weight: bold; position: relative; }
-    th { background: #f5f5f5; font-size: 11px; }
-
-    /* Highlighting */
-    .base-highlight { border: 3px solid red !important; background: rgba(255,0,0,0.1); color: red; }
-    .pattern-circle { border: 3px solid blue !important; border-radius: 50%; color: blue; }
+    table { border-collapse: collapse; color: black; position: relative; z-index: 2; }
+    td, th { border: 1px solid #ccc; width: 55px; height: 50px; text-align: center; font-weight: bold; position: relative; }
     
-    #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-    #checkList { margin: 20px; display: flex; flex-direction: column; gap: 5px; align-items: center; }
-    .check-item { background: #333; padding: 10px; width: 80%; cursor: pointer; border-left: 5px solid #ffd600; text-align: left; }
+    /* Box & Circle Styles from Screenshots */
+    .base-box { border: 3px solid red !important; background: rgba(255,0,0,0.1); color: red; }
+    .pattern-circle { border: 3px solid blue !important; border-radius: 50%; color: blue; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+    
+    button { padding: 10px; cursor: pointer; background: #ffd600; border: none; font-weight: bold; border-radius: 4px; }
+    .btn-blue { background: #2196F3; color: white; }
 </style>
 </head>
 <body>
 
-<div class="header">PRO 3rd TOUCH & FAMILY PATTERN SYSTEM</div>
+<div class="header">ISMART GUESSING - 3rd TOUCH PATTERN</div>
 
-<div class="control-panel">
+<div class="controls">
     <input type="file" id="csvInp" accept=".csv" onchange="loadCSV()">
     <select id="daySel">
         <option value="0">Mon</option><option value="1">Tue</option><option value="2">Wed</option>
         <option value="3">Thu</option><option value="4">Fri</option><option value="5">Sat</option>
     </select>
-    <input type="text" id="targetJodi" placeholder="Base Jodi" size="8">
-    <button onclick="findFamilyTouch()">SEARCH FAMILY TOUCH</button>
-    <button class="btn-check" onclick="generateCheckLines()">GENERATE CHECK LINES</button>
+    <button class="btn-blue" onclick="runSmartCheck()">RUN CHECK LINE</button>
+    <button onclick="saveData()">SAVE CHART</button>
 </div>
 
-<div class="chart-box" id="chartContainer">
-    <canvas id="canvas"></canvas>
-    <table id="mainTable">
+<div class="chart-box" id="container">
+    <canvas id="lineCanvas"></canvas>
+    <table id="matkaTable">
         <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<div id="checkList"></div>
-
 <script>
-let data = [
+let chartData = JSON.parse(localStorage.getItem('pro_data')) || [
     ["12","37","45","67","89","00"],["56","23","11","90","44","33"],
     ["32","82","77","12","05","99"],["10","20","30","40","50","60"],
     ["87","37","14","25","36","47"],["21","73","00","11","22","33"]
@@ -65,87 +57,77 @@ const families = {
     "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"]
 };
 
-function getFamily(j) {
-    for(let k in families) if(families[k].includes(j)) return families[k];
-    return [j, j.split('').reverse().join('')]; // Default Palti
+function getFamilyMembers(jodi) {
+    for(let key in families) if(families[key].includes(jodi)) return families[key];
+    return [jodi, jodi.split('').reverse().join('')];
 }
 
-function loadTable() {
+function initTable() {
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = data.map((row, r) => `<tr>${row.map((c, i) => `<td contenteditable onblur="data[${r}][${i}]=this.innerText">${c}</td>`).join('')}</tr>`).join('');
+    tbody.innerHTML = chartData.map((row, r) => `<tr>${row.map((c, i) => 
+        `<td contenteditable onblur="updateCell(${r},${i},this.innerText)">${c}</td>`).join('')}</tr>`).join('');
     resizeCanvas();
 }
 
+function updateCell(r, i, val) { chartData[r][i] = val; }
+
 function resizeCanvas() {
-    const c = document.getElementById('canvas');
-    const box = document.getElementById('chartContainer');
+    const c = document.getElementById('lineCanvas');
+    const box = document.getElementById('container');
     c.width = box.clientWidth; c.height = box.clientHeight;
 }
 
-function drawTouch(r1, c1, r2, c2) {
-    const ctx = document.getElementById('canvas').getContext('2d');
-    const table = document.getElementById('mainTable');
-    const b1 = table.rows[r1+1].cells[c1];
-    const b2 = table.rows[r2+1].cells[c2];
-    
-    ctx.strokeStyle = "blue"; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(b1.offsetLeft + 25, b1.offsetTop + 22);
-    ctx.lineTo(b2.offsetLeft + 25, b2.offsetTop + 22);
-    ctx.stroke();
-    
-    b1.classList.add('base-highlight');
-    b2.classList.add('pattern-circle');
-}
-
-function findFamilyTouch() {
-    clearStyles();
-    const target = document.getElementById('targetJodi').value;
+function runSmartCheck() {
+    clearAll();
     const day = parseInt(document.getElementById('daySel').value);
-    const familyMembers = getFamily(target);
-    
-    data.forEach((row, rIdx) => {
+    const ctx = document.getElementById('lineCanvas').getContext('2d');
+    const table = document.getElementById('matkaTable');
+
+    // 1. Niche se Base Jodi uthao (Last Row)
+    const baseJodiValue = chartData[chartData.length - 1][day];
+    const familyMembers = getFamilyMembers(baseJodiValue);
+
+    // 2. Scan Chart for Family
+    chartData.forEach((row, rIdx) => {
         if(familyMembers.includes(row[day])) {
-            // Pattern: Current row (Base) to Next Row (Pattern)
-            if(rIdx + 1 < data.length) drawTouch(rIdx, day, rIdx + 1, day);
+            let baseCell = table.rows[rIdx+1].cells[day];
+            baseCell.classList.add('base-box');
+
+            // 3. Pattern Draw (Base ke thik niche wali row ko circle karega)
+            if(rIdx + 1 < chartData.length) {
+                let resCell = table.rows[rIdx+2].cells[day];
+                resCell.classList.add('pattern-circle');
+
+                // Draw Tirchi Line (Diagonal) as per screenshot
+                ctx.strokeStyle = "blue"; ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(baseCell.offsetLeft + 27, baseCell.offsetTop + 25);
+                ctx.lineTo(resCell.offsetLeft + 27, resCell.offsetTop + 25);
+                ctx.stroke();
+            }
         }
     });
 }
 
-function generateCheckLines() {
-    const list = document.getElementById('checkList');
-    list.innerHTML = "";
-    // Real data se pattern uthana (Last row logic)
-    const lastRow = data.length - 1;
-    const currentDay = parseInt(document.getElementById('daySel').value);
-    
-    let item = document.createElement('div');
-    item.className = "check-item";
-    item.innerText = `View Real Data Pattern (Touch at Day ${currentDay})`;
-    item.onclick = () => {
-        findFamilyTouch(); 
-        alert("Check Line Active: Sabhi family touches draw ho gaye hain.");
-    };
-    list.appendChild(item);
-}
-
-function clearStyles() {
-    document.querySelectorAll('td').forEach(td => td.className = "");
-    const ctx = document.getElementById('canvas').getContext('2d');
-    ctx.clearRect(0, 0, 10000, 10000);
+function clearAll() {
+    document.querySelectorAll('td').forEach(t => t.className = "");
+    const canvas = document.getElementById('lineCanvas');
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function loadCSV() {
     const file = document.getElementById('csvInp').files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-        data = e.target.result.split("\n").map(r => r.split(",").map(c => c.trim()));
-        loadTable();
+        chartData = e.target.result.split("\n").map(r => r.split(",").map(c => c.trim()));
+        initTable();
     };
     reader.readAsText(file);
 }
 
-window.onload = loadTable;
+function saveData() { localStorage.setItem('pro_data', JSON.stringify(chartData)); alert("Saved!"); }
+
+window.onload = initTable;
 </script>
 </body>
 </html>
