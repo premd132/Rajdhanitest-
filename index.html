@@ -1,97 +1,117 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<title>DPBossKing Professional Master System</title>
-<style>
-    :root { --red: #ff0000; --blue: #0000ff; --green: #008000; --gold: #ffd600; --dark-bg: #0d0d0d; }
-    body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--dark-bg); color: #fff; margin: 0; user-select: none; }
-    
-    /* Premium Sidebar & Header */
-    header { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); text-align: center; font-size: 22px; font-weight: 800; letter-spacing: 1px; }
-    .main-grid { display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 65px); }
-    
-    .sidebar { background: #1a1a1a; padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
-    .tool-group { margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-    .tool-title { font-size: 12px; color: var(--gold); margin-bottom: 10px; display: block; font-weight: bold; }
-    
-    /* Button & Input Styles */
-    button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .btn-red { background: var(--red); color: #fff; }
-    .btn-blue { background: var(--blue); color: #fff; }
-    .btn-green { background: var(--green); color: #fff; }
-    .btn-run { background: var(--gold); color: #000; font-size: 16px; margin-top: 15px; box-shadow: 0 5px 0 #b89b00; }
-    .active { border: 3px solid #fff !important; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+    <meta charset="UTF-8">
+    <title>DPBossKing - Professional Login & Analytics</title>
+    <style>
+        :root { --red: #ff0000; --blue: #0000ff; --gold: #ffd600; --dark: #121212; }
+        body { font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; margin: 0; overflow-x: hidden; }
 
-    /* Chart Area */
-    .content { padding: 20px; overflow: auto; background: #222; position: relative; }
-    .chart-wrapper { position: relative; display: inline-block; background: #fff; padding: 15px; border-radius: 5px; box-shadow: 0 0 30px #000; }
-    table { border-collapse: collapse; color: #000; z-index: 10; position: relative; background: transparent; }
-    th, td { border: 1px solid #ccc; width: 60px; height: 55px; text-align: center; font-size: 20px; font-weight: 900; position: relative; }
-    th { background: #f4f4f4; font-size: 11px; height: 30px; }
+        /* Login Screen Styles */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: #1e1e1e; padding: 40px; border-radius: 10px; border-top: 5px solid #b71c1c; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login-card h2 { color: var(--gold); margin-bottom: 25px; }
+        .login-card input { width: 90%; padding: 12px; margin: 10px 0; background: #333; border: 1px solid #444; color: #fff; border-radius: 5px; }
+        .btn-login { background: #b71c1c; color: #fff; width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; }
 
-    /* Drawing Assets */
-    .f-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); color: var(--red); }
-    .f-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
-    .f-green { border: 4px solid var(--green) !important; background: rgba(0,128,0,0.1); color: var(--green); }
-    #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+        /* Main Dashboard Styles */
+        #main-app { display: none; } /* Initially hidden */
+        .navbar { background: #b71c1c; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
+        .user-info { font-size: 14px; color: var(--gold); }
 
-    /* Log Panel */
-    .footer-log { position: fixed; bottom: 0; right: 0; width: calc(100% - 280px); background: #000; color: #0f0; padding: 8px; font-family: monospace; border-top: 1px solid #333; font-size: 12px; }
-</style>
+        .layout { display: flex; height: calc(100vh - 65px); }
+        .sidebar { width: 300px; background: #1a1a1a; padding: 20px; border-right: 1px solid #333; overflow-y: auto; }
+        .workspace { flex: 1; padding: 20px; background: #252525; overflow: auto; position: relative; }
+
+        /* Pattern Tool Styling */
+        .tool-btn { width: 100%; padding: 10px; margin: 5px 0; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; text-align: left; }
+        .active-t { border: 2px solid #fff; }
+        
+        .chart-box { position: relative; background: #fff; padding: 15px; display: inline-block; border-radius: 5px; box-shadow: 0 0 40px #000; }
+        table { border-collapse: collapse; color: #000; position: relative; z-index: 10; }
+        td, th { border: 1px solid #ccc; width: 55px; height: 50px; text-align: center; font-weight: 900; font-size: 19px; }
+        
+        .f-red { border: 4px solid var(--red) !important; color: var(--red); background: rgba(255,0,0,0.1); }
+        .f-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
+        .f-green { border: 4px solid #008000 !important; color: #008000; background: rgba(0,128,0,0.1); }
+        #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+    </style>
 </head>
 <body>
 
-<header>DPBOSS KING - ADVANCED ANALYTICS & PATTERN CLONER PRO</header>
+<div id="login-overlay">
+    <div class="login-card">
+        <h2>DPBK MASTER LOGIN</h2>
+        <input type="text" id="username" placeholder="User ID">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn-login" onclick="attemptLogin()">ENTER SYSTEM</button>
+        <p style="font-size: 10px; color: #888; margin-top: 20px;">ACCESS RESTRICTED TO PREMIUM MEMBERS ONLY</p>
+    </div>
+</div>
 
-<div class="main-grid">
-    <div class="sidebar">
-        <div class="tool-group">
-            <span class="tool-title">LOAD DATA</span>
-            <input type="file" id="csvFile" onchange="loadData()" style="color:#fff; font-size: 12px;">
-        </div>
-        
-        <div class="tool-group">
-            <span class="tool-title">SELECT MARKER</span>
-            <button class="btn-red active" id="r-btn" onclick="setTool('f-red', 'r-btn')">BASE (RED BOX)</button>
-            <button class="btn-green" id="g-btn" onclick="setTool('f-green', 'g-btn')">TOUCH 1 (GREEN)</button>
-            <button class="btn-blue" id="b-btn" onclick="setTool('f-blue', 'b-btn')">TOUCH 2 (BLUE CIRCLE)</button>
-        </div>
-
-        <div class="tool-group">
-            <span class="tool-title">ANCHOR DAY</span>
-            <select id="anchorDay" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #444;">
-                <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
-                <option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option>
-            </select>
-        </div>
-
-        <button class="btn-run" onclick="executeProScan()">EXECUTE PATTERN CLONE</button>
-        <button onclick="location.reload()" style="background:#444; color:#fff; margin-top:20px;">FULL RESET</button>
+<div id="main-app">
+    <div class="navbar">
+        <div style="font-weight: 800; font-size: 20px;">DPBOSS KING <span style="color:var(--gold)">PRO</span></div>
+        <div class="user-info">Logged in as: <span id="display-user">Admin</span> | <a href="#" onclick="location.reload()" style="color:#fff">Logout</a></div>
     </div>
 
-    <div class="content">
-        <div class="chart-wrapper" id="box">
-            <canvas id="canvas"></canvas>
-            <table id="mainTable">
-                <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
-                <tbody id="tbody"></tbody>
-            </table>
+    <div class="layout">
+        <div class="sidebar">
+            <h4 style="color:var(--gold)">CONTROLS</h4>
+            <input type="file" id="csvInp" onchange="handleCSV()" style="margin-bottom: 20px; font-size: 12px;">
+            
+            <button class="tool-btn active-t" style="background:var(--red); color:#fff" onclick="setTool('f-red', this)">RED BOX (Base)</button>
+            <button class="tool-btn" style="background:#008000; color:#fff" onclick="setTool('f-green', this)">GREEN (Touch 1)</button>
+            <button class="tool-btn" style="background:var(--blue); color:#fff" onclick="setTool('f-blue', this)">BLUE (Touch 2)</button>
+
+            <hr style="border:0.5px solid #333; margin: 20px 0;">
+            <label style="font-size: 12px;">ANCHOR DAY:</label>
+            <select id="anchorDay" style="width:100%; padding:10px; margin-top:5px; background:#333; color:#fff;">
+                <option value="0">MONDAY</option><option value="1">TUESDAY</option><option value="2">WEDNESDAY</option>
+                <option value="3">THURSDAY</option><option value="4">FRIDAY</option><option value="5">SATURDAY</option>
+            </select>
+
+            <button onclick="runAdvancedScan()" style="background:var(--gold); color:#000; margin-top:20px; width:100%; padding:15px; font-weight:800; font-size:16px;">RUN 100% SCAN</button>
+            <button onclick="resetApp()" style="background:#444; color:#fff; margin-top:10px;">CLEAR MARKS</button>
+        </div>
+
+        <div class="workspace">
+            <div class="chart-box" id="chartArea">
+                <canvas id="canvas"></canvas>
+                <table id="targetTable">
+                    <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
+                    <tbody id="chartBody"></tbody>
+                </table>
+            </div>
+            <div id="status" style="color:#0f0; margin-top:20px; font-family:monospace;">System Online... Waiting for pattern input.</div>
         </div>
     </div>
 </div>
 
-<div class="footer-log" id="log">System Status: Online | Family Database: Loaded (100% Coverage)</div>
-
 <script>
-let currentTool = 'f-red';
-let chartData = [["10","20","30","40","50","60"],["11","21","31","41","51","61"],["12","22","32","42","52","62"],["13","23","33","43","53","63"],["80","35","25","**","**","**"]];
+let tool = 'f-red';
+let chartData = [["80","30","25","41","51","61"],["12","22","32","42","52","62"],["13","23","33","43","53","63"],["14","24","34","44","54","64"],["85","80","70","45","55","65"]];
 
-// The Real Family Logic (Calculated dynamically for 00-99)
-function getFamily(val) {
-    let n = val.toString().padStart(2, '0');
+// Login Security Logic
+function attemptLogin() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    // Standard secure-access check (Aap ise badal sakte ho)
+    if(user === "admin" && pass === "king123") {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('display-user').innerText = user.toUpperCase();
+        init();
+    } else {
+        alert("Invalid Access Credentials!");
+    }
+}
+
+// 100% Family Logic (Dynamic)
+function getFam(v) {
+    let n = v.toString().padStart(2, '0');
     let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
-    let c1 = (d1 + 5) % 10, c2 = (d2 + 5) % 10;
+    let c1 = (d1+5)%10, c2 = (d2+5)%10;
     let set = new Set();
     [[d1,c1],[c1,d1]].forEach(a => [[d2,c2],[c2,d2]].forEach(b => {
         set.add(`${a[0]}${b[0]}`); set.add(`${b[0]}${a[0]}`);
@@ -100,79 +120,72 @@ function getFamily(val) {
 }
 
 function init() {
-    const b = document.getElementById('tbody');
+    const b = document.getElementById('chartBody');
     b.innerHTML = chartData.map((row, r) => `<tr>${row.map((c, d) => 
         `<td onclick="applyTool(this)" contenteditable="true" onblur="chartData[${r}][${d}]=this.innerText">${c}</td>`).join('')}</tr>`).join('');
     setTimeout(syncCanvas, 100);
 }
 
-function setTool(t, id) {
-    currentTool = t;
-    document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+function setTool(t, btn) {
+    tool = t;
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-t'));
+    btn.classList.add('active-t');
 }
 
-function applyTool(td) { td.className = td.className === currentTool ? "" : currentTool; }
+function applyTool(td) { td.className = td.className === tool ? "" : tool; }
 
 function syncCanvas() {
-    const c = document.getElementById('canvas'), b = document.getElementById('box');
+    const c = document.getElementById('canvas'), b = document.getElementById('chartArea');
     c.width = b.scrollWidth; c.height = b.scrollHeight;
 }
 
-// THE CLONE ENGINE: Matching Set-to-Set Family
-function executeProScan() {
+// The Professional Search Engine
+function runAdvancedScan() {
     const day = parseInt(document.getElementById('anchorDay').value);
-    const table = document.getElementById('mainTable');
+    const table = document.getElementById('targetTable');
     const ctx = document.getElementById('canvas').getContext('2d');
     ctx.clearRect(0,0,5000,5000);
 
-    let masterDNA = { base: null, pattern: [] };
-
-    // 1. Capture the DNA of your current set
+    let dna = { base: null, touches: [] };
     for(let r=0; r<chartData.length; r++) {
         if(table.rows[r+1].cells[day].classList.contains('f-red')) {
-            masterDNA.base = { val: chartData[r][day], r: r, c: day };
+            dna.base = { val: chartData[r][day], r: r, c: day };
             break;
         }
     }
-
-    if(!masterDNA.base) { document.getElementById('log').innerText = "ERROR: Set a Red Base!"; return; }
+    if(!dna.base) return alert("Mark RED base first!");
 
     document.querySelectorAll('.f-green, .f-blue').forEach(m => {
         let mr = m.parentElement.rowIndex-1, mc = m.cellIndex;
-        masterDNA.pattern.push({ val: chartData[mr][mc], rd: mr - masterDNA.base.r, cd: mc - masterDNA.base.c, type: m.className });
+        dna.touches.push({ val: chartData[mr][mc], rd: mr - dna.base.r, cd: mc - dna.base.c, type: m.className });
     });
 
-    const baseFam = getFamily(masterDNA.base.val);
-
-    // 2. Scan History and CLONE
+    const baseFam = getFam(dna.base.val);
     chartData.forEach((row, ri) => {
-        if(baseFam.includes(row[day]) && ri !== masterDNA.base.r) {
-            let matchCount = 0;
-            masterDNA.pattern.forEach(p => {
-                let tr = ri + p.rd, tc = day + p.cd;
-                if(chartData[tr] && getFamily(p.val).includes(chartData[tr][tc])) matchCount++;
+        if(baseFam.includes(row[day]) && ri !== dna.base.r) {
+            let matches = 0;
+            dna.touches.forEach(t => {
+                let tr = ri + t.rd, tc = day + t.cd;
+                if(chartData[tr] && getFam(t.val).includes(chartData[tr][tc])) matches++;
             });
-
-            if(matchCount === masterDNA.pattern.length) {
+            if(matches === dna.touches.length) {
                 const bCell = table.rows[ri+1].cells[day];
                 bCell.classList.add('f-red');
-                masterDNA.pattern.forEach(p => {
-                    const tCell = table.rows[ri+p.rd+1].cells[day+p.cd];
-                    tCell.classList.add(p.type);
-                    ctx.strokeStyle = p.type.includes('green') ? 'green' : 'blue';
+                dna.touches.forEach(t => {
+                    const tCell = table.rows[ri+t.rd+1].cells[day+t.cd];
+                    tCell.classList.add(t.type);
+                    ctx.strokeStyle = t.type.includes('green') ? 'green' : 'blue';
                     ctx.lineWidth = 2.5; ctx.beginPath();
-                    ctx.moveTo(bCell.offsetLeft+30, bCell.offsetTop+27);
-                    ctx.lineTo(tCell.offsetLeft+30, tCell.offsetTop+27); ctx.stroke();
+                    ctx.moveTo(bCell.offsetLeft+28, bCell.offsetTop+25);
+                    ctx.lineTo(tCell.offsetLeft+28, tCell.offsetTop+25); ctx.stroke();
                 });
             }
         }
     });
-    document.getElementById('log').innerText = "PRO SCAN COMPLETE: Found Identical DNA Sets.";
 }
 
-function loadData() {
-    const f = document.getElementById('csvFile').files[0];
+function handleCSV() {
+    const f = document.getElementById('csvInp').files[0];
     const r = new FileReader();
     r.onload = (e) => {
         chartData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
@@ -181,7 +194,10 @@ function loadData() {
     r.readAsText(f);
 }
 
-window.onload = init;
+function resetApp() {
+    document.querySelectorAll('td').forEach(t => t.className = "");
+    document.getElementById('canvas').getContext('2d').clearRect(0,0,10000,10000);
+}
 </script>
 </body>
 </html>
