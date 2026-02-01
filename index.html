@@ -3,51 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <style>
-    body { font-family: 'Trebuchet MS', sans-serif; background: #0f0f0f; color: #eee; margin: 0; }
-    .nav { background: #d32f2f; padding: 15px; border-bottom: 4px solid #ffd600; font-size: 20px; font-weight: bold; text-align: center; position: sticky; top: 0; z-index: 100; }
+    :root { --red: #ff0000; --blue: #0000ff; --gold: #ffd600; }
+    body { font-family: 'Arial', sans-serif; background: #000; color: #fff; margin: 0; text-align: center; }
+    .header { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); font-weight: bold; font-size: 20px; }
     
-    .tool-box { background: #222; padding: 15px; display: flex; justify-content: center; gap: 10px; border-bottom: 2px solid #444; }
-    button { padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; }
-    .btn-run { background: #ffd600; color: #000; }
-    .btn-reset { background: #555; color: #fff; }
+    /* Control Panel */
+    .controls { background: #222; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; sticky; top: 0; z-index: 100; }
+    button { padding: 10px 15px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; transition: 0.2s; }
+    .btn-master { background: var(--gold); color: #000; }
+    .tool { background: #444; color: #fff; border: 1px solid #666; }
+    .active-tool { background: #fff !important; color: #000 !important; border: 2px solid var(--gold); }
 
-    .chart-wrapper { position: relative; margin: 30px auto; display: inline-block; background: #fff; padding: 10px; border-radius: 4px; }
-    table { border-collapse: collapse; color: #000; z-index: 5; position: relative; }
-    td, th { border: 1px solid #bbb; width: 55px; height: 50px; text-align: center; font-weight: 800; font-size: 18px; }
-    th { background: #f4f4f4; font-size: 11px; height: 30px; }
+    /* The Real Chart */
+    .chart-box { position: relative; margin: 20px auto; background: #fff; padding: 10px; display: inline-block; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+    table { border-collapse: collapse; color: #000; position: relative; z-index: 5; }
+    td, th { border: 1px solid #aaa; width: 55px; height: 50px; text-align: center; font-weight: 900; font-size: 19px; position: relative; }
+    th { background: #eee; font-size: 11px; height: 30px; }
 
-    /* Exact Styling as per your Screenshot */
-    .base-red { border: 3px solid #ff0000 !important; background: rgba(255,0,0,0.1) !important; color: #ff0000; }
-    .touch-blue { border: 3px solid #0000ff !important; border-radius: 50% !important; color: #0000ff; background: rgba(0,0,255,0.05); }
+    /* Drawing Shapes from Screenshots */
+    .box-red { border: 3px solid var(--red) !important; background: rgba(255,0,0,0.1) !important; color: var(--red); }
+    .circle-blue { border: 3px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
+    .diamond-green { border: 3px solid #008000 !important; background: rgba(0,128,0,0.1); color: #008000; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
     
     #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 2; }
+    .log-panel { background: #111; color: #0f0; padding: 10px; font-family: monospace; text-align: left; border-top: 1px solid #333; }
 </style>
 </head>
 <body>
 
-<div class="nav">DPBOSS KING - ADVANCED TABLE TRICK ENGINE</div>
+<div class="header">DPBOSS KING - ALL-IN-ONE PATTERN CLONER</div>
 
-<div class="tool-box">
-    <input type="file" id="csv" accept=".csv" onchange="uploadCSV()">
-    <select id="selDay">
+<div class="controls">
+    <input type="file" id="csv" onchange="loadCSV()" style="color:white">
+    <div style="border-right: 2px solid #555; padding: 0 10px;">
+        <button id="t1" class="tool active-tool" onclick="setTool('box-red')">RED BOX (Base)</button>
+        <button id="t2" class="tool" onclick="setTool('circle-blue')">BLUE CIRCLE (Pattern)</button>
+        <button id="t3" class="tool" onclick="setTool('diamond-green')">GREEN TRICK</button>
+    </div>
+    <select id="baseDay">
         <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
         <option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option>
     </select>
-    <button class="btn-run" onclick="cloneRealPattern()">RUN CHECK LINE (PATTERN CLONE)</button>
-    <button class="btn-reset" onclick="resetUI()">RESET</button>
+    <button class="btn-master" onclick="scanAndClone()">EXECUTE 100% PATTERN MATCH</button>
+    <button onclick="resetUI()">RESET</button>
 </div>
 
-<div class="chart-wrapper" id="box">
+<div class="chart-box" id="chartWrapper">
     <canvas id="canvas"></canvas>
-    <table id="targetTable">
+    <table id="mainTable">
         <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
-        <tbody id="tbody"></tbody>
+        <tbody id="chartBody"></tbody>
     </table>
 </div>
 
+<div class="log-panel" id="log">Ready: Create any complex pattern in the last row and hit Execute.</div>
+
 <script>
-// Family Groups Logic
-const families = {
+let currentTool = 'box-red';
+let chartData = [["10","20","30","40","50","60"],["11","21","31","41","51","61"],["12","22","32","42","52","62"],["13","23","33","43","53","63"],["14","24","34","44","54","64"],["15","25","35","45","55","65"]];
+
+// Master Family Groups (100% Coverage)
+const familyGroups = {
     "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"],
     "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"],
     "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],
@@ -55,98 +71,104 @@ const families = {
     "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"]
 };
 
-let mainData = [["00","00","00","00","00","00"]];
-
-function render() {
-    const b = document.getElementById('tbody');
-    b.innerHTML = mainData.map((row, r) => `<tr>${row.map((c, d) => 
-        `<td onclick="markMe(this)" contenteditable="true" onblur="mainData[${r}][${d}]=this.innerText">${c}</td>`).join('')}</tr>`).join('');
-    setTimeout(fixCanvas, 100);
+function renderTable() {
+    const tbody = document.getElementById('chartBody');
+    tbody.innerHTML = chartData.map((row, r) => `<tr>${row.map((c, d) => 
+        `<td onclick="applyShape(this)" contenteditable="true" onblur="chartData[${r}][${d}]=this.innerText">${c}</td>`).join('')}</tr>`).join('');
+    setTimeout(resizeCanvas, 100);
 }
 
-function markMe(td) {
-    if(td.classList.contains('base-red')) { td.classList.remove('base-red'); td.classList.add('touch-blue'); }
-    else if(td.classList.contains('touch-blue')) { td.classList.remove('touch-blue'); }
-    else { td.classList.add('base-red'); }
+function setTool(t) {
+    currentTool = t;
+    document.querySelectorAll('.tool').forEach(b => b.classList.remove('active-tool'));
+    event.target.classList.add('active-tool');
 }
 
-function fixCanvas() {
+function applyShape(td) {
+    td.className = td.className === currentTool ? "" : currentTool;
+}
+
+function resizeCanvas() {
     const c = document.getElementById('canvas');
-    const b = document.getElementById('box');
-    c.width = b.scrollWidth; c.height = b.scrollHeight;
+    const wrap = document.getElementById('chartWrapper');
+    c.width = wrap.scrollWidth; c.height = wrap.scrollHeight;
 }
 
-function getFam(v) {
-    for(let k in families) if(families[k].includes(v)) return families[k];
+function getFamily(v) {
+    for(let k in familyGroups) if(familyGroups[k].includes(v)) return familyGroups[k];
     return [v, v.split('').reverse().join('')];
 }
 
-function cloneRealPattern() {
-    const day = parseInt(document.getElementById('selDay').value);
-    const table = document.getElementById('targetTable');
+// THE MASTER LOGIC: Scans Geometry DNA
+function scanAndClone() {
+    const day = parseInt(document.getElementById('baseDay').value);
+    const table = document.getElementById('mainTable');
     const ctx = document.getElementById('canvas').getContext('2d');
     
-    // Step 1: Niche wale pattern (Master) ko scan karo
+    // 1. "Pattern DNA" Extraction
     let master = null;
-    for(let r = mainData.length-1; r >= 0; r--) {
-        if(table.rows[r+1].cells[day].classList.contains('base-red')) {
-            master = { val: mainData[r][day], row: r, day: day, shapes: [] };
-            // Aas-paas ke sabhi blue circles dhoondo jo pattern bana rahe hain
-            document.querySelectorAll('.touch-blue').forEach(b => {
-                let br = b.parentElement.rowIndex - 1;
-                let bd = b.cellIndex;
-                master.shapes.push({ rDiff: br - r, dDiff: bd - day });
+    for(let r = chartData.length-1; r >= 0; r--) {
+        if(table.rows[r+1].cells[day].classList.contains('box-red')) {
+            master = { val: chartData[r][day], row: r, col: day, trickDNA: [] };
+            
+            // Scan for ALL other shapes relative to this Base
+            document.querySelectorAll('.circle-blue, .diamond-green').forEach(mark => {
+                let mRow = mark.parentElement.rowIndex - 1;
+                let mCol = mark.cellIndex;
+                master.trickDNA.push({ rDiff: mRow - r, dDiff: mCol - day, type: mark.className });
             });
             break;
         }
     }
 
-    if(!master) { alert("Niche 'Current Set' mein Red Box lagayein!"); return; }
+    if(!master) { alert("Pehle niche kisi jodi ko Red Box banayein!"); return; }
 
-    const famList = getFam(master.val);
-    ctx.clearRect(0,0,10000,10000);
-    ctx.strokeStyle = "blue"; ctx.lineWidth = 2.5;
+    const family = getFamily(master.val);
+    ctx.clearRect(0,0,5000,5000);
+    ctx.lineWidth = 2.5;
 
-    // Step 2: History mein jahan bhi Family mile, wahan exact "Geometry" copy karo
-    mainData.forEach((row, rIdx) => {
-        if(famList.includes(row[day])) {
+    // 2. Multi-Pattern Cloning Engine
+    chartData.forEach((row, rIdx) => {
+        if(family.includes(row[day])) {
             const baseCell = table.rows[rIdx+1].cells[day];
-            baseCell.classList.add('base-red');
+            baseCell.classList.add('box-red');
 
-            master.shapes.forEach(s => {
-                let targetR = rIdx + s.rDiff;
-                let targetD = day + s.dDiff;
-                if(table.rows[targetR+1] && table.rows[targetR+1].cells[targetD]) {
-                    const resCell = table.rows[targetR+1].cells[targetD];
-                    resCell.classList.add('touch-blue');
+            master.trickDNA.forEach(dna => {
+                let tR = rIdx + dna.rDiff;
+                let tC = day + dna.dDiff;
+                if(table.rows[tR+1] && table.rows[tR+1].cells[tC]) {
+                    const targetCell = table.rows[tR+1].cells[tC];
+                    targetCell.classList.add(dna.type);
                     
-                    // Draw Line exactly like Dpbossking
+                    // Drawing Logic for EACH trick
+                    ctx.strokeStyle = (dna.type === 'circle-blue') ? 'blue' : 'green';
                     ctx.beginPath();
                     ctx.moveTo(baseCell.offsetLeft + 28, baseCell.offsetTop + 25);
-                    ctx.lineTo(resCell.offsetLeft + 28, resCell.offsetTop + 25);
+                    ctx.lineTo(targetCell.offsetLeft + 28, targetCell.offsetTop + 25);
                     ctx.stroke();
                 }
             });
         }
     });
+    document.getElementById('log').innerText = "Status: Universal Engine successfully cloned the pattern to all sets.";
 }
 
-function uploadCSV() {
-    const f = document.getElementById('csv').files[0];
-    const r = new FileReader();
-    r.onload = (e) => {
-        mainData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
-        render();
+function loadCSV() {
+    const file = document.getElementById('csv').files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        chartData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
+        renderTable();
     };
-    r.readAsText(f);
+    reader.readAsText(file);
 }
 
 function resetUI() {
-    document.querySelectorAll('td').forEach(t => t.className = "");
+    document.querySelectorAll('td').forEach(td => td.className = "");
     document.getElementById('canvas').getContext('2d').clearRect(0,0,10000,10000);
 }
 
-window.onload = render;
+window.onload = renderTable;
 </script>
 </body>
 </html>
