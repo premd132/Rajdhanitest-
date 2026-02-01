@@ -2,87 +2,94 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>DPBK - Smart Pattern Engine (Internal)</title>
+    <title>DPBK I-Smart Guessing System</title>
     <style>
-        :root { --red: #ff0000; --green: #008000; --blue: #0000ff; --gold: #ffd700; }
-        body { font-family: 'Roboto', sans-serif; background: #050505; color: #eee; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        :root { --red: #ff1111; --blue: #1177ff; --green: #00aa00; --gold: #ffd700; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; margin: 0; }
         
-        /* Dashboard Layout */
-        .smart-header { background: #b71c1c; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); box-shadow: 0 2px 10px #000; }
-        .main-wrapper { display: flex; flex: 1; overflow: hidden; }
+        /* I-Smart UI */
+        .smart-nav { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); display: flex; justify-content: space-between; }
+        .container { display: flex; height: calc(100vh - 65px); }
         
-        /* Smart Sidebar */
-        .internal-tools { width: 320px; background: #151515; border-right: 2px solid #333; padding: 20px; overflow-y: auto; }
-        .section-tag { font-size: 11px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin: 20px 0 10px 0; display: block; }
+        /* Control Panel */
+        .i-smart-sidebar { width: 350px; background: #151515; padding: 20px; border-right: 2px solid #333; overflow-y: auto; }
+        .dna-card { background: #222; border: 1px solid #444; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .dna-tag { color: var(--gold); font-size: 11px; font-weight: bold; letter-spacing: 1px; }
         
-        .mode-btn { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444; background: #222; color: #fff; cursor: pointer; text-align: left; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-        .mode-btn:hover { background: #333; }
-        .mode-btn.active { border-color: var(--gold); background: #333; box-shadow: inset 0 0 10px rgba(255,215,0,0.2); }
-        .color-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 10px; }
+        /* Markers */
+        .tool-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .t-btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: 800; font-size: 12px; }
+        .t-red { background: var(--red); color: #fff; }
+        .t-blue { background: var(--blue); color: #fff; }
+        .t-green { background: var(--green); color: #fff; }
+        .active { outline: 3px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
-        /* Chart Workspace */
-        .workspace { flex: 1; padding: 20px; overflow: auto; background: radial-gradient(circle, #222 0%, #050505 100%); display: flex; justify-content: center; }
-        .chart-container { position: relative; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,1); align-self: flex-start; }
+        /* Chart Area */
+        .chart-workspace { flex: 1; padding: 30px; background: #111; overflow: auto; display: flex; justify-content: center; }
+        .chart-frame { position: relative; background: #fff; padding: 10px; border-radius: 5px; box-shadow: 0 0 50px #000; height: fit-content; }
         
-        table { border-collapse: collapse; color: #000; position: relative; z-index: 10; }
-        td, th { border: 1px solid #bbb; width: 55px; height: 50px; text-align: center; font-weight: 900; font-size: 19px; cursor: cell; transition: all 0.1s; }
-        th { background: #eee; font-size: 11px; height: 25px; color: #555; }
-        td:hover { background: #f9f9f9; transform: scale(1.05); z-index: 15; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-
-        /* Internal Shapes */
+        table { border-collapse: collapse; color: #000; z-index: 10; position: relative; }
+        td, th { border: 1px solid #ddd; width: 60px; height: 55px; text-align: center; font-size: 20px; font-weight: 900; cursor: pointer; }
+        th { background: #f0f0f0; font-size: 11px; height: 30px; }
+        
+        /* I-Smart Shapes */
         .s-red { border: 4px solid var(--red) !important; color: var(--red); background: rgba(255,0,0,0.1); }
-        .s-green { border: 4px solid var(--green) !important; color: var(--green); background: rgba(0,128,0,0.1); }
-        .s-blue { border: 4px solid var(--blue) !important; color: var(--blue); border-radius: 50% !important; }
+        .s-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
+        .s-green { border: 4px solid var(--green) !important; background: rgba(0,255,0,0.1); color: var(--green); }
         
-        #drawLayer { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-        .run-engine { background: var(--gold); color: #000; width: 100%; padding: 15px; font-weight: 900; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 0 #b89b00; }
-        .run-engine:active { transform: translateY(2px); box-shadow: 0 2px 0 #b89b00; }
+        #canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+        .scan-btn { background: var(--gold); color: #000; width: 100%; padding: 18px; font-size: 18px; font-weight: 900; border: none; margin-top: 20px; cursor: pointer; border-radius: 5px; box-shadow: 0 5px 0 #b89b00; }
     </style>
 </head>
 <body>
 
-<div class="smart-header">
-    <div style="font-weight: 900; font-size: 20px;">DPBK <span style="color:var(--gold)">SMART-V3</span> INTERNAL</div>
-    <div id="status" style="font-size: 12px; color: #0f0;">ENGINE CORE: LOADED</div>
+<div class="smart-nav">
+    <div style="font-weight: 900; font-size: 22px;">DPBK <span style="color:var(--gold)">I-SMART</span> V3.0</div>
+    <div id="msg" style="color:#0f0; font-family: monospace;">AI ENGINE: ACTIVE</div>
 </div>
 
-<div class="main-wrapper">
-    <div class="internal-tools">
-        <span class="section-tag">Database Source</span>
-        <input type="file" id="csv" onchange="loadExternalData()" style="color: #fff; font-size: 12px;">
+<div class="container">
+    <div class="i-smart-sidebar">
+        <div class="dna-card">
+            <span class="dna-tag">PATTERN DNA INPUT</span>
+            <div class="tool-box">
+                <button class="t-btn t-red active" onclick="setMode('s-red', this)">BASE (RED)</button>
+                <button class="t-btn t-green" onclick="setMode('s-green', this)">TOUCH 1</button>
+                <button class="t-btn t-blue" onclick="setMode('s-blue', this)">TOUCH 2</button>
+            </div>
+            <input type="file" id="csv" onchange="loadCSV()" style="margin-top:20px; width:100%; font-size: 12px; color:#aaa;">
+        </div>
 
-        <span class="section-tag">Smart Markers</span>
-        <button class="mode-btn active" onclick="setMode('s-red', this)"><span class="color-dot" style="background:var(--red)"></span>BASE DNA (RED)</button>
-        <button class="mode-btn" onclick="setMode('s-green', this)"><span class="color-dot" style="background:var(--green)"></span>MATCH 1 (GREEN)</button>
-        <button class="mode-btn" onclick="setMode('s-blue', this)"><span class="color-dot" style="background:var(--blue)"></span>MATCH 2 (BLUE)</button>
+        <div class="dna-card">
+            <span class="dna-tag">SMART SETTINGS</span>
+            <select id="anchorDay" style="width:100%; padding:10px; margin-top:10px; background:#333; color:#fff;">
+                <option value="0">MONDAY</option><option value="1">TUESDAY</option>
+                <option value="2">WEDNESDAY</option><option value="3">THURSDAY</option>
+                <option value="4">FRIDAY</option><option value="5">SATURDAY</option>
+            </select>
+        </div>
 
-        <span class="section-tag">Anchor Logic</span>
-        <select id="daySelect" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #444;">
-            <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
-            <option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option>
-        </select>
-
-        <button class="run-engine" onclick="smartMatchExecution()">RUN SMART SEARCH</button>
-        <div id="console" style="margin-top:20px; font-size:11px; color:#888; font-family:monospace;">Waiting for Input DNA...</div>
+        <button class="scan-btn" onclick="iSmartScan()">RUN I-SMART GUESSING</button>
+        <p id="log" style="font-size: 11px; color: #888; margin-top: 15px; text-align: center;">I-Smart Engine scans family-to-family relations across 500+ weeks.</p>
     </div>
 
-    <div class="workspace">
-        <div class="chart-container" id="chartBox">
-            <canvas id="drawLayer"></canvas>
-            <table id="smartTable">
+    <div class="chart-workspace">
+        <div class="chart-frame" id="box">
+            <canvas id="canvas"></canvas>
+            <table id="itbl">
                 <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
-                <tbody id="smartBody"></tbody>
+                <tbody id="tbody"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-let currentMode = 's-red';
-let chartData = [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["11","22","33","44","55","66"],["12","37","45","67","89","00"],["67","17","90","**","**","**"]];
+let mode = 's-red';
+let chart = [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["11","22","33","44","55","66"],["80","35","41","67","89","00"],["67","17","90","**","**","**"]];
 
-// Internal 100% Family Matrix
-function getFamilySet(v) {
+// Internal I-Smart Family Logic
+function getFamily(v) {
     let n = v.toString().padStart(2, '0');
     let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
     let c1 = (d1+5)%10, c2 = (d2+5)%10;
@@ -93,90 +100,84 @@ function getFamilySet(v) {
     return Array.from(res);
 }
 
-function initChart() {
-    const tbody = document.getElementById('smartBody');
-    tbody.innerHTML = chartData.map((row, r) => `<tr>${row.map((val, c) => 
-        `<td onclick="markSmart(this)" contenteditable="true" onblur="chartData[${r}][${c}]=this.innerText">${val}</td>`).join('')}</tr>`).join('');
-    setTimeout(adjustCanvas, 100);
+function render() {
+    const b = document.getElementById('tbody');
+    b.innerHTML = chart.map((row, r) => `<tr>${row.map((val, c) => 
+        `<td onclick="mark(this)" contenteditable="true" onblur="chart[${r}][${c}]=this.innerText">${val}</td>`).join('')}</tr>`).join('');
+    setTimeout(sync, 100);
 }
 
-function setMode(mode, btn) {
-    currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+function setMode(m, btn) {
+    mode = m;
+    document.querySelectorAll('.t-btn').forEach(x => x.classList.remove('active'));
     btn.classList.add('active');
 }
 
-function markSmart(td) { td.className = td.className === currentMode ? "" : currentMode; }
+function mark(td) { td.className = td.className === mode ? "" : mode; }
 
-function adjustCanvas() {
-    const c = document.getElementById('drawLayer'), box = document.getElementById('chartBox');
+function sync() {
+    const c = document.getElementById('canvas'), box = document.getElementById('box');
     c.width = box.scrollWidth; c.height = box.scrollHeight;
 }
 
-// THE SMART ENGINE LOGIC (Internal Clone)
-function smartMatchExecution() {
-    const day = parseInt(document.getElementById('daySelect').value);
-    const table = document.getElementById('smartTable');
-    const ctx = document.getElementById('drawLayer').getContext('2d');
+// I-SMART DEEP SCAN ENGINE
+function iSmartScan() {
+    const day = parseInt(document.getElementById('anchorDay').value);
+    const table = document.getElementById('itbl');
+    const ctx = document.getElementById('canvas').getContext('2d');
     ctx.clearRect(0,0,5000,5000);
 
     let dna = { base: null, relatives: [] };
-    
-    // Scan User's Manual Pattern
-    for(let r=0; r<chartData.length; r++) {
+    for(let r=0; r<chart.length; r++) {
         if(table.rows[r+1].cells[day].classList.contains('s-red')) {
-            dna.base = { val: chartData[r][day], r: r, c: day };
-            break;
+            dna.base = { val: chart[r][day], r: r, c: day }; break;
         }
     }
 
-    if(!dna.base) { document.getElementById('console').innerText = "FAIL: No Red Base Found"; return; }
+    if(!dna.base) return alert("Select RED Base first!");
 
-    document.querySelectorAll('.s-green, .s-blue').forEach(cell => {
-        let r = cell.parentElement.rowIndex-1, c = cell.cellIndex;
-        dna.relatives.push({ val: chartData[r][c], rGap: r - dna.base.r, cGap: c - dna.base.c, type: cell.className });
+    document.querySelectorAll('.s-green, .s-blue').forEach(td => {
+        let r = td.parentElement.rowIndex-1, c = td.cellIndex;
+        dna.relatives.push({ val: chart[r][c], rd: r-dna.base.r, cd: c-dna.base.c, type: td.className });
     });
 
-    const bFam = getFamilySet(dna.base.val);
-
-    // Deep Search in Database
-    chartData.forEach((row, ri) => {
+    const bFam = getFamily(dna.base.val);
+    chart.forEach((row, ri) => {
         if(bFam.includes(row[day]) && ri !== dna.base.r) {
-            let matchesFound = 0;
+            let match = 0;
             dna.relatives.forEach(rel => {
-                let tr = ri + rel.rGap, tc = day + rel.cGap;
-                if(chartData[tr] && getFamilySet(rel.val).includes(chartData[tr][tc])) matchesFound++;
+                let tr = ri+rel.rd, tc = day+rel.cd;
+                if(chart[tr] && getFamily(rel.val).includes(chart[tr][tc])) match++;
             });
 
-            if(matchesFound === dna.relatives.length) {
-                const baseCell = table.rows[ri+1].cells[day];
-                baseCell.classList.add('s-red');
-                
+            if(match === dna.relatives.length) {
+                const bCell = table.rows[ri+1].cells[day];
+                bCell.classList.add('s-red');
                 dna.relatives.forEach(rel => {
-                    const targetCell = table.rows[ri+rel.rGap+1].cells[day+rel.cGap];
-                    targetCell.classList.add(rel.type);
-                    ctx.strokeStyle = rel.type.includes('green') ? 'green' : 'blue';
+                    const tCell = table.rows[ri+rel.rd+1].cells[day+rel.cd];
+                    tCell.classList.add(rel.type);
+                    ctx.strokeStyle = rel.type.includes('green') ? 'green' : '#1177ff';
                     ctx.lineWidth = 3; ctx.beginPath();
-                    ctx.moveTo(baseCell.offsetLeft + 27, baseCell.offsetTop + 25);
-                    ctx.lineTo(targetCell.offsetLeft + 27, targetCell.offsetTop + 25); ctx.stroke();
+                    ctx.moveTo(bCell.offsetLeft+30, bCell.offsetTop+27);
+                    ctx.lineTo(tCell.offsetLeft+30, tCell.offsetTop+27); ctx.stroke();
                 });
-                document.getElementById('console').innerText = "SUCCESS: Pattern Cloned from Week " + (ri+1);
+                document.getElementById('log').innerText = "I-Smart Found Match at Week " + (ri+1);
             }
         }
     });
 }
 
-function loadExternalData() {
+function loadCSV() {
     const f = document.getElementById('csv').files[0];
     const r = new FileReader();
     r.onload = (e) => {
-        chartData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
-        initChart();
+        chart = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
+        render();
     };
     r.readAsText(f);
 }
 
-window.onload = initChart;
+window.onload = render;
 </script>
 </body>
 </html>
