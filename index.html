@@ -3,166 +3,257 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan Pro AI - Sarala Edition</title>
+<title>Kalyan Pro AI – Multi-Target DNA</title>
 <style>
-    :root { --gold: #ffd700; --red: #ff3e3e; --green: #00ff00; --blue: #0084ff; --bg: #000; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
-    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 10px 0; }
+    :root { --gold: #ffd700; --red: #ff3e3e; --green: #00ff00; --blue: #0084ff; --bg: #121212; --panel: #1e1e1e; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 5px 0; font-size: 1.2rem; }
+    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); max-width: 100%; }
+    table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 35px; height: 35px; }
+    th { background: #800000; color: white; font-size: 11px; }
+    td[contenteditable] { background: #fffbe6; outline: none; }
+    .blank { background: #e0e0e0 !important; cursor: pointer; color: #888; border: 2px dashed #999 !important; }
     
-    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid #333; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    /* Triple Family Circle Colors */
+    .c1 { border: 3px solid var(--red); border-radius: 100%; background: rgba(255, 0, 0, 0.15); }
+    .c2 { border: 3px solid var(--green); border-radius: 100%; background: rgba(0, 255, 0, 0.15); }
+    .c3 { border: 3px solid var(--blue); border-radius: 100%; background: rgba(0, 132, 255, 0.15); }
     
-    .table-container { position: relative; display: inline-block; background: #fff; padding: 5px; border-radius: 8px; box-shadow: 0 0 20px rgba(255,215,0,0.3); }
-    table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-    td, th { border: 1px solid #bbb; width: 42px; height: 42px; text-align: center; font-weight: 900; position: relative; }
-    th { background: #600; color: #fff; font-size: 11px; height: 30px; }
-    
-    .blank { background: #eee !important; cursor: crosshair; color: #aaa; font-size: 10px; }
-    
-    /* Dynamic Circle Colors */
-    .target-red { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255,0,0,0.1); }
-    .target-green { border: 3px solid var(--green) !important; border-radius: 50%; background: rgba(0,255,0,0.1); }
-    .target-blue { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0,0,255,0.1); }
-
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-    button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-    button:hover { transform: scale(1.05); }
-    #status { background: #222; color: var(--gold); padding: 10px; border-radius: 5px; margin-top: 10px; font-family: monospace; }
+    .dashboard { display: flex; flex-direction: row; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); flex: 1; min-width: 250px; }
+    .card h3 { margin: 0 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid #444; padding-bottom: 3px; }
+    #checks { max-height: 100px; overflow-y: auto; }
+    #checks div { background: #2a2a2a; margin: 3px 0; padding: 6px; cursor: pointer; border-radius: 4px; font-size: 12px; border: 1px solid #444; }
+    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 10px; border-radius: 8px; color: #000; width: 90%; max-width: 450px; }
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+    button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; }
 </style>
 </head>
 <body>
 
-<h2>🏆 KALYAN SMART AI ENGINE</h2>
+<h2>🏆 Kalyan AI Multi-Pattern</h2>
 
 <div class="toolbar">
     <input type="file" id="csv" style="display:none">
-    <button onclick="document.getElementById('csv').click()">📁 UPLOAD CSV</button>
-    <button onclick="addRow()">➕ ADD ROW</button>
-    <button onclick="saveData()" style="background:#28a745; color:#fff;">💾 SAVE DATA</button>
-    <button onclick="clearAll()" style="background:#d32f2f; color:#fff;">🗑️ RESET</button>
+    <button onclick="document.getElementById('csv').click()">📂 CSV</button>
+    <button onclick="addRow()">➕ Row</button>
+    <button onclick="saveData()" style="background:#28a745; color:white;">💾 Save</button>
+    <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ Clear</button>
 </div>
 
-<div class="table-container" id="container">
-    <canvas id="canvas"></canvas>
-    <table id="mainTable"></table>
+<center>
+    <div class="table-container">
+        <canvas id="mainCanvas"></canvas>
+        <table id="tbl"></table>
+    </div>
+</center>
+
+<div class="dashboard">
+    <div class="card">
+        <h3>✔ DNA Matches</h3>
+        <div id="checks"></div>
+    </div>
+    <div class="card">
+        <h3>🤖 AI Target</h3>
+        <div id="ai" style="font-size: 13px;">Wait...</div>
+    </div>
+    <div class="card">
+        <h3>🔮 Future Forecast</h3>
+        <div id="future" style="font-size: 13px;">Select a match...</div>
+    </div>
 </div>
 
-<div id="status">System Ready: Upload CSV or enter data to start scanning.</div>
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#800000; color:white;">X</button>
+    <h3 style="margin: 0 0 10px 0; font-size: 14px;">Multi-Family Connection View</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #000;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
+</div>
 
 <script>
-const KEY = "KALYAN_SARALA_V3";
-const families = {
-    "11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],
-    "12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],
-    "15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],
-    "25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],
-    "45":["04","09","40","45","54","59","90","95"]
-};
+const STORAGE_KEY="pdata_kalyan_v3";
+let targetCol=null;
+const families={  
+"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],
+"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],
+};  
 
-function getFam(v) { for(let k in families) if(families[k].includes(v)) return k; return v; }
-function norm(v) { v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
 
-let chartData = JSON.parse(localStorage.getItem(KEY)) || [["**","**","**","**","**","**"]];
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
+data = data.map(r => r.map(norm));
 
-function render() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    chartData.forEach((row, ri) => {
-        h += "<tr>";
-        row.forEach((cell, ci) => {
-            let cls = (cell == "**") ? "blank" : "";
-            h += `<td id="c-${ri}-${ci}" class="${cls}" contenteditable onblur="update(${ri},${ci},this.innerText)" onclick="${cell=='**'?'scanPattern('+ri+','+ci+')':'' }">${cell}</td>`;
+let activeMark=null;
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = "";
+   if(activeMark) {
+      let type = isPartOfPattern(ri, ci);
+      if(type) cls = "c" + type;
+   }
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+}
+
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    if(i >= 0 && i < activeMark.shape.length) return activeMark.shape[i][ci];
+    return 0;
+}
+
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    
+    // Draw connections between same-colored circles
+    for(let type=1; type<=3; type++){
+        const cells = tblEl.querySelectorAll(".c"+type);
+        if(cells.length < 2) continue;
+        ctx.strokeStyle = type==1?"red":type==2?"green":"blue";
+        ctx.lineWidth = 1.5; ctx.setLineDash([5, 3]);
+        const tRect = tblEl.getBoundingClientRect();
+        for(let i=0; i<cells.length-1; i++){
+            const r1 = cells[i].getBoundingClientRect();
+            const r2 = cells[i+1].getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(r1.left - tRect.left + r1.width/2, r1.top - tRect.top + r1.height/2);
+            ctx.lineTo(r2.left - tRect.left + r2.width/2, r2.top - tRect.top + r2.height/2);
+            ctx.stroke();
+        }
+    }
+}
+
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear all?")){ localStorage.clear(); location.reload(); }}
+
+function makePattern(r,c){
+ targetCol=c; 
+ // TRIPLE TARGET DNA: Get last 3 available jodis in history
+ let bases = [];
+ for(let i=r; i>=0 && bases.length<3; i--){ 
+     if(data[i][c]!="**") bases.push({val: data[i][c], row: i}); 
+ }
+ if(bases.length < 1) return;
+
+ let shape=[];
+ // Generate shape for last 8 weeks area
+ for(let i=Math.max(0,r-4); i<=r; i++){
+  let row=[];
+  for(let j=0; j<6; j++){ 
+      let foundType = 0;
+      bases.forEach((b,idx) => { if(smartMatch(data[i][j], b.val)) foundType = idx+1; });
+      row.push(foundType);
+  }
+  shape.push(row);
+ }
+ searchPattern(shape, bases);
+}
+
+function searchPattern(shape, bases){
+ let lastMatches=[];
+ for(let i=0; i<=data.length-shape.length; i++){
+  let ok=true;
+  for(let k=0; k<shape.length; k++){
+   for(let j=0; j<4; j++){ 
+       let type = shape[k][j];
+       if(type > 0 && !smartMatch(data[i+k][j], bases[type-1].val)){ ok=false; break; }
+   }
+   if(!ok) break;
+  }
+  if(ok) lastMatches.push({index:i});
+ }
+ showChecks(shape, lastMatches);
+}
+
+function showChecks(shape, matches){
+ document.getElementById("checks").innerHTML="";
+ matches.slice(-5).reverse().forEach((m,i)=>{
+  let d = document.createElement("div");
+  d.innerText = `🔍 Match at Row ${m.index + 1}`;
+  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
+  document.getElementById("checks").appendChild(d);
+ });
+ updateAI(shape, matches);
+}
+
+function showOne(shape, idx){
+ let html="<table id='popTbl' style='color:#000'>";
+ for(let i=0; i<shape.length; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let cls = shape[i][j] ? "c"+shape[i][j] : "";
+   html+=`<td class="${cls}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=html+"</table>";
+ document.getElementById("popup").style.display="block";
+ document.getElementById("overlay").style.display="block";
+ setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
+}
+
+function updateAI(shape, matches){
+ let jc={};
+ matches.forEach(m=>{
+    shape.forEach((r,ri) => {
+        r.forEach((type, ci) => {
+            if(type == 1) { // Current Base Family
+                let v = data[m.index+ri][ci];
+                jc[v]=(jc[v]||0)+1;
+            }
         });
-        h += "</tr>";
     });
-    document.getElementById("mainTable").innerHTML = h;
-    syncCanvas();
+ });
+ document.getElementById("ai").innerHTML = `<b>Target Families:</b> ${Object.keys(jc).slice(0,3).join(", ")}`;
+ 
+ let pool = [];
+ matches.forEach(m => {
+  let nextR = m.index + shape.length;
+  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
+ });
+ document.getElementById("future").innerHTML = pool.length ? `<b>Expected:</b> ${[...new Set(pool)].join(", ")}` : "Need more data";
 }
 
-function update(r, c, v) { chartData[r][c] = norm(v); saveData(); }
-function addRow() { chartData.push(["**","**","**","**","**","**"]); render(); }
-function saveData() { localStorage.setItem(KEY, JSON.stringify(chartData)); }
-function clearAll() { if(confirm("Clear everything?")) { localStorage.clear(); location.reload(); } }
-
-function syncCanvas() {
-    const cvs = document.getElementById("canvas"), box = document.getElementById("container");
-    cvs.width = box.offsetWidth; cvs.height = box.offsetHeight;
-}
-
-// THE "SARALA" SCAN LOGIC (SCREENSHOT STYLE)
-function scanPattern(r, c) {
-    document.querySelectorAll('td').forEach(td => td.className = td.className.replace(/target-\w+/g, "").trim());
-    const ctx = document.getElementById("canvas").getContext("2d");
-    ctx.clearRect(0,0,5000,5000);
-
-    // 1. Capture the "Local Neighborhood" (8 weeks area around the click)
-    let targets = [];
-    for(let i = r-1; i >= Math.max(0, r-8); i--) {
-        for(let j = 0; j < 6; j++) {
-            if(chartData[i][j] !== "**") {
-                targets.push({ val: chartData[i][j], rOff: r-i, cOff: c-j, fKey: getFam(chartData[i][j]) });
-            }
-        }
-    }
-
-    if(targets.length < 2) return alert("Pehle record mein jodi bhariye!");
-
-    // 2. Scan whole history for this "Geometric Shape"
-    let matchFound = false;
-    for(let i = 0; i < chartData.length; i++) {
-        for(let j = 0; j < 6; j++) {
-            if(i === r && j === c) continue; // Skip current spot
-
-            let currentMatches = [];
-            targets.forEach(t => {
-                let checkR = i - t.rOff, checkC = j - t.cOff;
-                if(checkR >= 0 && checkC >= 0 && checkC < 6) {
-                    if(getFam(chartData[checkR][checkC]) === t.fKey) {
-                        currentMatches.push({r: checkR, c: checkC});
-                    }
-                }
-            });
-
-            // If at least 2 families match in the same shape/gap
-            if(currentMatches.length >= 2) {
-                matchFound = true;
-                currentMatches.forEach((m, idx) => {
-                    let colorCls = (idx % 3 == 0) ? "target-red" : (idx % 3 == 1) ? "target-green" : "target-blue";
-                    document.getElementById(`c-${m.r}-${m.c}`).classList.add(colorCls);
-                });
-                document.getElementById(`c-${i}-${j}`).classList.add("target-red");
-                drawDashedLines(currentMatches, {r: i, c: j});
-                document.getElementById("status").innerText = `PATTERN MATCH: Found at Row ${i+1}, Day ${j+1}`;
-                return; // Stop at first strong match
-            }
-        }
-    }
-    if(!matchFound) alert("No matching shape found in history.");
-}
-
-function drawDashedLines(points, base) {
-    const ctx = document.getElementById("canvas").getContext("2d");
-    ctx.strokeStyle = "#00f"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
-    const box = document.getElementById("container").getBoundingClientRect();
-    const bCell = document.getElementById(`c-${base.r}-${base.c}`).getBoundingClientRect();
-
-    points.forEach(p => {
-        const pCell = document.getElementById(`c-${p.r}-${p.c}`).getBoundingClientRect();
-        ctx.beginPath();
-        ctx.moveTo(bCell.left - box.left + 21, bCell.top - box.top + 21);
-        ctx.lineTo(pCell.left - box.left + 21, pCell.top - box.top + 21);
-        ctx.stroke();
-    });
-}
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
 document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        chartData = fr.result.split('\n').filter(l=>l).map(l => l.split(',').map(norm));
-        render();
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        draw();
     };
     fr.readAsText(e.target.files[0]);
 };
 
-render();
+draw();
 </script>
 </body>
 </html>
