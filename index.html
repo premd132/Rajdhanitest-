@@ -2,38 +2,40 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>DPBK I-Smart Professional</title>
+    <title>DPBK I-Smart Master: CSV + Storage</title>
     <style>
         :root { --red: #ff0000; --green: #00aa00; --blue: #0000ff; --gold: #ffd700; }
         body { font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; margin: 0; text-align: center; }
         header { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); font-weight: 900; }
         
         .controls { background: #1a1a1a; padding: 20px; display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid #333; flex-wrap: wrap; }
-        input { padding: 8px; border-radius: 4px; border: none; background: #333; color: #fff; text-align: center; font-weight: bold; width: 50px; }
+        input[type="text"] { padding: 8px; border-radius: 4px; border: none; background: #333; color: #fff; text-align: center; font-weight: bold; width: 50px; }
         .btn { padding: 10px 15px; border: none; font-weight: 900; cursor: pointer; border-radius: 4px; transition: 0.2s; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-blue { background: #1e88e5; color: #fff; }
+        .btn-csv { background: #4caf50; color: #fff; }
         .btn-red { background: #d32f2f; color: #fff; }
 
         .chart-area { position: relative; display: inline-block; background: #fff; padding: 15px; margin-top: 20px; border-radius: 8px; }
         table { border-collapse: collapse; color: #000; z-index: 10; position: relative; }
         td, th { border: 1px solid #ccc; width: 55px; height: 50px; text-align: center; font-size: 19px; font-weight: 900; }
-        td:focus { outline: 2px solid var(--gold); background: #fffde7; }
         
         .s-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
         .s-green { border: 4px solid var(--green) !important; color: var(--green); }
         .s-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
         
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-        .info { color: #aaa; font-size: 12px; margin-top: 5px; }
+        #status { color: #0f0; font-size: 12px; margin: 10px; }
     </style>
 </head>
 <body>
 
-<header>DPBK I-SMART: AUTO-DNA & STORAGE</header>
+<header>DPBK I-SMART: CSV & LOCAL STORAGE ENGINE</header>
 
 <div class="controls">
-    <button class="btn btn-blue" onclick="addNewRow()">+ Nayi Row</button>
+    <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importCSV(this)">
+    <button class="btn btn-csv" onclick="document.getElementById('csvFileInput').click()">📁 CSV Upload</button>
+    <button class="btn btn-blue" onclick="addNewRow()">+ Row Add</button>
     <div>
         <input type="text" id="j1" placeholder="J1">
         <input type="text" id="j2" placeholder="J2">
@@ -42,10 +44,10 @@
     <select id="day" style="padding:8px; border-radius:4px;">
         <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
     </select>
-    <button class="btn btn-gold" onclick="runSmartScan()">DNA MATCHING RUN</button>
-    <button class="btn btn-red" onclick="clearData()">Clear All</button>
+    <button class="btn btn-gold" onclick="runSmartScan()">RUN I-SMART</button>
+    <button class="btn btn-red" onclick="clearData()">Clear</button>
 </div>
-<div class="info">Saara data automatically aapke browser mein save ho raha hai.</div>
+<div id="status">Status: Waiting for Data...</div>
 
 <div class="chart-area" id="box">
     <canvas id="canvas"></canvas>
@@ -57,38 +59,39 @@
 
 <script>
 let chart = [];
-const STORAGE_KEY = 'DPBK_STORAGE_DATA';
+const STORAGE_KEY = 'DPBK_MASTER_DATA';
 
-// Local Storage Load
-function loadStorage() {
+// Initialize
+window.onload = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if(saved) {
         chart = JSON.parse(saved);
+        document.getElementById('status').innerText = "Storage Data Loaded.";
     } else {
         chart = [["**","**","**","**","**","**"]];
     }
     render();
-}
-
-function saveStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chart));
-}
-
-function getFam(v) {
-    if(!v || v === "**") return [];
-    let n = v.toString().padStart(2, '0');
-    let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
-    let c1 = (d1+5)%10, c2 = (d2+5)%10;
-    let s = new Set();
-    [[d1,c1],[c1,d1]].forEach(a => [[d2,c2],[c2,d2]].forEach(b => { s.add(`${a[0]}${b[0]}`); s.add(`${b[0]}${a[0]}`); }));
-    return Array.from(s);
-}
+};
 
 function render() {
     const b = document.getElementById('tbody');
     b.innerHTML = chart.map((row, ri) => `<tr>${row.map((j, ci) => 
         `<td contenteditable="true" onblur="updateCell(${ri}, ${ci}, this.innerText)">${j}</td>`).join('')}</tr>`).join('');
-    syncCanvas();
+    setTimeout(syncCanvas, 100);
+}
+
+// CSV Logic
+function importCSV(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const lines = e.target.result.split("\n");
+        chart = lines.map(line => line.split(",").map(cell => cell.trim())).filter(l => l.length > 1);
+        saveStorage();
+        render();
+        document.getElementById('status').innerText = "CSV Imported & Saved to Storage!";
+    };
+    reader.readAsText(file);
 }
 
 function updateCell(r, c, val) {
@@ -102,8 +105,12 @@ function addNewRow() {
     saveStorage();
 }
 
+function saveStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chart));
+}
+
 function clearData() {
-    if(confirm("Kya aap saara data delete karna chahte hain?")) {
+    if(confirm("Full delete?")) {
         localStorage.removeItem(STORAGE_KEY);
         location.reload();
     }
@@ -114,10 +121,19 @@ function syncCanvas() {
     c.width = b.scrollWidth; c.height = b.scrollHeight;
 }
 
+// I-SMART DNA LOGIC
+function getFam(v) {
+    if(!v || v === "**") return [];
+    let n = v.toString().padStart(2, '0');
+    let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
+    let c1 = (d1+5)%10, c2 = (d2+5)%10;
+    let s = new Set();
+    [[d1,c1],[c1,d1]].forEach(a => [[d2,c2],[c2,d2]].forEach(b => { s.add(`${a[0]}${b[0]}`); s.add(`${b[0]}${a[0]}`); }));
+    return Array.from(s);
+}
+
 function runSmartScan() {
-    const j1 = document.getElementById('j1').value;
-    const j2 = document.getElementById('j2').value;
-    const j3 = document.getElementById('j3').value;
+    const j1 = document.getElementById('j1').value, j2 = document.getElementById('j2').value, j3 = document.getElementById('j3').value;
     const d = parseInt(document.getElementById('day').value);
     const table = document.getElementById('itbl');
     const ctx = document.getElementById('canvas').getContext('2d');
@@ -129,17 +145,14 @@ function runSmartScan() {
     const lastRow = chart.length - 1;
 
     chart.forEach((row, ri) => {
-        if(ri < lastRow - 2) {
-            // Triple DNA Check
+        if(ri < lastRow - 1) {
             if(f1.includes(row[d]) && f2.includes(row[d+1]) && f3.includes(row[d+2])) {
                 let patterns = [{rd: -2, cd: 0, type: 's-green'}, {rd: -4, cd: 1, type: 's-blue'}];
-                
                 patterns.forEach(p => {
                     let tr = ri + p.rd, tc = d + p.cd;
                     if(chart[tr]) {
                         table.rows[ri+1].cells[d].className = "s-red";
                         table.rows[tr+1].cells[tc].className = p.type;
-                        
                         ctx.strokeStyle = p.type.includes('green') ? 'green' : 'blue';
                         ctx.lineWidth = 2.5; ctx.setLineDash([5, 5]); ctx.beginPath();
                         ctx.moveTo(table.rows[ri+1].cells[d].offsetLeft + 27, table.rows[ri+1].cells[d].offsetTop + 25);
@@ -151,8 +164,6 @@ function runSmartScan() {
         }
     });
 }
-
-window.onload = loadStorage;
 </script>
 </body>
 </html>
