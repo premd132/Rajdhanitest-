@@ -1,149 +1,259 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>DPBK I-Smart CSV Fixed</title>
-    <style>
-        :root { --red: #ff0000; --green: #00aa00; --blue: #0000ff; --gold: #ffd700; }
-        body { font-family: 'Arial', sans-serif; background: #000; color: #fff; margin: 0; padding-bottom: 50px; text-align: center; }
-        .nav { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); font-weight: 900; font-size: 20px; }
-        .controls { background: #1a1a1a; padding: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #333; }
-        input, select { padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-weight: bold; }
-        .btn { padding: 10px 15px; border: none; font-weight: 900; cursor: pointer; border-radius: 4px; }
-        .btn-gold { background: var(--gold); color: #000; }
-        .btn-blue { background: #1e88e5; color: #fff; }
-        .chart-container { position: relative; display: inline-block; background: #fff; padding: 15px; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 50px #000; }
-        table { border-collapse: collapse; color: #000; z-index: 10; position: relative; }
-        td, th { border: 1px solid #ccc; width: 60px; height: 50px; text-align: center; font-size: 18px; font-weight: 900; }
-        .s-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
-        .s-green { border: 4px solid var(--green) !important; color: var(--green); }
-        .s-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-        #status { color: #0f0; margin: 10px; font-family: monospace; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalyan Pro AI – Multi-Target DNA</title>
+<style>
+    :root { --gold: #ffd700; --red: #ff3e3e; --green: #00ff00; --blue: #0084ff; --bg: #121212; --panel: #1e1e1e; }
+    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; overflow-x: hidden; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; letter-spacing: 1px; margin: 5px 0; font-size: 1.2rem; }
+    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); max-width: 100%; }
+    table { border-collapse: collapse; font-size: 12px; position: relative; z-index: 2; color: #000; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 35px; height: 35px; }
+    th { background: #800000; color: white; font-size: 11px; }
+    td[contenteditable] { background: #fffbe6; outline: none; }
+    .blank { background: #e0e0e0 !important; cursor: pointer; color: #888; border: 2px dashed #999 !important; }
+    
+    /* Triple Family Circle Colors */
+    .c1 { border: 3px solid var(--red); border-radius: 100%; background: rgba(255, 0, 0, 0.15); }
+    .c2 { border: 3px solid var(--green); border-radius: 100%; background: rgba(0, 255, 0, 0.15); }
+    .c3 { border: 3px solid var(--blue); border-radius: 100%; background: rgba(0, 132, 255, 0.15); }
+    
+    .dashboard { display: flex; flex-direction: row; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); flex: 1; min-width: 250px; }
+    .card h3 { margin: 0 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid #444; padding-bottom: 3px; }
+    #checks { max-height: 100px; overflow-y: auto; }
+    #checks div { background: #2a2a2a; margin: 3px 0; padding: 6px; cursor: pointer; border-radius: 4px; font-size: 12px; border: 1px solid #444; }
+    #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border: 3px solid var(--gold); display: none; z-index: 100; padding: 10px; border-radius: 8px; color: #000; width: 90%; max-width: 450px; }
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+    button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 12px; }
+</style>
 </head>
 <body>
 
-<div class="nav">DPBK I-SMART: CSV DNA SCANNER (FIXED)</div>
+<h2>🏆 Kalyan AI Multi-Pattern</h2>
 
-<div class="controls">
-    <input type="file" id="csvInp" accept=".csv" onchange="importCSV(this)">
-    <button class="btn btn-blue" onclick="addRow()">+ Row Add</button>
-    <div>
-        <input type="text" id="j1" placeholder="J1" style="width:50px">
-        <input type="text" id="j2" placeholder="J2" style="width:50px">
-        <input type="text" id="j3" placeholder="J3" style="width:50px">
-    </div>
-    <select id="dayIdx">
-        <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
-    </select>
-    <button class="btn btn-gold" onclick="runISmart()">RUN DNA SCAN</button>
-    <button class="btn btn" style="background:#555; color:#fff" onclick="clearAll()">Reset</button>
+<div class="toolbar">
+    <input type="file" id="csv" style="display:none">
+    <button onclick="document.getElementById('csv').click()">📂 CSV</button>
+    <button onclick="addRow()">➕ Row</button>
+    <button onclick="saveData()" style="background:#28a745; color:white;">💾 Save</button>
+    <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ Clear</button>
 </div>
 
-<div id="status">Status: Upload CSV to Start</div>
+<center>
+    <div class="table-container">
+        <canvas id="mainCanvas"></canvas>
+        <table id="tbl"></table>
+    </div>
+</center>
 
-<div class="chart-container" id="box">
-    <canvas id="canvas"></canvas>
-    <table id="itbl">
-        <thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
-        <tbody id="tbody"></tbody>
-    </table>
+<div class="dashboard">
+    <div class="card">
+        <h3>✔ DNA Matches</h3>
+        <div id="checks"></div>
+    </div>
+    <div class="card">
+        <h3>🤖 AI Target</h3>
+        <div id="ai" style="font-size: 13px;">Wait...</div>
+    </div>
+    <div class="card">
+        <h3>🔮 Future Forecast</h3>
+        <div id="future" style="font-size: 13px;">Select a match...</div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#800000; color:white;">X</button>
+    <h3 style="margin: 0 0 10px 0; font-size: 14px;">Multi-Family Connection View</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #000;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
 </div>
 
 <script>
-let chartData = [];
-const STORAGE_KEY = 'DPBK_FINAL_V9';
+const STORAGE_KEY="pdata_kalyan_v3";
+let targetCol=null;
+const families={  
+"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],
+"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],
+};  
 
-function getFam(v) {
-    if(!v || v === "**") return [];
-    let n = v.toString().trim().padStart(2, '0');
-    let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
-    let c1 = (d1+5)%10, c2 = (d2+5)%10;
-    let s = new Set();
-    [[d1,c1],[c1,d1]].forEach(a => [[d2,c2],[c2,d2]].forEach(b => { s.add(`${a[0]}${b[0]}`); s.add(`${b[0]}${a[0]}`); }));
-    return Array.from(s);
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
+
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57","19","95"],["05","90","74","06","19","63"],["90","34","82","09","28","19"],["**","**","**","**","**","**"]];
+data = data.map(r => r.map(norm));
+
+let activeMark=null;
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = "";
+   if(activeMark) {
+      let type = isPartOfPattern(ri, ci);
+      if(type) cls = "c" + type;
+   }
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-function importCSV(input) {
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const text = e.target.result;
-        // DEEP CLEANING LOGIC: Remove extra spaces and invisible chars
-        chartData = text.split(/\r?\n/).filter(line => line.trim() !== "").map(line => 
-            line.split(",").map(cell => cell.trim().replace(/[^0-9*]/g, '') || "**")
-        );
-        saveAndRender();
-        document.getElementById('status').innerText = "CSV Cleaned & Loaded!";
-    };
-    reader.readAsText(file);
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    if(i >= 0 && i < activeMark.shape.length) return activeMark.shape[i][ci];
+    return 0;
 }
 
-function saveAndRender() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chartData));
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = chartData.map((row, ri) => `<tr>${row.map((j, ci) => 
-        `<td contenteditable="true" onblur="chartData[${ri}][${ci}]=this.innerText.trim();localStorage.setItem(STORAGE_KEY, JSON.stringify(chartData))">${j}</td>`).join('')}</tr>`).join('');
-    setTimeout(sync, 100);
-}
-
-function addRow() {
-    chartData.push(["**","**","**","**","**","**"]);
-    saveAndRender();
-}
-
-function sync() {
-    const c = document.getElementById('canvas'), b = document.getElementById('box');
-    if(c && b) { c.width = b.scrollWidth; c.height = b.scrollHeight; }
-}
-
-function runISmart() {
-    const j1 = document.getElementById('j1').value.trim();
-    const j2 = document.getElementById('j2').value.trim();
-    const j3 = document.getElementById('j3').value.trim();
-    const day = parseInt(document.getElementById('dayIdx').value);
-    const table = document.getElementById('itbl');
-    const ctx = document.getElementById('canvas').getContext('2d');
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    document.querySelectorAll('td').forEach(t => t.className = "");
-    ctx.clearRect(0,0,5000,5000);
-
-    if(!j1 || chartData.length === 0) return alert("Pehle Data load karein!");
-
-    const f1 = getFam(j1), f2 = getFam(j2), f3 = getFam(j3);
-    const lastRow = chartData.length - 1;
-
-    chartData.forEach((row, ri) => {
-        if(ri < lastRow - 1) {
-            // Triple Match Logic
-            let m1 = f1.includes(row[day]);
-            let m2 = j2 === "" ? true : f2.includes(row[day+1]);
-            let m3 = j3 === "" ? true : f3.includes(row[day+2]);
-
-            if(m1 && m2 && m3) {
-                document.getElementById('status').innerText = "DNA MATCH FOUND!";
-                let patterns = [{rd: -2, cd: 0, type: 's-green'}, {rd: -1, cd: 2, type: 's-blue'}];
-                
-                patterns.forEach(p => {
-                    let tr = ri + p.rd, tc = day + p.cd;
-                    if(chartData[tr] && chartData[tr][tc]) {
-                        table.rows[ri+1].cells[day].className = "s-red";
-                        table.rows[tr+1].cells[tc].className = p.type;
-                        ctx.strokeStyle = p.type.includes('green') ? 'green' : 'blue';
-                        ctx.lineWidth = 3; ctx.setLineDash([5, 5]); ctx.beginPath();
-                        ctx.moveTo(table.rows[ri+1].cells[day].offsetLeft + 30, table.rows[ri+1].cells[day].offsetTop + 25);
-                        ctx.lineTo(table.rows[tr+1].cells[tc].offsetLeft + 30, table.rows[tr+1].cells[tc].offsetTop + 25);
-                        ctx.stroke();
-                    }
-                });
-            }
+    // Draw connections between same-colored circles
+    for(let type=1; type<=3; type++){
+        const cells = tblEl.querySelectorAll(".c"+type);
+        if(cells.length < 2) continue;
+        ctx.strokeStyle = type==1?"red":type==2?"green":"blue";
+        ctx.lineWidth = 1.5; ctx.setLineDash([5, 3]);
+        const tRect = tblEl.getBoundingClientRect();
+        for(let i=0; i<cells.length-1; i++){
+            const r1 = cells[i].getBoundingClientRect();
+            const r2 = cells[i+1].getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(r1.left - tRect.left + r1.width/2, r1.top - tRect.top + r1.height/2);
+            ctx.lineTo(r2.left - tRect.left + r2.width/2, r2.top - tRect.top + r2.height/2);
+            ctx.stroke();
         }
-    });
+    }
 }
 
-function clearAll() { chartData = []; localStorage.removeItem(STORAGE_KEY); location.reload(); }
-window.onload = () => { const s = localStorage.getItem(STORAGE_KEY); if(s){ chartData = JSON.parse(s); saveAndRender(); } };
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear all?")){ localStorage.clear(); location.reload(); }}
+
+function makePattern(r,c){
+ targetCol=c; 
+ // TRIPLE TARGET DNA: Get last 3 available jodis in history
+ let bases = [];
+ for(let i=r; i>=0 && bases.length<3; i--){ 
+     if(data[i][c]!="**") bases.push({val: data[i][c], row: i}); 
+ }
+ if(bases.length < 1) return;
+
+ let shape=[];
+ // Generate shape for last 8 weeks area
+ for(let i=Math.max(0,r-8); i<=r; i++){
+  let row=[];
+  for(let j=0; j<6; j++){ 
+      let foundType = 0;
+      bases.forEach((b,idx) => { if(smartMatch(data[i][j], b.val)) foundType = idx+1; });
+      row.push(foundType);
+  }
+  shape.push(row);
+ }
+ searchPattern(shape, bases);
+}
+
+function searchPattern(shape, bases){
+ let lastMatches=[];
+ for(let i=0; i<=data.length-shape.length; i++){
+  let ok=true;
+  for(let k=0; k<shape.length; k++){
+   for(let j=0; j<6; j++){ 
+       let type = shape[k][j];
+       if(type > 0 && !smartMatch(data[i+k][j], bases[type-1].val)){ ok=false; break; }
+   }
+   if(!ok) break;
+  }
+  if(ok) lastMatches.push({index:i});
+ }
+ showChecks(shape, lastMatches);
+}
+
+function showChecks(shape, matches){
+ document.getElementById("checks").innerHTML="";
+ matches.slice(-5).reverse().forEach((m,i)=>{
+  let d = document.createElement("div");
+  d.innerText = `🔍 Match at Row ${m.index + 1}`;
+  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
+  document.getElementById("checks").appendChild(d);
+ });
+ updateAI(shape, matches);
+}
+
+function showOne(shape, idx){
+ let html="<table id='popTbl' style='color:#000'>";
+ for(let i=0; i<shape.length; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let cls = shape[i][j] ? "c"+shape[i][j] : "";
+   html+=`<td class="${cls}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=html+"</table>";
+ document.getElementById("popup").style.display="block";
+ document.getElementById("overlay").style.display="block";
+ setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
+}
+
+function updateAI(shape, matches){
+ let jc={};
+ matches.forEach(m=>{
+    shape.forEach((r,ri) => {
+        r.forEach((type, ci) => {
+            if(type == 1) { // Current Base Family
+                let v = data[m.index+ri][ci];
+                jc[v]=(jc[v]||0)+1;
+            }
+        });
+    });
+ });
+ document.getElementById("ai").innerHTML = `<b>Target Families:</b> ${Object.keys(jc).slice(0,3).join(", ")}`;
+ 
+ let pool = [];
+ matches.forEach(m => {
+  let nextR = m.index + shape.length;
+  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
+ });
+ document.getElementById("future").innerHTML = pool.length ? `<b>Expected:</b> ${[...new Set(pool)].join(", ")}` : "Need more data";
+}
+
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
+
+draw();
 </script>
 </body>
 </html>
