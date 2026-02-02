@@ -137,7 +137,7 @@ function drawLines(cvsId, tblEl) {
         const cells = tblEl.querySelectorAll(".c"+type);
         if(cells.length < 2) continue;
         ctx.strokeStyle = type==1?"red":type==2?"green":"blue";
-        ctx.lineWidth = 1.5; ctx.setLineDash([5, 3]);
+        ctx.lineWidth = 1.5; ctx.setLineDash([2, 2]);
         const tRect = tblEl.getBoundingClientRect();
         for(let i=0; i<cells.length-1; i++){
             const r1 = cells[i].getBoundingClientRect();
