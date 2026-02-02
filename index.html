@@ -180,10 +180,10 @@ function makePattern(r,c){
 
 function searchPattern(shape, bases){
  let lastMatches=[];
- for(let i=0; i<=data.length-shape.length; i+){
+ for(let i=0; i<=data.length-shape.length; i++){
   let ok=true;
-  for(let k=0; k<shape.length; k+){
-   for(let j=0; j<4; j+){ 
+  for(let k=0; k<shape.length; k++){
+   for(let j=0; j<4; j){ 
        let type = shape[k][j];
        if(type > 0 && !smartMatch(data[i+k][j], bases[type-1].val)){ ok=false; break; }
    }
