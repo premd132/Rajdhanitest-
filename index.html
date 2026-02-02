@@ -3,162 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kalyan AI - Strict Pattern Pro</title>
+<title>Kalyan Pro AI - Sarala Edition</title>
 <style>
-    :root { --gold: #ffd700; --red: #ff3e3e; --green: #00ff00; --blue: #0084ff; --bg: #121212; --panel: #1e1e1e; }
-    body { font-family: 'Segoe UI', Arial; background: var(--bg); color: #fff; margin: 0; padding: 10px; text-align: center; }
-    h2 { color: var(--gold); text-transform: uppercase; margin: 5px 0; font-size: 1.2rem; }
-    .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-    .table-container { position: relative; display: inline-block; background: #fff; border-radius: 5px; box-shadow: 0 0 15px #000; max-width: 100%; }
-    table { border-collapse: collapse; font-size: 13px; position: relative; z-index: 2; color: #000; }
-    td, th { border: 1px solid #ccc; width: 40px; height: 40px; text-align: center; font-weight: bold; }
-    th { background: #800000; color: white; font-size: 11px; }
-    .blank { background: #d4d4d4 !important; cursor: pointer; border: 2px dashed #666 !important; }
+    :root { --gold: #ffd700; --red: #ff3e3e; --green: #00ff00; --blue: #0084ff; --bg: #000; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+    h2 { color: var(--gold); text-align: center; text-transform: uppercase; margin: 10px 0; }
     
-    /* Strict Circles */
-    .c1 { border: 3px solid var(--red); border-radius: 50%; background: rgba(255,0,0,0.1); }
-    .c2 { border: 3px solid var(--green); border-radius: 50%; background: rgba(0,255,0,0.1); }
-    .c3 { border: 3px solid var(--blue); border-radius: 50%; background: rgba(0,132,255,0.1); }
+    .toolbar { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid #333; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
-    .card { background: var(--panel); padding: 10px; border-radius: 8px; border-left: 4px solid var(--gold); margin: 10px; text-align: left; }
-    button { background: var(--gold); color: #000; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+    .table-container { position: relative; display: inline-block; background: #fff; padding: 5px; border-radius: 8px; box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+    table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+    td, th { border: 1px solid #bbb; width: 42px; height: 42px; text-align: center; font-weight: 900; position: relative; }
+    th { background: #600; color: #fff; font-size: 11px; height: 30px; }
+    
+    .blank { background: #eee !important; cursor: crosshair; color: #aaa; font-size: 10px; }
+    
+    /* Dynamic Circle Colors */
+    .target-red { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255,0,0,0.1); }
+    .target-green { border: 3px solid var(--green) !important; border-radius: 50%; background: rgba(0,255,0,0.1); }
+    .target-blue { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0,0,255,0.1); }
+
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+    button { background: var(--gold); color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+    button:hover { transform: scale(1.05); }
+    #status { background: #222; color: var(--gold); padding: 10px; border-radius: 5px; margin-top: 10px; font-family: monospace; }
 </style>
 </head>
 <body>
 
-<h2>🏆 Kalyan AI: Record Matcher</h2>
+<h2>🏆 KALYAN SMART AI ENGINE</h2>
 
 <div class="toolbar">
     <input type="file" id="csv" style="display:none">
-    <button onclick="document.getElementById('csv').click()">📂 LOAD CSV</button>
-    <button onclick="addRow()">➕ ROW</button>
-    <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
-    <button onclick="location.reload()" style="background:#555; color:white;">🔄 REFRESH</button>
+    <button onclick="document.getElementById('csv').click()">📁 UPLOAD CSV</button>
+    <button onclick="addRow()">➕ ADD ROW</button>
+    <button onclick="saveData()" style="background:#28a745; color:#fff;">💾 SAVE DATA</button>
+    <button onclick="clearAll()" style="background:#d32f2f; color:#fff;">🗑️ RESET</button>
 </div>
 
-<div class="table-container">
-    <canvas id="mainCanvas"></canvas>
-    <table id="tbl"></table>
+<div class="table-container" id="container">
+    <canvas id="canvas"></canvas>
+    <table id="mainTable"></table>
 </div>
 
-<div class="card">
-    <h3 id="status" style="color:var(--gold); margin:0;">Status: Click on a grey (blank) cell to find record matches.</h3>
-</div>
+<div id="status">System Ready: Upload CSV or enter data to start scanning.</div>
 
 <script>
-const STORAGE_KEY="kalyan_strict_v1";
-const families={  
-    "25":["02","07","20","25","52","57","70","75"],
-    "35":["03","08","30","35","53","58","80","85"],
-    "13":["13","18","31","36","63","68","81","86"],
-    // ... baki families wahi rahengi
+const KEY = "KALYAN_SARALA_V3";
+const families = {
+    "11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],
+    "12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],
+    "15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],
+    "25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],
+    "45":["04","09","40","45","54","59","90","95"]
 };
 
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return v;}
-function norm(v){ v=String(v).trim(); if(!v || v=="**") return "**"; return v.length==1?"0"+v:v;}
-function isMatch(a, b){ if(a=="**" || b=="**") return false; return fam(a) === fam(b); }
+function getFam(v) { for(let k in families) if(families[k].includes(v)) return k; return v; }
+function norm(v) { v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
 
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["07","**","**","**","**","**"],["**","**","**","**","**","70"],["**","**","**","**","**","**"]];
-data = data.map(r => r.map(norm));
+let chartData = JSON.parse(localStorage.getItem(KEY)) || [["**","**","**","**","**","**"]];
 
-let activeMark = null;
-
-function draw(){
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((r,ri)=>{
-        h+="<tr>";
-        r.forEach((c,ci)=>{
-            let cls = "";
-            if(activeMark && activeMark.row == ri && activeMark.col == ci) cls = "c1";
-            if(activeMark && activeMark.matches){
-                activeMark.matches.forEach(m => { if(m.r == ri && m.c == ci) cls = "c2"; });
-            }
-            if(c=="**") cls += " blank";
-            h+=`<td class="${cls}" contenteditable onblur="update(${ri},${ci},this.innerText)" onclick="${c=='**'?'findPattern('+ri+','+ci+')':'' }">${c}</td>`;
+function render() {
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    chartData.forEach((row, ri) => {
+        h += "<tr>";
+        row.forEach((cell, ci) => {
+            let cls = (cell == "**") ? "blank" : "";
+            h += `<td id="c-${ri}-${ci}" class="${cls}" contenteditable onblur="update(${ri},${ci},this.innerText)" onclick="${cell=='**'?'scanPattern('+ri+','+ci+')':'' }">${cell}</td>`;
         });
-        h+="</tr>";
+        h += "</tr>";
     });
-    document.getElementById("tbl").innerHTML=h;
-    if(activeMark) setTimeout(drawConnections, 50);
+    document.getElementById("mainTable").innerHTML = h;
+    syncCanvas();
 }
 
-function update(r,c,v){ data[r][c]=norm(v); saveData(); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function update(r, c, v) { chartData[r][c] = norm(v); saveData(); }
+function addRow() { chartData.push(["**","**","**","**","**","**"]); render(); }
+function saveData() { localStorage.setItem(KEY, JSON.stringify(chartData)); }
+function clearAll() { if(confirm("Clear everything?")) { localStorage.clear(); location.reload(); } }
 
-// REAL RECORD MATCHING LOGIC
-function findPattern(r, c){
-    let historySequence = [];
-    // 1. Current column mein pichle 15 hafton ki jodis dekho
-    for(let i=r-1; i>=Math.max(0, r-15); i--){
-        if(data[i][c] !== "**") historySequence.push({ val: data[i][c], gap: r-i });
-    }
+function syncCanvas() {
+    const cvs = document.getElementById("canvas"), box = document.getElementById("container");
+    cvs.width = box.offsetWidth; cvs.height = box.offsetHeight;
+}
 
-    if(historySequence.length < 1){
-        document.getElementById("status").innerText = "Pehle upar jodi bhariye!";
-        return;
-    }
+// THE "SARALA" SCAN LOGIC (SCREENSHOT STYLE)
+function scanPattern(r, c) {
+    document.querySelectorAll('td').forEach(td => td.className = td.className.replace(/target-\w+/g, "").trim());
+    const ctx = document.getElementById("canvas").getContext("2d");
+    ctx.clearRect(0,0,5000,5000);
 
-    // 2. Pure record mein waisa hi GAP aur FAMILY dhoondho
-    let foundPatterns = [];
-    for(let i=0; i < data.length - 1; i++){
-        let matchPoints = [];
-        historySequence.forEach(seq => {
-            let checkRow = i - seq.gap;
-            if(checkRow >= 0 && isMatch(data[i][c], data[checkRow][c])){
-                // Agar history mein bhi wahi family aur wahi gap hai
-                matchPoints.push({r: checkRow, c: c});
+    // 1. Capture the "Local Neighborhood" (8 weeks area around the click)
+    let targets = [];
+    for(let i = r-1; i >= Math.max(0, r-8); i--) {
+        for(let j = 0; j < 6; j++) {
+            if(chartData[i][j] !== "**") {
+                targets.push({ val: chartData[i][j], rOff: r-i, cOff: c-j, fKey: getFam(chartData[i][j]) });
             }
-        });
-        
-        if(matchPoints.length > 0){
-            foundPatterns.push({r: i, c: c, matches: matchPoints});
         }
     }
 
-    if(foundPatterns.length > 0){
-        activeMark = foundPatterns[foundPatterns.length-1]; // Latest match dikhao
-        document.getElementById("status").innerText = "Match Found in History!";
-        draw();
-    } else {
-        alert("Record mein aisa pattern nahi mila.");
+    if(targets.length < 2) return alert("Pehle record mein jodi bhariye!");
+
+    // 2. Scan whole history for this "Geometric Shape"
+    let matchFound = false;
+    for(let i = 0; i < chartData.length; i++) {
+        for(let j = 0; j < 6; j++) {
+            if(i === r && j === c) continue; // Skip current spot
+
+            let currentMatches = [];
+            targets.forEach(t => {
+                let checkR = i - t.rOff, checkC = j - t.cOff;
+                if(checkR >= 0 && checkC >= 0 && checkC < 6) {
+                    if(getFam(chartData[checkR][checkC]) === t.fKey) {
+                        currentMatches.push({r: checkR, c: checkC});
+                    }
+                }
+            });
+
+            // If at least 2 families match in the same shape/gap
+            if(currentMatches.length >= 2) {
+                matchFound = true;
+                currentMatches.forEach((m, idx) => {
+                    let colorCls = (idx % 3 == 0) ? "target-red" : (idx % 3 == 1) ? "target-green" : "target-blue";
+                    document.getElementById(`c-${m.r}-${m.c}`).classList.add(colorCls);
+                });
+                document.getElementById(`c-${i}-${j}`).classList.add("target-red");
+                drawDashedLines(currentMatches, {r: i, c: j});
+                document.getElementById("status").innerText = `PATTERN MATCH: Found at Row ${i+1}, Day ${j+1}`;
+                return; // Stop at first strong match
+            }
+        }
     }
+    if(!matchFound) alert("No matching shape found in history.");
 }
 
-function drawConnections(){
-    const cvs = document.getElementById("mainCanvas");
-    const ctx = cvs.getContext("2d");
-    const tbl = document.getElementById("tbl");
-    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    
-    const cells = tbl.querySelectorAll(".c1, .c2");
-    if(cells.length < 2) return;
-    
-    ctx.strokeStyle = "blue"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
-    const rect = tbl.getBoundingClientRect();
-    
-    for(let i=0; i<cells.length-1; i++){
-        const r1 = cells[i].getBoundingClientRect();
-        const r2 = cells[i+1].getBoundingClientRect();
+function drawDashedLines(points, base) {
+    const ctx = document.getElementById("canvas").getContext("2d");
+    ctx.strokeStyle = "#00f"; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+    const box = document.getElementById("container").getBoundingClientRect();
+    const bCell = document.getElementById(`c-${base.r}-${base.c}`).getBoundingClientRect();
+
+    points.forEach(p => {
+        const pCell = document.getElementById(`c-${p.r}-${p.c}`).getBoundingClientRect();
         ctx.beginPath();
-        ctx.moveTo(r1.left-rect.left+20, r1.top-rect.top+20);
-        ctx.lineTo(r2.left-rect.left+20, r2.top-rect.top+20);
+        ctx.moveTo(bCell.left - box.left + 21, bCell.top - box.top + 21);
+        ctx.lineTo(pCell.left - box.left + 21, pCell.top - box.top + 21);
         ctx.stroke();
-    }
+    });
 }
 
 document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l).map(l => l.split(',').map(norm));
-        draw();
+        chartData = fr.result.split('\n').filter(l=>l).map(l => l.split(',').map(norm));
+        render();
     };
     fr.readAsText(e.target.files[0]);
 };
 
-draw();
+render();
 </script>
 </body>
 </html>
