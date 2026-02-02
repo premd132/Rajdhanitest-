@@ -2,55 +2,46 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>DPBK I-Smart Fixed Engine</title>
+    <title>DPBK I-Smart CSV Fixed</title>
     <style>
         :root { --red: #ff0000; --green: #00aa00; --blue: #0000ff; --gold: #ffd700; }
-        body { font-family: 'Arial', sans-serif; background: #000; color: #fff; margin: 0; padding-bottom: 50px; }
+        body { font-family: 'Arial', sans-serif; background: #000; color: #fff; margin: 0; padding-bottom: 50px; text-align: center; }
         .nav { background: #b71c1c; padding: 15px; border-bottom: 4px solid var(--gold); font-weight: 900; font-size: 20px; }
         .controls { background: #1a1a1a; padding: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #333; }
-        
         input, select { padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-weight: bold; }
         .btn { padding: 10px 15px; border: none; font-weight: 900; cursor: pointer; border-radius: 4px; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-blue { background: #1e88e5; color: #fff; }
-        .btn-green { background: #4caf50; color: #fff; }
-        .btn-red { background: #d32f2f; color: #fff; }
-
-        .chart-container { position: relative; display: inline-block; background: #fff; padding: 15px; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .chart-container { position: relative; display: inline-block; background: #fff; padding: 15px; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 50px #000; }
         table { border-collapse: collapse; color: #000; z-index: 10; position: relative; }
-        td, th { border: 1px solid #ccc; width: 60px; height: 55px; text-align: center; font-size: 20px; font-weight: 900; }
-        th { background: #eee; font-size: 11px; height: 30px; }
-        
-        /* Marker Shapes */
+        td, th { border: 1px solid #ccc; width: 60px; height: 50px; text-align: center; font-size: 18px; font-weight: 900; }
         .s-red { border: 4px solid var(--red) !important; background: rgba(255,0,0,0.1); }
         .s-green { border: 4px solid var(--green) !important; color: var(--green); }
         .s-blue { border: 4px solid var(--blue) !important; border-radius: 50% !important; color: var(--blue); }
-        
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
         #status { color: #0f0; margin: 10px; font-family: monospace; }
     </style>
 </head>
 <body>
 
-<div class="nav">DPBK I-SMART MASTER ENGINE (FIXED)</div>
+<div class="nav">DPBK I-SMART: CSV DNA SCANNER (FIXED)</div>
 
 <div class="controls">
     <input type="file" id="csvInp" accept=".csv" onchange="importCSV(this)">
-    <button class="btn btn-green" onclick="addSampleData()">Load Demo Data</button>
-    <button class="btn btn-blue" onclick="addRow()">+ Nayi Row</button>
+    <button class="btn btn-blue" onclick="addRow()">+ Row Add</button>
     <div>
-        <input type="text" id="j1" placeholder="Jodi 1" style="width:50px">
-        <input type="text" id="j2" placeholder="Jodi 2" style="width:50px">
-        <input type="text" id="j3" placeholder="Jodi 3" style="width:50px">
+        <input type="text" id="j1" placeholder="J1" style="width:50px">
+        <input type="text" id="j2" placeholder="J2" style="width:50px">
+        <input type="text" id="j3" placeholder="J3" style="width:50px">
     </div>
     <select id="dayIdx">
         <option value="0">MON</option><option value="1">TUE</option><option value="2">WED</option>
     </select>
-    <button class="btn btn-gold" onclick="runISmart()">RUN I-SMART SCAN</button>
-    <button class="btn btn-red" onclick="resetAll()">Clear All</button>
+    <button class="btn btn-gold" onclick="runISmart()">RUN DNA SCAN</button>
+    <button class="btn btn" style="background:#555; color:#fff" onclick="clearAll()">Reset</button>
 </div>
 
-<div id="status">Status: Waiting for Data...</div>
+<div id="status">Status: Upload CSV to Start</div>
 
 <div class="chart-container" id="box">
     <canvas id="canvas"></canvas>
@@ -62,66 +53,11 @@
 
 <script>
 let chartData = [];
-const KEY = 'DPBK_DATA_V7';
-
-window.onload = () => {
-    const saved = localStorage.getItem(KEY);
-    if(saved) {
-        chartData = JSON.parse(saved);
-        render();
-        document.getElementById('status').innerText = "Saved Data Loaded.";
-    }
-};
-
-function render() {
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = chartData.map((row, ri) => `<tr>${row.map((j, ci) => 
-        `<td contenteditable="true" onblur="updateCell(${ri}, ${ci}, this.innerText)">${j}</td>`).join('')}</tr>`).join('');
-    setTimeout(sync, 100);
-}
-
-function updateCell(r, c, val) {
-    chartData[r][c] = val || "**";
-    localStorage.setItem(KEY, JSON.stringify(chartData));
-}
-
-function addRow() {
-    chartData.push(["**","**","**","**","**","**"]);
-    render();
-}
-
-function addSampleData() {
-    chartData = [
-        ["10","20","30","40","50","60"],
-        ["11","22","33","44","55","66"],
-        ["80","35","70","12","23","34"], // Historical Match
-        ["99","88","77","66","55","44"],
-        ["35","80","25","**","**","**"]  // Current Base
-    ];
-    render();
-    document.getElementById('status').innerText = "Demo Data Loaded. Try J1:35, J2:80, J3:25 on Monday!";
-}
-
-function importCSV(input) {
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        chartData = e.target.result.split("\n").map(l => l.split(",").map(c => c.trim())).filter(l => l.length > 1);
-        localStorage.setItem(KEY, JSON.stringify(chartData));
-        render();
-        document.getElementById('status').innerText = "CSV Loaded Successfully!";
-    };
-    reader.readAsText(file);
-}
-
-function sync() {
-    const c = document.getElementById('canvas'), b = document.getElementById('box');
-    c.width = b.scrollWidth; c.height = b.scrollHeight;
-}
+const STORAGE_KEY = 'DPBK_FINAL_V9';
 
 function getFam(v) {
     if(!v || v === "**") return [];
-    let n = v.toString().padStart(2, '0');
+    let n = v.toString().trim().padStart(2, '0');
     let d1 = parseInt(n[0]), d2 = parseInt(n[1]);
     let c1 = (d1+5)%10, c2 = (d2+5)%10;
     let s = new Set();
@@ -129,10 +65,43 @@ function getFam(v) {
     return Array.from(s);
 }
 
+function importCSV(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = e.target.result;
+        // DEEP CLEANING LOGIC: Remove extra spaces and invisible chars
+        chartData = text.split(/\r?\n/).filter(line => line.trim() !== "").map(line => 
+            line.split(",").map(cell => cell.trim().replace(/[^0-9*]/g, '') || "**")
+        );
+        saveAndRender();
+        document.getElementById('status').innerText = "CSV Cleaned & Loaded!";
+    };
+    reader.readAsText(file);
+}
+
+function saveAndRender() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chartData));
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = chartData.map((row, ri) => `<tr>${row.map((j, ci) => 
+        `<td contenteditable="true" onblur="chartData[${ri}][${ci}]=this.innerText.trim();localStorage.setItem(STORAGE_KEY, JSON.stringify(chartData))">${j}</td>`).join('')}</tr>`).join('');
+    setTimeout(sync, 100);
+}
+
+function addRow() {
+    chartData.push(["**","**","**","**","**","**"]);
+    saveAndRender();
+}
+
+function sync() {
+    const c = document.getElementById('canvas'), b = document.getElementById('box');
+    if(c && b) { c.width = b.scrollWidth; c.height = b.scrollHeight; }
+}
+
 function runISmart() {
-    const j1 = document.getElementById('j1').value;
-    const j2 = document.getElementById('j2').value;
-    const j3 = document.getElementById('j3').value;
+    const j1 = document.getElementById('j1').value.trim();
+    const j2 = document.getElementById('j2').value.trim();
+    const j3 = document.getElementById('j3').value.trim();
     const day = parseInt(document.getElementById('dayIdx').value);
     const table = document.getElementById('itbl');
     const ctx = document.getElementById('canvas').getContext('2d');
@@ -140,27 +109,31 @@ function runISmart() {
     document.querySelectorAll('td').forEach(t => t.className = "");
     ctx.clearRect(0,0,5000,5000);
 
+    if(!j1 || chartData.length === 0) return alert("Pehle Data load karein!");
+
     const f1 = getFam(j1), f2 = getFam(j2), f3 = getFam(j3);
     const lastRow = chartData.length - 1;
 
     chartData.forEach((row, ri) => {
         if(ri < lastRow - 1) {
-            // Triple DNA Check
-            if(f1.includes(row[day]) && f2.includes(row[day+1]) && f3.includes(row[day+2])) {
-                document.getElementById('status').innerText = "PATTERN MATCH FOUND!";
-                
-                // Drawing Patterns
+            // Triple Match Logic
+            let m1 = f1.includes(row[day]);
+            let m2 = j2 === "" ? true : f2.includes(row[day+1]);
+            let m3 = j3 === "" ? true : f3.includes(row[day+2]);
+
+            if(m1 && m2 && m3) {
+                document.getElementById('status').innerText = "DNA MATCH FOUND!";
                 let patterns = [{rd: -2, cd: 0, type: 's-green'}, {rd: -1, cd: 2, type: 's-blue'}];
+                
                 patterns.forEach(p => {
                     let tr = ri + p.rd, tc = day + p.cd;
-                    if(chartData[tr]) {
+                    if(chartData[tr] && chartData[tr][tc]) {
                         table.rows[ri+1].cells[day].className = "s-red";
                         table.rows[tr+1].cells[tc].className = p.type;
-                        
                         ctx.strokeStyle = p.type.includes('green') ? 'green' : 'blue';
                         ctx.lineWidth = 3; ctx.setLineDash([5, 5]); ctx.beginPath();
-                        ctx.moveTo(table.rows[ri+1].cells[day].offsetLeft + 30, table.rows[ri+1].cells[day].offsetTop + 27);
-                        ctx.lineTo(table.rows[tr+1].cells[tc].offsetLeft + 30, table.rows[tr+1].cells[tc].offsetTop + 27);
+                        ctx.moveTo(table.rows[ri+1].cells[day].offsetLeft + 30, table.rows[ri+1].cells[day].offsetTop + 25);
+                        ctx.lineTo(table.rows[tr+1].cells[tc].offsetLeft + 30, table.rows[tr+1].cells[tc].offsetTop + 25);
                         ctx.stroke();
                     }
                 });
@@ -169,12 +142,8 @@ function runISmart() {
     });
 }
 
-function resetAll() {
-    if(confirm("Sab clear karun?")) {
-        localStorage.removeItem(KEY);
-        location.reload();
-    }
-}
+function clearAll() { chartData = []; localStorage.removeItem(STORAGE_KEY); location.reload(); }
+window.onload = () => { const s = localStorage.getItem(STORAGE_KEY); if(s){ chartData = JSON.parse(s); saveAndRender(); } };
 </script>
 </body>
 </html>
