@@ -131,7 +131,7 @@ function drawLines(cvsId, tblEl) {
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
     // Draw connections between same-colored circles
-    for(let type=1; type<=3; type++){
+    for(let type=1; type<=2; type++){
         const cells = tblEl.querySelectorAll(".c"+type);
         if(cells.length < 2) continue;
         ctx.strokeStyle = type==1?"red":type==2?"green":"blue";
