@@ -129,7 +129,7 @@ let p2 = pool
             }
         }
         // 80% similarity scan
-        if((score/total) >= .90 && data[i+shape.length][c] !== "**") {
+        if((score/total) >= 0.80 && data[i+shape.length][c] !== "**") {
             matches.push({start: i, shape: shape, resR: i+shape.length, resC: c, val: data[i+shape.length][c], per: Math.round((score/total)*100)});
         }
     }
