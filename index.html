@@ -3,84 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI – MON-SAT Tool (2.2 Family Strong)</title>
+<title>Rajdhani AI – MON-SAT Tool (2.2 Family Final)</title>
 
 <style>
 :root{
   --gold:#ffd700; --blue:#3e84ff; --red:#ff3e3e;
   --green:#00ff00; --bg:#0a0a0a;
 }
-body{
-  font-family:sans-serif;background:var(--bg);
-  color:#fff;margin:0;padding:10px;
-}
+body{font-family:sans-serif;background:var(--bg);color:#fff;margin:0;padding:10px}
 .toolbar{
   background:#1a1a1a;padding:15px;border-radius:10px;
   display:flex;gap:8px;justify-content:center;
-  border-bottom:2px solid var(--gold);margin-bottom:15px;
-  flex-wrap:wrap;
+  border-bottom:2px solid var(--gold);margin-bottom:15px;flex-wrap:wrap
 }
 .table-container{
-  position:relative;display:inline-block;background:#fff;
-  padding:10px;border-radius:5px;
-  max-height:55vh;overflow-y:auto;
-  width:100%;max-width:600px;
+  position:relative;background:#fff;padding:10px;border-radius:5px;
+  max-height:55vh;overflow-y:auto;width:100%;max-width:600px
 }
-table{
-  border-collapse:collapse;font-size:13px;
-  color:#000;width:100%;z-index:10;position:relative;
-}
-td,th{
-  border:1px solid #999;width:16.6%;height:45px;
-  text-align:center;font-weight:bold;
-}
-th{
-  background:#800;color:#fff;
-  position:sticky;top:0;font-size:11px;
-}
-
-/* circles */
-.f1{
-  border:3px solid var(--blue)!important;
-  border-radius:50%;
-  background:rgba(62,132,255,.25);
-}
-.f2{
-  border:3px solid var(--red)!important;
-  border-radius:50%;
-  background:rgba(255,62,62,.25);
-}
-.f-res{
-  border:3px solid var(--green)!important;
-  border-radius:50%;
-  background:rgba(0,255,0,.3);
-}
-.blank{
-  background:#f0f0f0!important;
-  color:#bbb;cursor:pointer;
-}
-canvas{
-  position:absolute;top:0;left:0;
-  pointer-events:none;z-index:20;
-}
-.dashboard{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:15px;margin-top:15px;
-}
-.card{
-  background:#1a1a1a;padding:12px;
-  border-radius:10px;border-left:5px solid var(--gold);
-}
-button{
-  padding:10px;cursor:pointer;
-  font-weight:bold;border-radius:5px;border:none;
-}
+table{border-collapse:collapse;font-size:13px;color:#000;width:100%}
+td,th{border:1px solid #999;height:45px;text-align:center;font-weight:bold}
+th{background:#800;color:#fff;position:sticky;top:0;font-size:11px}
+.f1{border:3px solid var(--blue)!important;border-radius:50%;background:rgba(62,132,255,.25)}
+.f2{border:3px solid var(--red)!important;border-radius:50%;background:rgba(255,62,62,.25)}
+.f-res{border:3px solid var(--green)!important;border-radius:50%;background:rgba(0,255,0,.3)}
+.blank{background:#f0f0f0!important;color:#bbb;cursor:pointer}
+canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:20}
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}
+.card{background:#1a1a1a;padding:12px;border-radius:10px;border-left:5px solid var(--gold)}
 .check-btn{
-  display:block;width:100%;margin-top:8px;
-  padding:12px;background:#252525;
-  color:var(--gold);border:1px solid #444;
-  text-align:left;border-radius:5px;font-size:12px;
+  display:block;width:100%;margin-top:8px;padding:12px;
+  background:#252525;color:var(--gold);border:1px solid #444;
+  text-align:left;border-radius:5px;font-size:12px
 }
+button{padding:10px;font-weight:bold;border-radius:5px;border:none;cursor:pointer}
 </style>
 </head>
 
@@ -130,8 +85,7 @@ const families={
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data=JSON.parse(localStorage.getItem("raj_mon_sat_v1"))
- || [["**","**","**","**","**","**"]];
+let data=JSON.parse(localStorage.getItem("raj_mon_sat_v1"))||[["**","**","**","**","**","**"]];
 let activePattern=null,currentClick=null;
 
 function fam(v){
@@ -143,12 +97,12 @@ function fam(v){
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((row,ri)=>{
-  h+=`<tr id="tr-${ri}">`;
+  h+=`<tr>`;
   row.forEach((cell,ci)=>{
    let cls=cell==="**"?"blank":"";
    if(activePattern){
-    let hst=ri>=activePattern.start && ri<activePattern.start+activePattern.shape.length;
-    let prd=currentClick && ri>=currentClick.r-activePattern.shape.length && ri<currentClick.r;
+    let hst=ri>=activePattern.start&&ri<activePattern.start+activePattern.shape.length;
+    let prd=currentClick&&ri>=currentClick.r-activePattern.shape.length&&ri<currentClick.r;
     if(hst){
      let p=activePattern.shape[ri-activePattern.start][ci];
      if(p===1)cls+=" f1"; if(p===2)cls+=" f2";
@@ -162,16 +116,14 @@ function draw(){
        cls+=" f-res";
    }
    h+=`<td class="${cls}" contenteditable
-        onblur="updateCell(${ri},${ci},this.innerText)"
+        onblur="data[${ri}][${ci}]=this.innerText.trim()||'**'"
         onclick="initScan(${ri},${ci})">${cell}</td>`;
   });
   h+="</tr>";
  });
  tbl.innerHTML=h;
- setTimeout(renderLines,80);
+ setTimeout(renderLines,60);
 }
-
-function updateCell(r,c,v){data[r][c]=v.trim()||"**";}
 
 function initScan(r,c){
  if(data[r][c]!=="**")return;
@@ -179,29 +131,23 @@ function initScan(r,c){
 
  let pool=[];
  for(let i=r-1;i>=Math.max(0,r-8);i--){
-  data[i].forEach((v,ci)=>{
-   if(v!=="**") pool.push({ri:i,ci,f:fam(v)});
-  });
+  data[i].forEach((v,ci)=>{ if(v!=="**") pool.push({ri:i,ci,f:fam(v)}) });
  }
- if(pool.length<6) return alert("Pichla data kam hai");
+ if(pool.length<5)return;
 
- /* ---- 2.2 STRONG FAMILY LOGIC ---- */
  let score={};
- pool.forEach(p=>{
-  score[p.f]=(score[p.f]||0)+(10-(r-p.ri));
- });
+ pool.forEach(p=>score[p.f]=(score[p.f]||0)+(10-(r-p.ri)));
 
- let top3=Object.entries(score)
-  .sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
- if(top3.length<3)return;
+ let top3=Object.entries(score).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+ if(top3.length<2)return;
 
- let famA=top3[0], famB=top3[1]; // famC silent
+ let famA=top3[0], famB=top3[1];
 
  let p1=pool.filter(x=>x.f===famA).sort((a,b)=>b.ri-a.ri).slice(0,2);
  let baseCol=p1[0].ci;
- let p2=pool.filter(x=>x.f===famB && Math.abs(x.ci-baseCol)<=1)
+ let p2=pool.filter(x=>x.f===famB && Math.abs(x.ci-baseCol)<=2)
             .sort((a,b)=>b.ri-a.ri).slice(0,2);
- if(p1.length<2||p2.length<2)return;
+ if(p1.length+p2.length<3)return;
 
  let top=Math.min(...p1.map(p=>p.ri),...p2.map(p=>p.ri));
  let shape=Array.from({length:r-top},()=>Array(6).fill(0));
@@ -210,24 +156,17 @@ function initScan(r,c){
 
  let matches=[];
  for(let i=0;i<=data.length-shape.length-1;i++){
-  if(i===top)continue;
   let scoreM=0,total=0;
   for(let k=0;k<shape.length;k++){
    for(let j=0;j<6;j++){
-    if(shape[k][j]>0){
+    if(shape[k][j]){
      total++;
-     if(fam(data[i+k][j])===(shape[k][j]===1?famA:famB))
-       scoreM++;
+     if(fam(data[i+k][j])===(shape[k][j]===1?famA:famB))scoreM++;
     }
    }
   }
-  if(scoreM/total>=0.8 && data[i+shape.length][c]!=="**"){
-   matches.push({
-    start:i,shape,
-    resR:i+shape.length,resC:c,
-    val:data[i+shape.length][c],
-    per:Math.round(scoreM/total*100)
-   });
+  if(scoreM/total>=0.65 && data[i+shape.length][c]!=="**"){
+   matches.push({start:i,shape,resR:i+shape.length,resC:c,val:data[i+shape.length][c],per:Math.round(scoreM/total*100)});
   }
  }
 
@@ -235,7 +174,7 @@ function initScan(r,c){
  matches.slice(0,3).forEach((m,i)=>{
   let b=document.createElement("button");
   b.className="check-btn";
-  b.innerHTML=`🏁 Match #${i+1} (${m.per}%)<br>Row ${m.start+1} → ${m.val}`;
+  b.innerHTML=`🏁 Match #${i+1} (${m.per}%)<br>Result → ${m.val}`;
   b.onclick=()=>{activePattern=m;draw();};
   checkList.appendChild(b);
  });
@@ -244,21 +183,19 @@ function initScan(r,c){
 
 function renderLines(){
  const cvs=mainCanvas,ctx=cvs.getContext("2d");
- const tbl=tblRef=document.getElementById("tbl");
+ const t=tbl.getBoundingClientRect();
  cvs.width=tbl.offsetWidth;cvs.height=tbl.offsetHeight;
  ctx.clearRect(0,0,cvs.width,cvs.height);
- const rect=tbl.getBoundingClientRect();
-
  ["f1","f2","f-res"].forEach((cls,i)=>{
   let els=[...tbl.querySelectorAll("."+cls)];
   if(!els.length)return;
   ctx.strokeStyle=i===0?"#3e84ff":i===1?"#ff3e3e":"#00aa00";
   ctx.lineWidth=3;ctx.beginPath();
-  els.forEach((el,ix)=>{
+  els.forEach((el,j)=>{
    let r=el.getBoundingClientRect();
-   let x=r.left-rect.left+r.width/2;
-   let y=r.top-rect.top+r.height/2;
-   if(ix===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   let x=r.left-t.left+r.width/2;
+   let y=r.top-t.top+r.height/2;
+   j?ctx.lineTo(x,y):ctx.moveTo(x,y);
   });
   ctx.stroke();
  });
@@ -278,7 +215,7 @@ function importCSV(inp){
  r.readAsText(inp.files[0]);
 }
 function addRow(){data.push(["**","**","**","**","**","**"]);draw();}
-function saveToLocal(){localStorage.setItem("raj_mon_sat_v1",JSON.stringify(data));alert("Saved");}
+function saveToLocal(){localStorage.setItem("raj_mon_sat_v1",JSON.stringify(data));}
 draw();
 </script>
 
