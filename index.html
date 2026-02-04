@@ -71,7 +71,7 @@ function draw() {
                 let isHistory = (ri >= activePattern.start && ri < activePattern.start + activePattern.shape.length);
                 let isPrediction = (currentClick && ri >= currentClick.r - activePattern.shape.length && ri < currentClick.r);
                 if(isHistory) {
-                    let p = activePattern.shape[ri - activePattern.start][ci];
+                    let p = activePattern.shape[ri - activePattern.start][ri];
                     if(p === 1) cls += " f1"; if(p === 2) cls += " f2";
                 } 
                 if(isPrediction) {
