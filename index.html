@@ -100,8 +100,24 @@ function initScan(r, c) {
     }
     if(pool.length < 4) return alert("Piche ka data dalo (10 weeks)!");
 
-    let familiesInPool = [...new Set(pool.map(p => p.f))];
-    let selected = familiesInPool.sort(() => 0.5 - Math.random()).slice(0, 2);
+    // ---- STRONG FAMILY SELECTION ----
+let famScore = {};
+pool.forEach(p => {
+  famScore[p.f] = (famScore[p.f] || 0) + (10 - (r - p.ri)); 
+});
+
+// top 3 families by strength
+let top3 = Object.entries(famScore)
+  .sort((a,b) => b[1] - a[1])
+  .slice(0,3)
+  .map(x => x[0]);
+
+if(top3.length < 3) return;
+
+// dominant 2 families only
+let famA = top3[0];
+let famB = top3[1];
+// famC = top3[2] (silent, no draw)
     let p1 = pool.filter(x => x.f === selected[0]).sort((a,b)=>b.ri-a.ri).slice(0,2);
 let baseCol = p1[0].ci;
 
