@@ -95,7 +95,7 @@ function initScan(r, c) {
     currentClick = {r: r, c: c};
     let pool = [];
     // Last 10 weeks constraint
-    for(let i=r-1; i>=Math.max(0, r-10); i--) {
+    for(let i=r-1; i>=Math.max(0, r-15); i--) {
         data[i].forEach((v, ci) => { if(v!=="**") pool.push({ri:i, ci:ci, f:fam(v)}); });
     }
     if(pool.length < 4) return alert("Piche ka data dalo (10 weeks)!");
