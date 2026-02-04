@@ -102,8 +102,13 @@ function initScan(r, c) {
 
     let familiesInPool = [...new Set(pool.map(p => p.f))];
     let selected = familiesInPool.sort(() => 0.5 - Math.random()).slice(0, 2);
-    let p1 = pool.filter(x => x.f === selected[0]).slice(0, 2);
-    let p2 = pool.filter(x => x.f === selected[1]).slice(0, 2);
+    let p1 = pool.filter(x => x.f === selected[0]).sort((a,b)=>b.ri-a.ri).slice(0,2);
+let baseCol = p1[0].ci;
+
+let p2 = pool
+  .filter(x => x.f === selected[1] && Math.abs(x.ci - baseCol) <= 1)
+  .sort((a,b)=>b.ri-a.ri)
+  .slice(0,2);
     if(p1.length < 2 || p2.length < 2) return;
 
     let top = Math.min(p1[0].ri, p1[1].ri, p2[0].ri, p2[1].ri);
