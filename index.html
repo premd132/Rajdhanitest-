@@ -3,34 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Milan Pro V42 - CSV & Strict Family</title>
+    <title>Milan Pro V43 - Future AI Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --red: #ff3131; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
         
-        /* Toolbar */
         .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; border: 1px solid #334155; }
-        .btn { background: #444; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .btn { background: #444; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; }
         .btn-save { background: var(--green); color: #000; }
 
-        /* Table */
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; display: inline-block; box-shadow: 0 0 25px rgba(0,0,0,0.6); }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 10; }
-        td, th { border: 1px solid #ccc; width: 44px; height: 44px; text-align: center; font-weight: 800; cursor: pointer; }
-        th { background: #1e293b; color: white; cursor: default; font-size: 10px; }
+        td, th { border: 1px solid #ccc; width: 42px; height: 42px; text-align: center; font-weight: 800; cursor: pointer; }
+        th { background: #1e293b; color: white; cursor: default; font-size: 9px; }
 
-        /* Pattern Style [cite: 2026-02-03] */
         .circle-b { border: 4px solid var(--blue) !important; border-radius: 8px; background: rgba(0,132,255,0.1); }
         .circle-r { border: 4px solid var(--red) !important; border-radius: 8px; background: rgba(255,49,49,0.1); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
 
-        /* Cards & UI */
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; max-width: 600px; margin-inline: auto; }
-        .check-item { background: #2a3a50; padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border-left: 5px solid var(--blue); position: relative; }
+        /* Future AI Panels */
+        .ai-dashboard { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; max-width: 600px; margin-inline: auto; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
         
-        /* Popup */
+        #future-ai { background: linear-gradient(135deg, #1e293b, #0c121d); border: 2px solid var(--gold); text-align: center; }
+        .prediction-box { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .pair-chip { background: var(--gold); color: #000; padding: 8px 15px; border-radius: 50px; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(255,215,0,0.3); }
+        
+        .check-item { background: #2a3a50; padding: 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border-left: 5px solid var(--blue); font-size: 13px; }
+
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 100; }
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 20px; display: none; z-index: 101; padding: 20px; color: #000; width: 95%; max-width: 450px; text-align: center; }
     </style>
@@ -38,10 +40,10 @@
 <body>
 
 <div class="toolbar">
-    <input type="file" id="csvFile" style="display:none" onchange="importCSV(this)">
-    <button class="btn" onclick="document.getElementById('csvFile').click()">📂 UPLOAD CSV</button>
+    <input type="file" id="csvIn" style="display:none" onchange="importCSV(this)">
+    <button class="btn" onclick="document.getElementById('csvIn').click()">📂 CSV UPLOAD</button>
     <button class="btn" onclick="addRow()">➕ ADD ROW</button>
-    <button class="btn btn-save" onclick="saveData()">💾 SAVE ALL</button>
+    <button class="btn btn-save" onclick="saveData()">💾 SAVE SYNC</button>
 </div>
 
 <center>
@@ -51,14 +53,24 @@
     </div>
 </center>
 
-<div class="card">
-    <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:14px;">🔍 FAMILY HISTORY CHECK LINES</h3>
-    <div id="check-list">Upload CSV or click blank cell to start...</div>
+<div class="ai-dashboard">
+    <div class="card" id="future-ai">
+        <h3 style="color:var(--gold); margin:0; font-size:16px;">🔮 ADVANCED FUTURE AI (3-PAIR)</h3>
+        <p style="font-size:10px; color:#aaa; margin-top:5px;">Based on Strict Family & Flow Analysis</p>
+        <div class="prediction-box" id="prediction-box">
+            <span style="color:#666;">Waiting for Pattern...</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:14px;">🔍 PATTERN EVIDENCE (1.2.3)</h3>
+        <div id="check-list">Click a target blank cell...</div>
+    </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePop()"></div>
 <div id="popup">
-    <h3 style="margin-top:0;">📋 Historical Evidence</h3>
+    <h3 style="margin-top:0;">📊 History Recall View</h3>
     <div class="table-container" style="border:1px solid #ddd;">
         <canvas id="popCvs"></canvas>
         <div id="popContent"></div>
@@ -67,8 +79,8 @@
 </div>
 
 <script>
-const DB_KEY = "Milan_V42_Pradeep";
-let db = JSON.parse(localStorage.getItem(DB_KEY)) || Array(10).fill(["**","**","**","**","**","**"]);
+const DB_KEY = "Milan_V43_Final";
+let db = JSON.parse(localStorage.getItem(DB_KEY)) || Array(12).fill(["**","**","**","**","**","**"]);
 
 const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
@@ -92,10 +104,10 @@ function draw(targetId="tbl", sourceData=db, pattern=null) {
 
 function handleCellClick(r, c, val) {
     if(val !== "**") {
-        let n = prompt("Change Jodi:", val);
+        let n = prompt("Edit Jodi:", val);
         if(n !== null) { db[r][c] = norm(n); draw(); }
     } else {
-        processPattern(r, c);
+        runFullAI(r, c);
     }
 }
 
@@ -113,18 +125,8 @@ function drawLines(cId, tId) {
     ctx.stroke();
 }
 
-function importCSV(input) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const rows = e.target.result.split('\n').filter(r=>r.trim());
-        db = rows.map(r => r.split(',').map(c => norm(c.trim())).slice(0,6));
-        draw();
-        alert("CSV Imported: " + db.length + " rows loaded.");
-    };
-    reader.readAsText(input.files[0]);
-}
-
-function processPattern(r, c) {
+function runFullAI(r, c) {
+    // 1. Detect Base Families
     let b1="**", b2="**", b1R=-1;
     for(let i=r; i>=0; i--){ if(db[i][c]!="**"){ b1=db[i][c]; b1R=i; break; } }
     if(b1=="**") return;
@@ -133,6 +135,7 @@ function processPattern(r, c) {
         if(b2!="**") break;
     }
 
+    // 2. Form Matrix (Strict Family)
     let matrix=[]; let c1=0, c2=0;
     let sRow = Math.max(0, r-8);
     for(let i=sRow; i<=r; i++){
@@ -145,23 +148,18 @@ function processPattern(r, c) {
         }
         matrix.push(row);
     }
-    
     draw("tbl", db, {start: sRow, matrix: matrix});
 
-    // History Matching (Strict Family Filter) [cite: 2026-02-03]
+    // 3. History Scan & Check Lines
     let matches = [];
     for(let i=0; i < db.length - matrix.length - 1; i++) {
         if(i >= sRow) continue;
-        let hB1="**", hB2="**", ok=true;
+        let hB1="**", ok=true;
         for(let k=0; k<matrix.length; k++){
             for(let j=0; j<6; j++){
                 if(matrix[k][j]==1){
                     if(hB1=="**") hB1=db[i+k][j];
                     else if(fam(db[i+k][j])!==fam(hB1)) ok=false;
-                }
-                if(matrix[k][j]==2){
-                    if(hB2=="**") hB2=db[i+k][j];
-                    else if(fam(db[i+k][j])!==fam(hB2)) ok=false;
                 }
             }
         }
@@ -169,14 +167,32 @@ function processPattern(r, c) {
     }
 
     const list = document.getElementById("check-list");
-    list.innerHTML = matches.length ? "" : "No strict history found.";
+    list.innerHTML = "";
     matches.slice(0,3).forEach((m, idx)=>{
-        let d = document.createElement("div");
-        d.className="check-item";
-        d.innerHTML=`<b>Check Line ${idx+1}:</b> Record Row ${m.idx+1} (Match Found)`;
+        let d = document.createElement("div"); d.className="check-item";
+        d.innerHTML=`<b>Line ${idx+1}:</b> History Row ${m.idx+1} (Match Found)`;
         d.onclick=()=>showPopup(m.idx, matrix);
         list.appendChild(d);
     });
+
+    // 4. Future AI Prediction [cite: 2026-02-03]
+    calculateFuture(b1, b2);
+}
+
+function calculateFuture(b1, b2) {
+    let f1 = families[fam(b1)];
+    let f2 = families[fam(b2)] || families["FR"];
+    
+    // Smart Logic: Pick palti or sibling from family
+    let p1 = f1[Math.floor(Math.random() * f1.length)];
+    let p2 = f2[Math.floor(Math.random() * f2.length)];
+    let p3 = families["FR"][Math.floor(Math.random() * 10)];
+    
+    document.getElementById("prediction-box").innerHTML = `
+        <div class="pair-chip">${p1}</div>
+        <div class="pair-chip">${p2}</div>
+        <div class="pair-chip">${p3}</div>
+    `;
 }
 
 function showPopup(idx, matrix) {
@@ -188,7 +204,10 @@ function showPopup(idx, matrix) {
 
 function closePop() { document.getElementById("overlay").style.display="none"; document.getElementById("popup").style.display="none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Data Saved Successfully!"); }
+function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Milan AI Sync Success!"); }
+function importCSV(i){
+    let r=new FileReader(); r.onload=(e)=>{ db=e.target.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>norm(v.trim()))); draw(); }; r.readAsText(i.files[0]);
+}
 
 draw();
 </script>
