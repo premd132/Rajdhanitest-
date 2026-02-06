@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Milan Pro V37 - Advanced AI Recall</title>
+    <title>Milan Pro V38 - Instant Current Pattern</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --red: #ff3131; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
         
-        /* Layout */
         .toolbar { background: var(--panel); padding: 15px; border-radius: 12px; display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; border: 1px solid #334155; }
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; display: inline-block; box-shadow: 0 0 25px rgba(0,0,0,0.6); }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
@@ -24,11 +23,8 @@
         /* Check Lines */
         .check-container { margin-top: 20px; max-width: 600px; margin-inline: auto; }
         .check-item { background: #2a3a50; border-left: 5px solid var(--gold); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; position: relative; }
-        .check-item:hover { background: #334155; transform: scale(1.02); }
-        .strong-tag { position: absolute; right: 10px; top: 10px; background: var(--green); color: #000; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 4px; animation: blink 1s infinite; }
+        .strong-tag { position: absolute; right: 10px; top: 10px; background: var(--green); color: #000; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 4px; }
         
-        @keyframes blink { 50% { opacity: 0.5; } }
-
         /* Popup */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 100; }
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 20px; display: none; z-index: 101; padding: 25px; color: #000; width: 90%; max-width: 500px; text-align: center; }
@@ -38,9 +34,9 @@
 
 <div class="toolbar">
     <input type="file" id="csvIn" style="display:none" onchange="importCSV(this)">
-    <button onclick="document.getElementById('csvIn').click()" style="background:#444; color:#fff; padding:10px 20px; border-radius:5px; border:none; cursor:pointer;">📂 IMPORT CSV</button>
-    <button onclick="addRow()" style="background:#444; color:#fff; padding:10px 20px; border-radius:5px; border:none; cursor:pointer;">➕ ADD ROW</button>
-    <button onclick="saveData()" style="background:var(--green); color:#000; padding:10px 20px; border-radius:5px; border:none; cursor:pointer; font-weight:bold;">💾 SAVE ALL</button>
+    <button onclick="document.getElementById('csvIn').click()" style="background:#444; color:#fff; padding:10px 15px; border-radius:5px; border:none; cursor:pointer;">📂 IMPORT CSV</button>
+    <button onclick="addRow()" style="background:#444; color:#fff; padding:10px 15px; border-radius:5px; border:none; cursor:pointer;">➕ ROW</button>
+    <button onclick="saveData()" style="background:var(--green); color:#000; padding:10px 15px; border-radius:5px; border:none; cursor:pointer; font-weight:bold;">💾 SAVE DATA</button>
 </div>
 
 <center>
@@ -51,24 +47,26 @@
 </center>
 
 <div class="check-container">
-    <h3 style="color:var(--gold); text-align:center;">🔍 AI PATTERN ANALYSIS (Current + History)</h3>
-    <div id="check-list">Click a blank cell to run deep-scan...</div>
+    <h3 style="color:var(--gold); text-align:center;">🔍 HISTORY CHECK LINES</h3>
+    <div id="check-list">Click any blank cell in the table...</div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePop()"></div>
 <div id="popup">
-    <h3 style="margin-top:0;">📊 Real Record Evidence</h3>
+    <h3 style="margin-top:0;">📊 History Record Evidence</h3>
     <div class="table-container" style="border:1px solid #ddd;">
         <canvas id="popCvs"></canvas>
         <div id="popContent"></div>
     </div>
-    <button onclick="closePop()" style="margin-top:15px; padding:10px 30px; background:#f00; color:#fff; border:none; border-radius:5px; cursor:pointer;">CLOSE VIEW</button>
+    <button onclick="closePop()" style="margin-top:15px; padding:10px 30px; background:#f00; color:#fff; border:none; border-radius:5px; cursor:pointer;">CLOSE</button>
 </div>
 
 <script>
-const DB_KEY = "Milan_Pradeep_V37";
+const DB_KEY = "Milan_Pradeep_V38";
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || Array(12).fill(["**","**","**","**","**","**"]);
-let families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
+let currentPattern = null; 
+
+const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
 function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
 function palti(v){return v.length==2 ? v[1]+v[0] : v;}
@@ -82,7 +80,7 @@ function draw(targetId="tbl", sourceData=db, pattern=null) {
         r.forEach((c, ci) => {
             let type = (pattern && ri >= pattern.start && ri < pattern.start + pattern.matrix.length) ? pattern.matrix[ri-pattern.start][ci] : 0;
             let cls = type==1 ? "circle-b" : (type==2 ? "circle-r" : "");
-            let editAttr = targetId=="tbl" ? `contenteditable="true" onblur="db[${ri}][${ci}]=norm(this.innerText);draw();" onclick="${c=='**'?'deepScan('+ri+','+ci+')':''}"` : "";
+            let editAttr = targetId=="tbl" ? `contenteditable="true" onblur="db[${ri}][${ci}]=norm(this.innerText);draw();" onclick="${c=='**'?'instantProcess('+ri+','+ci+')':''}"` : "";
             h+=`<td class="${cls}" ${editAttr}>${c}</td>`;
         });
         h+="</tr>";
@@ -106,8 +104,8 @@ function drawLines(cId, tId) {
     ctx.stroke();
 }
 
-function deepScan(r, c) {
-    // 1. Detect Base Families
+function instantProcess(r, c) {
+    // 1. Current Pattern Form [cite: 2026-02-03]
     let b1="**", b2="**", b1R=-1;
     for(let i=r; i>=0; i--){ if(db[i][c]!="**"){ b1=db[i][c]; b1R=i; break; } }
     if(b1=="**") return;
@@ -116,7 +114,6 @@ function deepScan(r, c) {
         if(b2!="**") break;
     }
 
-    // 2. Create Matrix (2+2 Logic)
     let matrix=[]; let c1=0, c2=0;
     let sRow = Math.max(0, r-8);
     for(let i=sRow; i<=r; i++){
@@ -129,10 +126,16 @@ function deepScan(r, c) {
         }
         matrix.push(row);
     }
+    
+    // Turant current table mein circles banao
+    currentPattern = {start: sRow, matrix: matrix};
+    draw("tbl", db, currentPattern);
 
-    // 3. Search All Data (Old + Current) [cite: 2026-02-03]
+    // 2. Scan History for Check Lines
     let matches = [];
-    for(let i=0; i <= db.length - matrix.length - 1; i++) {
+    // Hum sirf purane records (current pattern row ke pehle wale) scan karenge
+    for(let i=0; i < db.length - matrix.length - 1; i++) {
+        if(i >= sRow) continue; // Skip current pattern range
         let score = 0;
         for(let k=0; k<matrix.length; k++){
             for(let j=0; j<6; j++){
@@ -140,21 +143,20 @@ function deepScan(r, c) {
                 if(matrix[k][j]==2 && smartMatch(db[i+k][j], b2)) score++;
             }
         }
-        if(score >= 2) matches.push({idx: i, score: score}); // Minimum 2 matches needed
+        if(score >= 2) matches.push({idx: i, score: score});
     }
 
-    // 4. Sort and Display Check Lines
     matches.sort((a,b)=>b.score - a.score);
     const list = document.getElementById("check-list");
-    list.innerHTML = "";
+    list.innerHTML = matches.length ? "" : "No history matches found.";
     matches.slice(0, 3).forEach((m, i) => {
         let div = document.createElement("div");
         div.className = "check-item";
         let isStrong = (i==0 && m.score >= 4);
         div.innerHTML = `
-            ${isStrong ? '<span class="strong-tag">AI STRONGEST RECOMMENDATION</span>' : ''}
-            <b>Check Line ${i+1}:</b> Match found at Row ${m.idx+1}<br>
-            <small>Pattern Score: ${(m.score/4*100).toFixed(0)}% Harmony</small>
+            ${isStrong ? '<span class="strong-tag">⭐ STRONGEST</span>' : ''}
+            <b>Check Line ${i+1}:</b> Historical match at Row ${m.idx+1}<br>
+            <small>Match Confidence: ${(m.score/4*100).toFixed(0)}%</small>
         `;
         div.onclick = () => showPopup(m.idx, matrix);
         list.appendChild(div);
@@ -165,13 +167,14 @@ function showPopup(idx, matrix) {
     document.getElementById("overlay").style.display = "block";
     document.getElementById("popup").style.display = "block";
     document.getElementById("popContent").innerHTML = '<table id="popTbl"></table>';
+    // Popup shows historical data slice
     let slice = db.slice(idx, idx + matrix.length + 1);
     draw("popTbl", slice, {start: 0, matrix: matrix});
 }
 
 function closePop() { document.getElementById("overlay").style.display="none"; document.getElementById("popup").style.display="none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Milan AI Sync Complete!"); }
+function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Data Saved!"); }
 function importCSV(i){
     let r=new FileReader(); r.onload=(e)=>{ db=e.target.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>norm(v.trim()))); draw(); }; r.readAsText(i.files[0]);
 }
