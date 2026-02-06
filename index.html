@@ -3,22 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Milan Pro V41 - Strict Family Match</title>
+    <title>Milan Pro V42 - CSV & Strict Family</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --red: #ff3131; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
+        
+        /* Toolbar */
         .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; border: 1px solid #334155; }
+        .btn { background: #444; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .btn-save { background: var(--green); color: #000; }
+
+        /* Table */
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; display: inline-block; box-shadow: 0 0 25px rgba(0,0,0,0.6); }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 10; }
         td, th { border: 1px solid #ccc; width: 44px; height: 44px; text-align: center; font-weight: 800; cursor: pointer; }
         th { background: #1e293b; color: white; cursor: default; font-size: 10px; }
-        .circle-b { border: 4px solid var(--blue) !important; border-radius: 10px; background: rgba(0,132,255,0.1); }
-        .circle-r { border: 4px solid var(--red) !important; border-radius: 10px; background: rgba(255,49,49,0.1); }
+
+        /* Pattern Style [cite: 2026-02-03] */
+        .circle-b { border: 4px solid var(--blue) !important; border-radius: 8px; background: rgba(0,132,255,0.1); }
+        .circle-r { border: 4px solid var(--red) !important; border-radius: 8px; background: rgba(255,49,49,0.1); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; }
-        .check-item { background: #2a3a50; padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border-left: 5px solid var(--blue); }
+
+        /* Cards & UI */
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; max-width: 600px; margin-inline: auto; }
+        .check-item { background: #2a3a50; padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border-left: 5px solid var(--blue); position: relative; }
+        
+        /* Popup */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; z-index: 100; }
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 20px; display: none; z-index: 101; padding: 20px; color: #000; width: 95%; max-width: 450px; text-align: center; }
     </style>
@@ -26,8 +38,10 @@
 <body>
 
 <div class="toolbar">
-    <button onclick="addRow()" style="background:#444; color:#fff; border:none; padding:10px; border-radius:5px;">➕ ADD ROW</button>
-    <button onclick="saveData()" style="background:var(--green); color:#000; font-weight:bold; border:none; padding:10px; border-radius:5px;">💾 SAVE</button>
+    <input type="file" id="csvFile" style="display:none" onchange="importCSV(this)">
+    <button class="btn" onclick="document.getElementById('csvFile').click()">📂 UPLOAD CSV</button>
+    <button class="btn" onclick="addRow()">➕ ADD ROW</button>
+    <button class="btn btn-save" onclick="saveData()">💾 SAVE ALL</button>
 </div>
 
 <center>
@@ -38,23 +52,23 @@
 </center>
 
 <div class="card">
-    <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:14px;">🔍 STRICT FAMILY CHECK LINES</h3>
-    <div id="check-list">Click a blank cell to scan...</div>
+    <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:14px;">🔍 FAMILY HISTORY CHECK LINES</h3>
+    <div id="check-list">Upload CSV or click blank cell to start...</div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePop()"></div>
 <div id="popup">
-    <h3>📊 Corrected History Record</h3>
+    <h3 style="margin-top:0;">📋 Historical Evidence</h3>
     <div class="table-container" style="border:1px solid #ddd;">
         <canvas id="popCvs"></canvas>
         <div id="popContent"></div>
     </div>
-    <button onclick="closePop()" style="margin-top:15px; padding:10px 25px; background:red; color:white; border:none; border-radius:5px;">CLOSE</button>
+    <button onclick="closePop()" style="margin-top:15px; padding:10px 25px; background:red; color:white; border:none; border-radius:5px; font-weight:bold;">CLOSE</button>
 </div>
 
 <script>
-const DB_KEY = "Milan_Strict_V41";
-let db = JSON.parse(localStorage.getItem(DB_KEY)) || Array(12).fill(["**","**","**","**","**","**"]);
+const DB_KEY = "Milan_V42_Pradeep";
+let db = JSON.parse(localStorage.getItem(DB_KEY)) || Array(10).fill(["**","**","**","**","**","**"]);
 
 const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
@@ -78,10 +92,10 @@ function draw(targetId="tbl", sourceData=db, pattern=null) {
 
 function handleCellClick(r, c, val) {
     if(val !== "**") {
-        let n = prompt("Edit:", val);
+        let n = prompt("Change Jodi:", val);
         if(n !== null) { db[r][c] = norm(n); draw(); }
     } else {
-        processStrictPattern(r, c);
+        processPattern(r, c);
     }
 }
 
@@ -99,7 +113,18 @@ function drawLines(cId, tId) {
     ctx.stroke();
 }
 
-function processStrictPattern(r, c) {
+function importCSV(input) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const rows = e.target.result.split('\n').filter(r=>r.trim());
+        db = rows.map(r => r.split(',').map(c => norm(c.trim())).slice(0,6));
+        draw();
+        alert("CSV Imported: " + db.length + " rows loaded.");
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function processPattern(r, c) {
     let b1="**", b2="**", b1R=-1;
     for(let i=r; i>=0; i--){ if(db[i][c]!="**"){ b1=db[i][c]; b1R=i; break; } }
     if(b1=="**") return;
@@ -114,7 +139,6 @@ function processStrictPattern(r, c) {
         let row=[0,0,0,0,0,0];
         for(let j=0; j<6; j++){
             if(db[i][j]!="**"){
-                // Strict Family Check [cite: 2026-02-03]
                 if(fam(db[i][j])==fam(b1) && c1<2){ row[j]=1; c1++; }
                 else if(b2!=="**" && fam(db[i][j])==fam(b2) && c2<2){ row[j]=2; c2++; }
             }
@@ -124,22 +148,20 @@ function processStrictPattern(r, c) {
     
     draw("tbl", db, {start: sRow, matrix: matrix});
 
-    // History Matching (Strict Family only)
+    // History Matching (Strict Family Filter) [cite: 2026-02-03]
     let matches = [];
     for(let i=0; i < db.length - matrix.length - 1; i++) {
         if(i >= sRow) continue;
         let hB1="**", hB2="**", ok=true;
-        
-        // Find historical base families first
         for(let k=0; k<matrix.length; k++){
             for(let j=0; j<6; j++){
                 if(matrix[k][j]==1){
                     if(hB1=="**") hB1=db[i+k][j];
-                    else if(fam(db[i+k][j])!==fam(hB1)) ok=false; // BLOCK if family doesn't match within Blue
+                    else if(fam(db[i+k][j])!==fam(hB1)) ok=false;
                 }
                 if(matrix[k][j]==2){
                     if(hB2=="**") hB2=db[i+k][j];
-                    else if(fam(db[i+k][j])!==fam(hB2)) ok=false; // BLOCK if family doesn't match within Red
+                    else if(fam(db[i+k][j])!==fam(hB2)) ok=false;
                 }
             }
         }
@@ -147,11 +169,11 @@ function processStrictPattern(r, c) {
     }
 
     const list = document.getElementById("check-list");
-    list.innerHTML = matches.length ? "" : "No strict family matches found.";
+    list.innerHTML = matches.length ? "" : "No strict history found.";
     matches.slice(0,3).forEach((m, idx)=>{
         let d = document.createElement("div");
         d.className="check-item";
-        d.innerHTML=`<b>Line ${idx+1}:</b> Historical Row ${m.idx+1} (Strict Family Match)`;
+        d.innerHTML=`<b>Check Line ${idx+1}:</b> Record Row ${m.idx+1} (Match Found)`;
         d.onclick=()=>showPopup(m.idx, matrix);
         list.appendChild(d);
     });
@@ -166,7 +188,7 @@ function showPopup(idx, matrix) {
 
 function closePop() { document.getElementById("overlay").style.display="none"; document.getElementById("popup").style.display="none"; }
 function addRow() { db.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Strict Mode Saved!"); }
+function saveData() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Data Saved Successfully!"); }
 
 draw();
 </script>
