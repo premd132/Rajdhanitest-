@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan PRO AI – Fixed</title>
+<title>Milan PRO AI – Stable</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -22,7 +22,7 @@ body{margin:0;background:var(--bg);color:#fff}
  display:flex;
  flex-direction:column;
  justify-content:center;
- align-items:center;
+ align-items:center
 }
 .hero-title{font-size:3rem;color:var(--gold)}
 .enter-btn{
@@ -31,7 +31,7 @@ body{margin:0;background:var(--bg);color:#fff}
  border-radius:40px;
  background:var(--gold);
  font-weight:800;
- cursor:pointer;
+ cursor:pointer
 }
 
 /* APP */
@@ -45,21 +45,10 @@ body{margin:0;background:var(--bg);color:#fff}
  flex-wrap:wrap;
  justify-content:center
 }
-button,input{
- padding:6px 10px;
- border-radius:6px;
- border:none;
- font-weight:bold;
- cursor:pointer
-}
+button{padding:6px 10px;border-radius:6px;border:none;font-weight:bold}
 
 /* TABLE */
-.table-container{
- background:#fff;
- padding:5px;
- border-radius:10px;
- overflow:auto
-}
+.table-container{background:#fff;padding:5px;border-radius:10px;overflow:auto}
 table{border-collapse:collapse;color:#000}
 td,th{
  border:1px solid #ccc;
@@ -67,20 +56,12 @@ td,th{
  text-align:center;
  font-weight:bold
 }
-th{
- background:#1e293b;
- color:#fff;
- font-size:11px
-}
-.blank{
- background:#eee;
- color:#999;
- cursor:pointer
-}
+th{background:#1e293b;color:#fff;font-size:11px}
+.blank{background:#eee;color:#999}
 
 /* DASHBOARD */
-.dashboard{margin-top:15px}
 .card{
+ margin-top:15px;
  background:var(--panel);
  padding:12px;
  border-radius:10px;
@@ -94,18 +75,18 @@ th{
 <!-- HOME -->
 <div id="home-screen">
  <h1 class="hero-title">Milan PRO AI</h1>
- <button class="enter-btn" onclick="startApp()">START</button>
+ <button class="enter-btn" id="startBtn">START</button>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="main-app">
 
  <div class="toolbar">
   <input type="file" id="csv" accept=".csv" style="display:none">
-  <button onclick="document.getElementById('csv').click()">CSV</button>
-  <button onclick="addRow()">ROW</button>
-  <button onclick="saveData()" style="background:#28a745">SAVE</button>
-  <button onclick="clearData()" style="background:#dc3545">CLEAR</button>
+  <button id="csvBtn">CSV</button>
+  <button id="rowBtn">ROW</button>
+  <button id="saveBtn" style="background:#28a745">SAVE</button>
+  <button id="clearBtn" style="background:#dc3545">CLEAR</button>
  </div>
 
  <center>
@@ -114,20 +95,21 @@ th{
   </div>
  </center>
 
- <div class="dashboard">
-  <div class="card">
-   <h3>🤖 AI BLANK PREDICTION</h3>
-   <div id="ai">Blank ( ** ) cell par click karo</div>
-  </div>
+ <div class="card">
+  <h3>🤖 AI BLANK PREDICTION</h3>
+  <div id="ai">Blank (** ) cell par tap karo</div>
  </div>
 
 </div>
 
 <script>
-/* ================= STORAGE ================= */
-const STORAGE_KEY = "milan_pro_ai_data";
+/* ================= SAFE INIT ================= */
+document.addEventListener("DOMContentLoaded",()=>{
 
-/* ================= FAMILY DATA ================= */
+/* ---------- CONFIG ---------- */
+const STORAGE_KEY="milan_ai_safe";
+
+/* ---------- FAMILY ---------- */
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -143,7 +125,7 @@ const families={
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-/* ================= DATA ================= */
+/* ---------- DATA ---------- */
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
  ["51","91","41","57","19","95"],
  ["05","90","74","06","19","63"],
@@ -151,103 +133,89 @@ let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
  ["**","**","**","**","**","**"]
 ];
 
-/* ================= HELPERS ================= */
-function norm(v){
- if(v==="**") return "**";
- v=String(v).trim();
- if(v==="") return "**";
- return v.padStart(2,"0");
-}
-function palti(v){ return v[1]+v[0]; }
-function fam(v){
- for(let k in families)
-  if(families[k].includes(v)) return k;
- return "";
-}
+/* ---------- HELPERS ---------- */
+const norm=v=>v==="**"?"**":String(v||"").padStart(2,"0");
+const palti=v=>v[1]+v[0];
+const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return""};
 
-/* ================= START ================= */
-function startApp(){
+/* ---------- START ---------- */
+document.getElementById("startBtn").onclick=()=>{
  document.getElementById("home-screen").style.display="none";
  document.getElementById("main-app").style.display="block";
  draw();
-}
+};
 
-/* ================= DRAW TABLE ================= */
+/* ---------- DRAW ---------- */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,i)=>{
   h+="<tr>";
   r.forEach((c,j)=>{
    let cls=c==="**"?"blank":"";
-   h+=`<td class="${cls}" contenteditable
-        onclick="blankClick(${i},${j})"
-        oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
+   h+=`<td class="${cls}" data-r="${i}" data-c="${j}" contenteditable>${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
 }
 
-/* ================= BLANK AI ================= */
-function blankClick(r,c){
- if(data[r][c] !== "**") return;
+/* ---------- TABLE CLICK (EVENT DELEGATION) ---------- */
+document.getElementById("tbl").addEventListener("click",e=>{
+ let td=e.target.closest("td");
+ if(!td) return;
+ let r=+td.dataset.r, c=+td.dataset.c;
+ if(data[r][c]!=="**") return;
 
- let score = {};
-
+ let score={};
  for(let i=0;i<data.length;i++){
   let v=data[i][c];
   if(v!=="**"){
-   score[v]=(score[v]||0)+3; // same column weight
+   score[v]=(score[v]||0)+3;
    let f=fam(v);
-   if(f){
-    families[f].forEach(j=>{
-     score[j]=(score[j]||0)+1;
-    });
-   }
+   families[f]?.forEach(j=>score[j]=(score[j]||0)+1);
    score[palti(v)]=(score[palti(v)]||0)+1;
   }
  }
 
- let top = Object.entries(score)
+ let top=Object.entries(score)
   .sort((a,b)=>b[1]-a[1])
-  .map(e=>e[0])
+  .map(v=>v[0])
   .slice(0,4);
 
- document.getElementById("ai").innerHTML =
+ document.getElementById("ai").innerHTML=
   `<b>${["MON","TUE","WED","THU","FRI","SAT"][c]}</b><br>
-   🔥 Strong 4 Jodi:<br>
+   🔥 Top 4 Jodi:<br>
    <span style="color:#ffd700;font-size:18px">${top.join(" , ")}</span>`;
-}
-
-/* ================= CSV IMPORT ================= */
-document.getElementById("csv").addEventListener("change",e=>{
- let f=new FileReader();
- f.onload=()=>{
-  data = f.result
-   .split("\n")
-   .filter(l=>l.trim())
-   .map(l=>l.split(",").map(v=>norm(v)));
-  draw();
-  saveData(false);
- };
- f.readAsText(e.target.files[0]);
 });
 
-/* ================= STORAGE ================= */
-function saveData(alertOn=true){
- localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
- if(alertOn) alert("Data Saved");
-}
-function clearData(){
- if(confirm("Clear all data?")){
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
- }
-}
-function addRow(){
- data.push(["**","**","**","**","**","**"]);
- draw();
-}
+/* ---------- EDIT SAVE ---------- */
+document.getElementById("tbl").addEventListener("input",e=>{
+ let td=e.target.closest("td");
+ if(!td) return;
+ let r=+td.dataset.r, c=+td.dataset.c;
+ data[r][c]=norm(td.innerText);
+});
+
+/* ---------- CSV ---------- */
+document.getElementById("csvBtn").onclick=()=>csv.click();
+document.getElementById("csv").onchange=e=>{
+ let f=new FileReader();
+ f.onload=()=>{
+  data=f.result.split("\n")
+   .filter(l=>l.trim())
+   .map(l=>l.split(",").map(v=>norm(v.trim())));
+  draw();
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ };
+ f.readAsText(e.target.files[0]);
+};
+
+/* ---------- BUTTONS ---------- */
+rowBtn.onclick=()=>{data.push(["**","**","**","**","**","**"]);draw()};
+saveBtn.onclick=()=>{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved")};
+clearBtn.onclick=()=>{localStorage.removeItem(STORAGE_KEY);location.reload()};
+
+});
 </script>
 
 </body>
