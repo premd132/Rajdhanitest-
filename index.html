@@ -112,8 +112,11 @@ const palti=v=>v[1]+v[0];
 const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return"";}
 const smart=(a,b)=>a!="**"&&(a==b||palti(a)==b||fam(a)==fam(b));
 
-function startApp(){home-screen.style.display="none";main-app.style.display="block";draw();}
-
+function startApp(){
+  document.getElementById("home-screen").style.display = "none";
+  document.getElementById("main-app").style.display = "block";
+  draw();
+}
 /* DRAW */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
