@@ -3,80 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan Pro AI – Premium System</title>
+<title>Milan PRO AI – Ultimate</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
 :root{
- --gold:#ffd700;
- --blue-circle:#0084ff;
- --green-line:#00ff88;
- --bg:#0f172a;
- --panel:#1e293b;
+ --gold:#ffd700;--blue:#0084ff;--green:#00ff88;
+ --bg:#0f172a;--panel:#1e293b;
 }
 *{box-sizing:border-box;font-family:Poppins}
 body{margin:0;background:var(--bg);color:#fff}
 
-/* HOME */
-#home-screen{
- height:100vh;display:flex;flex-direction:column;
- justify-content:center;align-items:center;
- background:radial-gradient(circle,#1e293b,#0f172a)
-}
+#home-screen{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
 .hero-title{font-size:3rem;color:var(--gold)}
-.enter-btn{
- padding:15px 40px;border:none;border-radius:40px;
- background:var(--gold);font-weight:800;cursor:pointer
-}
+.enter-btn{padding:15px 40px;border:none;border-radius:40px;background:var(--gold);font-weight:800}
 
-/* APP */
 #main-app{display:none;padding:10px}
-.toolbar{
- background:var(--panel);padding:10px;border-radius:10px;
- display:flex;gap:8px;flex-wrap:wrap;justify-content:center
-}
-button,select,input{
- padding:6px 10px;border-radius:6px;border:none;font-weight:bold
-}
+.toolbar{background:var(--panel);padding:10px;border-radius:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+button,select,input{padding:6px 10px;border-radius:6px;border:none;font-weight:bold}
 
-/* TABLE */
 .table-container{position:relative;background:#fff;padding:5px;border-radius:10px}
 table{border-collapse:collapse;color:#000}
-td,th{
- border:1px solid #ccc;width:45px;height:45px;
- text-align:center;font-weight:bold
-}
+td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:bold}
 th{background:#1e293b;color:#fff;font-size:11px}
 
-.circle{
- border:3px solid var(--blue-circle)!important;
- border-radius:50%!important;
- background:rgba(0,132,255,.15)
-}
+.circle{border:3px solid var(--blue)!important;border-radius:50%!important;background:rgba(0,132,255,.15)}
 canvas{position:absolute;top:0;left:0;pointer-events:none}
 
-/* DASHBOARD */
-.dashboard{
- display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
- gap:10px;margin-top:15px
-}
-.card{
- background:var(--panel);padding:12px;border-radius:10px;
- border-top:3px solid var(--gold)
-}
-.card h3{margin:0 0 10px;color:var(--gold);font-size:13px}
-
-/* POPUP */
-#popup{
- position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
- background:#fff;color:#000;border-radius:12px;
- display:none;z-index:99;padding:10px;width:90%;max-width:400px
-}
-.overlay{
- position:fixed;top:0;left:0;width:100%;height:100%;
- background:rgba(0,0,0,.8);display:none;z-index:98
-}
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:15px}
+.card{background:var(--panel);padding:12px;border-radius:10px;border-top:3px solid var(--gold)}
+.card h3{margin:0 0 8px;color:var(--gold);font-size:13px}
 </style>
 </head>
 
@@ -97,29 +54,22 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
  <button onclick="clearData()" style="background:#dc3545">CLEAR</button>
 </div>
 
-<!-- 🔍 SEARCH PANEL (VIDEO JESA) -->
-<div class="toolbar" style="background:#111;margin-top:8px">
+<!-- SEARCH PANEL -->
+<div class="toolbar" style="background:#111">
  <select id="sDay">
-  <option value="">DAY</option>
-  <option value="0">MON</option>
-  <option value="1">TUE</option>
-  <option value="2">WED</option>
-  <option value="3">THU</option>
-  <option value="4">FRI</option>
-  <option value="5">SAT</option>
+  <option value="">DAY</option><option value="0">MON</option><option value="1">TUE</option>
+  <option value="2">WED</option><option value="3">THU</option><option value="4">FRI</option><option value="5">SAT</option>
  </select>
-
  <select id="sType">
   <option value="1">1 JODI</option>
   <option value="2">2 JODI</option>
   <option value="3">3 JODI</option>
  </select>
-
  <input id="sJodi" placeholder="12 or 12,45,90">
  <button onclick="runSearch()" style="background:var(--gold)">SEARCH</button>
 </div>
 
-<center style="margin-top:10px">
+<center>
 <div class="table-container">
  <canvas id="mainCanvas"></canvas>
  <table id="tbl"></table>
@@ -127,44 +77,22 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 </center>
 
 <div class="dashboard">
- <div class="card">
-  <h3>✔ Matches</h3>
-  <div id="checks"></div>
- </div>
- <div class="card">
-  <h3>🤖 AI</h3>
-  <div id="ai">Waiting...</div>
- </div>
- <div class="card">
-  <h3>🔮 Future</h3>
-  <div id="future">---</div>
- </div>
+ <div class="card"><h3>✔ Matches</h3><div id="checks"></div></div>
+ <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">---</div></div>
+ <div class="card"><h3>🔮 Prediction</h3><div id="future">---</div></div>
 </div>
 
-</div>
-
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
- <button onclick="closePopup()">CLOSE</button>
- <div id="popData"></div>
- <canvas id="popCanvas"></canvas>
 </div>
 
 <script>
-/* ================= CORE LOGIC (UNCHANGED) ================= */
-
-const STORAGE_KEY="pdata_Milan_v2";
+/* CORE DATA */
+const STORAGE_KEY="pdata_Milan_v3";
 const families={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"],
+"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],
 "HR":["05","16","27","38","49","50","61","72","83","94"],
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
@@ -176,45 +104,39 @@ let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||[
 ["**","**","**","**","**","**"]
 ];
 
-let activeMark=null,targetCol=null;
+let activeMark=null;
 
-function startApp(){
- home-screen.style.display="none";
- main-app.style.display="block";
- draw();
-}
-function norm(v){if(v=="**")return"**";v=String(v);return v.length==1?"0"+v:v}
-function palti(v){return v[1]+v[0]}
-function fam(v){for(let k in families)if(families[k].includes(v))return k;return""}
-function smartMatch(a,b){return a!="**"&&(a==b||palti(a)==b||fam(a)==fam(b))}
+/* HELPERS */
+const norm=v=>v=="**"?"**":String(v).padStart(2,"0");
+const palti=v=>v[1]+v[0];
+const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return"";}
+const smart=(a,b)=>a!="**"&&(a==b||palti(a)==b||fam(a)==fam(b));
 
+function startApp(){home-screen.style.display="none";main-app.style.display="block";draw();}
+
+/* DRAW */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,i)=>{
   h+="<tr>";
   r.forEach((c,j)=>{
-   let cls=activeMark&&isPart(i,j)?"circle":"";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${i},${j},this)">${c}</td>`;
+   let cls=activeMark&&activeMark.shape[i-activeMark.start]?.[j]?"circle":"";
+   h+=`<td class="${cls}" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
   });
   h+="</tr>";
  });
  tbl.innerHTML=h;
- if(activeMark)setTimeout(()=>drawLines("mainCanvas",tbl),50);
+ if(activeMark)setTimeout(()=>drawLines(),50);
 }
 
-function isPart(r,c){
- let i=r-activeMark.start;
- return i>=0&&i<activeMark.shape.length&&activeMark.shape[i][c];
-}
-
-function drawLines(id,t){
- let c=document.getElementById(id),x=c.getContext("2d");
- c.width=t.offsetWidth;c.height=t.offsetHeight;
+function drawLines(){
+ let c=mainCanvas,x=c.getContext("2d");
+ c.width=tbl.offsetWidth;c.height=tbl.offsetHeight;
  x.clearRect(0,0,c.width,c.height);
- let cells=t.querySelectorAll(".circle");
+ let cells=tbl.querySelectorAll(".circle");
  if(cells.length<2)return;
- let tr=t.getBoundingClientRect();
- x.strokeStyle=varGreen="#00ff88";x.lineWidth=2.5;x.beginPath();
+ let tr=tbl.getBoundingClientRect();
+ x.strokeStyle="#00ff88";x.lineWidth=2.5;x.beginPath();
  cells.forEach((e,i)=>{
   let r=e.getBoundingClientRect();
   let X=r.left-tr.left+r.width/2;
@@ -224,56 +146,50 @@ function drawLines(id,t){
  x.stroke();
 }
 
-function edit(r,c,e){data[r][c]=norm(e.innerText.trim())}
-function addRow(){data.push(["**","**","**","**","**","**"]);draw()}
-function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved")}
-function clearData(){if(confirm("Clear?")){localStorage.clear();location.reload()}}
-
-/* ================= VIDEO STYLE SEARCH ENGINE ================= */
-
+/* SEARCH + AI */
 function runSearch(){
  activeMark=null;
- let day=sDay.value;
- let need=parseInt(sType.value);
- let jodis=sJodi.value.split(",").map(v=>norm(v.trim())).filter(v=>v);
- if(!jodis.length)return alert("Enter jodi");
+ let jodis=sJodi.value.split(",").map(v=>norm(v.trim())).filter(Boolean);
+ let need=+sType.value;
+ let matches=[],shape=[];
 
- let shape=[],matches=[];
  for(let i=0;i<data.length;i++){
   let hit=0;
-  data[i].forEach((v,c)=>{
-   if(day==""||c==day)
-    if(jodis.some(j=>smartMatch(v,j)))hit++;
-  });
+  data[i].forEach(v=>jodis.some(j=>smart(v,j))&&hit++);
   if(hit>=need){
-   let sh=[];
-   for(let k=i;k<i+need&&k<data.length;k++){
-    sh.push(data[k].map(v=>jodis.some(j=>smartMatch(v,j))?1:0));
-   }
-   shape=sh;matches.push({index:i});
+   shape=[];
+   for(let k=i;k<i+need&&k<data.length;k++)
+    shape.push(data[k].map(v=>jodis.some(j=>smart(v,j))?1:0));
+   matches.push(i);
   }
  }
- showChecks(shape,matches);
-}
 
-function showChecks(shape,m){
+ let touch=matches.length>=3?"3rd Touch":matches.length==2?"2nd Touch":"1st Touch";
+ let strength=Math.min(100,Math.round((matches.length*shape.length)/data.length*100));
+ let level=strength>65?"🟢 STRONG":strength>40?"🟡 MEDIUM":"🔴 WEAK";
+
+ ai.innerHTML=`<b>${touch}</b><br>Strength: ${strength}% (${level})`;
+
  checks.innerHTML="";
- m.forEach(o=>{
+ matches.forEach(i=>{
   let d=document.createElement("div");
-  d.innerText="Match at Row "+(o.index+1);
-  d.onclick=()=>{activeMark={start:o.index,shape};draw()};
+  d.innerText="Match Row "+(i+1);
+  d.onclick=()=>{activeMark={start:i,shape};draw();};
   checks.appendChild(d);
  });
- ai.innerHTML="Matches: "+m.length;
- future.innerHTML="Pattern Flow Active";
+
+ future.innerHTML="Next row same family / palti expected";
 }
 
-function closePopup(){popup.style.display="none";overlay.style.display="none"}
+/* DATA */
+function addRow(){data.push(["**","**","**","**","**","**"]);draw()}
+function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved")}
+function clearData(){if(confirm("Clear all?")){localStorage.clear();location.reload()}}
 csv.onchange=e=>{
  let f=new FileReader();
- f.onload=()=>{data=f.result.split("\n").map(l=>l.split(",").map(v=>norm(v.trim())));draw()}
+ f.onload=()=>{data=f.result.split("\n").map(l=>l.split(",").map(norm));draw()}
  f.readAsText(e.target.files[0]);
-}
+};
 </script>
 </body>
 </html>
