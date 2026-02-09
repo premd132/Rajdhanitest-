@@ -3,53 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan PRO AI – Blank AI</title>
+<title>Milan PRO AI – Final</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
 :root{
- --gold:#ffd700; --blue:#0084ff; --green:#00ff88;
- --bg:#0f172a; --panel:#1e293b;
+ --gold:#ffd700; --bg:#0f172a; --panel:#1e293b;
 }
 *{box-sizing:border-box;font-family:Poppins}
 body{margin:0;background:var(--bg);color:#fff}
 
-#home-screen{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
+#home-screen{
+ height:100vh;display:flex;flex-direction:column;
+ align-items:center;justify-content:center
+}
 .hero-title{font-size:3rem;color:var(--gold)}
-.enter-btn{padding:15px 40px;border:none;border-radius:40px;background:var(--gold);font-weight:800}
+.enter-btn{
+ padding:15px 40px;border:none;border-radius:40px;
+ background:var(--gold);font-weight:800;cursor:pointer
+}
 
 #main-app{display:none;padding:10px}
-.toolbar{background:var(--panel);padding:10px;border-radius:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.toolbar{
+ background:var(--panel);padding:10px;border-radius:10px;
+ display:flex;gap:8px;flex-wrap:wrap;justify-content:center
+}
 button,input{padding:6px 10px;border-radius:6px;border:none;font-weight:bold}
 
-.table-container{position:relative;background:#fff;padding:5px;border-radius:10px}
+.table-container{background:#fff;padding:5px;border-radius:10px}
 table{border-collapse:collapse;color:#000}
-td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:bold}
-th{background:#1e293b;color:#fff;font-size:11px}
-
-.blank{background:#eee;color:#999}
-.circle{border:3px solid var(--blue)!important;border-radius:50%!important;background:rgba(0,132,255,.15)}
-
-.dashboard{
- display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
- gap:10px;margin-top:15px
+td,th{
+ border:1px solid #ccc;width:45px;height:45px;
+ text-align:center;font-weight:bold
 }
-.card{background:var(--panel);padding:12px;border-radius:10px;border-top:3px solid var(--gold)}
-.card h3{margin:0 0 8px;color:var(--gold);font-size:13px}
+th{background:#1e293b;color:#fff;font-size:11px}
+.blank{background:#eee;color:#999}
+
+.dashboard{margin-top:15px}
+.card{
+ background:var(--panel);padding:12px;border-radius:10px;
+ border-top:3px solid var(--gold)
+}
 </style>
 </head>
 
 <body>
 
+<!-- HOME -->
 <div id="home-screen">
  <h1 class="hero-title">Milan PRO AI</h1>
  <button class="enter-btn" onclick="startApp()">START</button>
 </div>
 
+<!-- APP -->
 <div id="main-app">
 
 <div class="toolbar">
+ <input type="file" id="csv" accept=".csv" style="display:none">
+ <button onclick="csv.click()">CSV</button>
  <button onclick="addRow()">ROW</button>
  <button onclick="saveData()" style="background:#28a745">SAVE</button>
  <button onclick="clearData()" style="background:#dc3545">CLEAR</button>
@@ -71,7 +83,10 @@ th{background:#1e293b;color:#fff;font-size:11px}
 </div>
 
 <script>
-/* ================= DATA ================= */
+/* ================= CONFIG ================= */
+const STORAGE_KEY="milan_pro_ai_data";
+
+/* ================= FAMILY DATA ================= */
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -87,13 +102,15 @@ const families={
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-let data=[
-["51","91","41","57","19","95"],
-["05","90","74","06","19","63"],
-["90","34","82","09","28","19"],
-["**","**","**","**","**","**"]
+/* ================= DATA ================= */
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+ ["51","91","41","57","19","95"],
+ ["05","90","74","06","19","63"],
+ ["90","34","82","09","28","19"],
+ ["**","**","**","**","**","**"]
 ];
 
+/* ================= HELPERS ================= */
 const norm=v=>v=="**"?"**":String(v).padStart(2,"0");
 const palti=v=>v[1]+v[0];
 const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return""};
@@ -112,7 +129,9 @@ function draw(){
   h+="<tr>";
   r.forEach((c,j)=>{
    let cls=c=="**"?"blank":"";
-   h+=`<td class="${cls}" onclick="blankClick(${i},${j})" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable
+        onclick="blankClick(${i},${j})"
+        oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -128,10 +147,10 @@ function blankClick(r,c){
  for(let i=0;i<data.length;i++){
   let v=data[i][c];
   if(v!="**"){
-   score[v]=(score[v]||0)+3;                // same column
+   score[v]=(score[v]||0)+3;
    let f=fam(v);
-   families[f]?.forEach(j=>score[j]=(score[j]||0)+1); // family support
-   score[palti(v)]=(score[palti(v)]||0)+1;  // palti
+   families[f]?.forEach(j=>score[j]=(score[j]||0)+1);
+   score[palti(v)]=(score[palti(v)]||0)+1;
   }
  }
 
@@ -141,15 +160,40 @@ function blankClick(r,c){
   .slice(0,4);
 
  document.getElementById("ai").innerHTML =
-  `<b>Column ${["MON","TUE","WED","THU","FRI","SAT"][c]}</b><br>
-   🎯 AI Strong 4 Jodi:<br>
+  `<b>${["MON","TUE","WED","THU","FRI","SAT"][c]}</b><br>
+   🎯 Top 4 Strong Jodi:<br>
    <span style="color:var(--gold);font-size:18px">${top.join(" , ")}</span>`;
 }
 
-/* ================= DATA ================= */
-function addRow(){data.push(["**","**","**","**","**","**"]);draw()}
-function saveData(){alert("Saved")}
-function clearData(){location.reload()}
+/* ================= CSV IMPORT ================= */
+csv.onchange=e=>{
+ let f=new FileReader();
+ f.onload=()=>{
+  data=f.result
+   .split("\n")
+   .filter(l=>l.trim())
+   .map(l=>l.split(",").map(v=>norm(v.trim())));
+  draw();
+  saveData();
+ };
+ f.readAsText(e.target.files[0]);
+};
+
+/* ================= STORAGE ================= */
+function saveData(){
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ alert("Data Saved");
+}
+function clearData(){
+ if(confirm("Clear all data?")){
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+ }
+}
+function addRow(){
+ data.push(["**","**","**","**","**","**"]);
+ draw();
+}
 </script>
 
 </body>
