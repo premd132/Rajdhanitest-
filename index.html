@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan PRO AI – Stable Final</title>
+<title>Milan PRO AI – Blank AI</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -17,21 +17,24 @@ body{margin:0;background:var(--bg);color:#fff}
 
 #home-screen{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
 .hero-title{font-size:3rem;color:var(--gold)}
-.enter-btn{padding:15px 40px;border:none;border-radius:40px;background:var(--gold);font-weight:800;cursor:pointer}
+.enter-btn{padding:15px 40px;border:none;border-radius:40px;background:var(--gold);font-weight:800}
 
 #main-app{display:none;padding:10px}
 .toolbar{background:var(--panel);padding:10px;border-radius:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-button,select,input{padding:6px 10px;border-radius:6px;border:none;font-weight:bold}
+button,input{padding:6px 10px;border-radius:6px;border:none;font-weight:bold}
 
 .table-container{position:relative;background:#fff;padding:5px;border-radius:10px}
 table{border-collapse:collapse;color:#000}
 td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:bold}
 th{background:#1e293b;color:#fff;font-size:11px}
 
+.blank{background:#eee;color:#999}
 .circle{border:3px solid var(--blue)!important;border-radius:50%!important;background:rgba(0,132,255,.15)}
-canvas{position:absolute;top:0;left:0;pointer-events:none}
 
-.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:15px}
+.dashboard{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+ gap:10px;margin-top:15px
+}
 .card{background:var(--panel);padding:12px;border-radius:10px;border-top:3px solid var(--gold)}
 .card h3{margin:0 0 8px;color:var(--gold);font-size:13px}
 </style>
@@ -52,27 +55,17 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
  <button onclick="clearData()" style="background:#dc3545">CLEAR</button>
 </div>
 
-<div class="toolbar" style="background:#111">
- <select id="sType">
-  <option value="1">1 JODI</option>
-  <option value="2">2 JODI</option>
-  <option value="3">3 JODI</option>
- </select>
- <input id="sJodi" placeholder="12 or 12,45">
- <button onclick="runSearch()" style="background:var(--gold)">SEARCH</button>
-</div>
-
 <center>
 <div class="table-container">
- <canvas id="mainCanvas"></canvas>
  <table id="tbl"></table>
 </div>
 </center>
 
 <div class="dashboard">
- <div class="card"><h3>✔ STRONG CHECK LINE</h3><div id="checks"></div></div>
- <div class="card"><h3>🤖 AI</h3><div id="ai">---</div></div>
- <div class="card"><h3>🔮 NEXT</h3><div id="future">---</div></div>
+ <div class="card">
+  <h3>🤖 AI BLANK PREDICTION</h3>
+  <div id="ai">Blank cell par click karo</div>
+ </div>
 </div>
 
 </div>
@@ -101,14 +94,11 @@ let data=[
 ["**","**","**","**","**","**"]
 ];
 
-let activeMark=null;
-
-/* ================= HELPERS ================= */
 const norm=v=>v=="**"?"**":String(v).padStart(2,"0");
 const palti=v=>v[1]+v[0];
-const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return"";}
-const smart=(a,b)=>a!="**"&&(a==b||palti(a)==b||fam(a)==fam(b));
+const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return""};
 
+/* ================= START ================= */
 function startApp(){
  document.getElementById("home-screen").style.display="none";
  document.getElementById("main-app").style.display="block";
@@ -121,82 +111,46 @@ function draw(){
  data.forEach((r,i)=>{
   h+="<tr>";
   r.forEach((c,j)=>{
-   let cls=activeMark && activeMark.shape[i-activeMark.start]?.[j]?"circle":"";
-   h+=`<td class="${cls}" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
+   let cls=c=="**"?"blank":"";
+   h+=`<td class="${cls}" onclick="blankClick(${i},${j})" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
   });
   h+="</tr>";
  });
  tbl.innerHTML=h;
- if(activeMark)setTimeout(drawLines,50);
 }
 
-function drawLines(){
- let c=mainCanvas,ctx=c.getContext("2d");
- c.width=tbl.offsetWidth;c.height=tbl.offsetHeight;
- ctx.clearRect(0,0,c.width,c.height);
- let cells=tbl.querySelectorAll(".circle");
- if(cells.length<2)return;
- let tr=tbl.getBoundingClientRect();
- ctx.strokeStyle="#00ff88";ctx.lineWidth=2.5;ctx.beginPath();
- cells.forEach((e,i)=>{
-  let r=e.getBoundingClientRect();
-  let x=r.left-tr.left+r.width/2;
-  let y=r.top-tr.top+r.height/2;
-  i?ctx.lineTo(x,y):ctx.moveTo(x,y);
- });
- ctx.stroke();
-}
+/* ================= BLANK AI ================= */
+function blankClick(r,c){
+ if(data[r][c]!="**") return;
 
-/* ================= STRONG SEARCH ONLY ================= */
-function runSearch(){
- activeMark=null;
- checks.innerHTML="";
- ai.innerHTML="---";
-
- let jodis=sJodi.value.split(",").map(v=>norm(v.trim())).filter(Boolean);
- if(!jodis.length)return alert("Jodi enter karo");
-
- let need=+sType.value;
- let shapes={};
+ let score={};
 
  for(let i=0;i<data.length;i++){
-  let hit=0;
-  data[i].forEach(v=>jodis.some(j=>smart(v,j))&&hit++);
-  if(hit>=need){
-   let key=hit+"-"+need;
-   if(!shapes[key]){
-    let shape=[];
-    for(let k=i;k<i+need&&k<data.length;k++)
-     shape.push(data[k].map(v=>jodis.some(j=>smart(v,j))?1:0));
-    shapes[key]={start:i,shape};
-   }
+  let v=data[i][c];
+  if(v!="**"){
+   score[v]=(score[v]||0)+3;                // same column
+   let f=fam(v);
+   families[f]?.forEach(j=>score[j]=(score[j]||0)+1); // family support
+   score[palti(v)]=(score[palti(v)]||0)+1;  // palti
   }
  }
 
- let strong=Object.values(shapes);
- if(!strong.length){
-  ai.innerHTML="❌ No strong pattern";
-  return;
- }
+ let top=Object.entries(score)
+  .sort((a,b)=>b[1]-a[1])
+  .map(v=>v[0])
+  .slice(0,4);
 
- strong.forEach((o,idx)=>{
-  let d=document.createElement("div");
-  d.style="cursor:pointer;margin:5px 0;padding:6px;background:#222;border-left:4px solid #00ff88";
-  d.innerText="STRONG CHECK LINE #"+(idx+1);
-  d.onclick=()=>{
-    activeMark=o;
-    draw();
-    ai.innerHTML="🟢 STRONG PATTERN ACTIVE";
-    future.innerHTML="Next row: same family / palti expected";
-  };
-  checks.appendChild(d);
- });
+ document.getElementById("ai").innerHTML =
+  `<b>Column ${["MON","TUE","WED","THU","FRI","SAT"][c]}</b><br>
+   🎯 AI Strong 4 Jodi:<br>
+   <span style="color:var(--gold);font-size:18px">${top.join(" , ")}</span>`;
 }
 
 /* ================= DATA ================= */
 function addRow(){data.push(["**","**","**","**","**","**"]);draw()}
-function saveData(){alert("Saved (demo)")}
+function saveData(){alert("Saved")}
 function clearData(){location.reload()}
 </script>
+
 </body>
 </html>
