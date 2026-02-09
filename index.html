@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan PRO AI – Final</title>
+<title>Milan PRO AI – Stable Final</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -15,99 +15,50 @@
 *{box-sizing:border-box;font-family:Poppins}
 body{margin:0;background:var(--bg);color:#fff}
 
-/* HOME */
-#home-screen{
- height:100vh;display:flex;flex-direction:column;
- align-items:center;justify-content:center
-}
+#home-screen{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
 .hero-title{font-size:3rem;color:var(--gold)}
-.enter-btn{
- padding:15px 40px;border:none;border-radius:40px;
- background:var(--gold);font-weight:800;cursor:pointer
-}
+.enter-btn{padding:15px 40px;border:none;border-radius:40px;background:var(--gold);font-weight:800;cursor:pointer}
 
-/* APP */
 #main-app{display:none;padding:10px}
-.toolbar{
- background:var(--panel);padding:10px;border-radius:10px;
- display:flex;gap:8px;flex-wrap:wrap;justify-content:center
-}
-button,select,input{
- padding:6px 10px;border-radius:6px;border:none;font-weight:bold
-}
+.toolbar{background:var(--panel);padding:10px;border-radius:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+button,select,input{padding:6px 10px;border-radius:6px;border:none;font-weight:bold}
 
-/* TABLE */
 .table-container{position:relative;background:#fff;padding:5px;border-radius:10px}
 table{border-collapse:collapse;color:#000}
-td,th{
- border:1px solid #ccc;width:45px;height:45px;
- text-align:center;font-weight:bold
-}
+td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:bold}
 th{background:#1e293b;color:#fff;font-size:11px}
 
-.circle{
- border:3px solid var(--blue)!important;
- border-radius:50%!important;
- background:rgba(0,132,255,.15)
-}
+.circle{border:3px solid var(--blue)!important;border-radius:50%!important;background:rgba(0,132,255,.15)}
 canvas{position:absolute;top:0;left:0;pointer-events:none}
 
-/* DASHBOARD */
-.dashboard{
- display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
- gap:10px;margin-top:15px
-}
-.card{
- background:var(--panel);padding:12px;border-radius:10px;
- border-top:3px solid var(--gold)
-}
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:15px}
+.card{background:var(--panel);padding:12px;border-radius:10px;border-top:3px solid var(--gold)}
 .card h3{margin:0 0 8px;color:var(--gold);font-size:13px}
-
-/* STRENGTH BAR */
-.bar{
- height:12px;background:#222;border-radius:20px;overflow:hidden
-}
-.bar span{
- display:block;height:100%;background:var(--green);width:0%
-}
 </style>
 </head>
 
 <body>
 
-<!-- HOME -->
 <div id="home-screen">
  <h1 class="hero-title">Milan PRO AI</h1>
  <button class="enter-btn" onclick="startApp()">START</button>
 </div>
 
-<!-- MAIN APP -->
 <div id="main-app">
 
 <div class="toolbar">
- <input type="file" id="csv" style="display:none">
- <button onclick="csv.click()">CSV</button>
  <button onclick="addRow()">ROW</button>
  <button onclick="saveData()" style="background:#28a745">SAVE</button>
  <button onclick="clearData()" style="background:#dc3545">CLEAR</button>
 </div>
 
-<!-- SEARCH PANEL -->
 <div class="toolbar" style="background:#111">
- <select id="sDay">
-  <option value="">DAY</option>
-  <option value="0">MON</option><option value="1">TUE</option>
-  <option value="2">WED</option><option value="3">THU</option>
-  <option value="4">FRI</option><option value="5">SAT</option>
- </select>
-
  <select id="sType">
   <option value="1">1 JODI</option>
   <option value="2">2 JODI</option>
   <option value="3">3 JODI</option>
  </select>
-
- <input id="sJodi" placeholder="12 or 12,45,90">
+ <input id="sJodi" placeholder="12 or 12,45">
  <button onclick="runSearch()" style="background:var(--gold)">SEARCH</button>
 </div>
 
@@ -119,34 +70,15 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 </center>
 
 <div class="dashboard">
- <div class="card">
-  <h3>✔ Matches</h3>
-  <div id="checks"></div>
- </div>
-
- <div class="card">
-  <h3>🤖 AI Analysis</h3>
-  <div id="ai">---</div>
-  <div class="bar"><span id="strengthBar"></span></div>
- </div>
-
- <div class="card">
-  <h3>🔮 Prediction</h3>
-  <div id="future">---</div>
- </div>
+ <div class="card"><h3>✔ STRONG CHECK LINE</h3><div id="checks"></div></div>
+ <div class="card"><h3>🤖 AI</h3><div id="ai">---</div></div>
+ <div class="card"><h3>🔮 NEXT</h3><div id="future">---</div></div>
 </div>
 
 </div>
-
-<!-- SOUND -->
-<audio id="beep">
- <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
 
 <script>
 /* ================= DATA ================= */
-const STORAGE_KEY="pdata_Milan_FINAL";
-
 const families={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -162,7 +94,7 @@ const families={
 "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||[
+let data=[
 ["51","91","41","57","19","95"],
 ["05","90","74","06","19","63"],
 ["90","34","82","09","28","19"],
@@ -177,7 +109,6 @@ const palti=v=>v[1]+v[0];
 const fam=v=>{for(let k in families)if(families[k].includes(v))return k;return"";}
 const smart=(a,b)=>a!="**"&&(a==b||palti(a)==b||fam(a)==fam(b));
 
-/* ================= START FIX ================= */
 function startApp(){
  document.getElementById("home-screen").style.display="none";
  document.getElementById("main-app").style.display="block";
@@ -191,8 +122,7 @@ function draw(){
   h+="<tr>";
   r.forEach((c,j)=>{
    let cls=activeMark && activeMark.shape[i-activeMark.start]?.[j]?"circle":"";
-   h+=`<td class="${cls}" contenteditable
-        oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -217,81 +147,56 @@ function drawLines(){
  ctx.stroke();
 }
 
-/* ================= SEARCH + AI ================= */
+/* ================= STRONG SEARCH ONLY ================= */
 function runSearch(){
  activeMark=null;
+ checks.innerHTML="";
+ ai.innerHTML="---";
 
  let jodis=sJodi.value.split(",").map(v=>norm(v.trim())).filter(Boolean);
  if(!jodis.length)return alert("Jodi enter karo");
 
  let need=+sType.value;
- let matches=[],shape=[];
+ let shapes={};
 
  for(let i=0;i<data.length;i++){
   let hit=0;
   data[i].forEach(v=>jodis.some(j=>smart(v,j))&&hit++);
   if(hit>=need){
-   shape=[];
-   for(let k=i;k<i+need && k<data.length;k++)
-    shape.push(data[k].map(v=>jodis.some(j=>smart(v,j))?1:0));
-   matches.push(i);
+   let key=hit+"-"+need;
+   if(!shapes[key]){
+    let shape=[];
+    for(let k=i;k<i+need&&k<data.length;k++)
+     shape.push(data[k].map(v=>jodis.some(j=>smart(v,j))?1:0));
+    shapes[key]={start:i,shape};
+   }
   }
  }
 
- /* TOUCH ALERT */
- if(matches.length===2 || matches.length>=3){
-  document.getElementById("beep").play();
-  alert(matches.length===2?"⚠️ 2nd TOUCH":"🚨 3rd TOUCH STRONG");
+ let strong=Object.values(shapes);
+ if(!strong.length){
+  ai.innerHTML="❌ No strong pattern";
+  return;
  }
 
- /* STRENGTH */
- let strength=Math.min(100,Math.round((matches.length*shape.length)/data.length*100));
- document.getElementById("strengthBar").style.width=strength+"%";
-
- let level=strength>65?"🟢 STRONG":strength>40?"🟡 MEDIUM":"🔴 WEAK";
- let touch=matches.length>=3?"3rd Touch":matches.length==2?"2nd Touch":"1st Touch";
-
- ai.innerHTML=`${touch}<br>Strength: ${strength}% (${level})`;
-
- /* MATCH LIST */
- checks.innerHTML="";
- matches.forEach(i=>{
+ strong.forEach((o,idx)=>{
   let d=document.createElement("div");
-  d.innerText="Match Row "+(i+1);
-  d.onclick=()=>{activeMark={start:i,shape};draw()};
+  d.style="cursor:pointer;margin:5px 0;padding:6px;background:#222;border-left:4px solid #00ff88";
+  d.innerText="STRONG CHECK LINE #"+(idx+1);
+  d.onclick=()=>{
+    activeMark=o;
+    draw();
+    ai.innerHTML="🟢 STRONG PATTERN ACTIVE";
+    future.innerHTML="Next row: same family / palti expected";
+  };
   checks.appendChild(d);
  });
-
- /* NEXT PREDICTION */
- autoNextPrediction(matches,shape);
-}
-
-/* ================= NEXT ROW AI ================= */
-function autoNextPrediction(matchIdx,shape){
- let pool={};
- matchIdx.forEach(i=>{
-  let n=i+shape.length;
-  if(n<data.length){
-   data[n].forEach(v=>{
-    if(v!="**")pool[v]=(pool[v]||0)+1;
-   });
-  }
- });
- let sorted=Object.entries(pool).sort((a,b)=>b[1]-a[1]).map(v=>v[0]);
- future.innerHTML=sorted.length
-  ?"AI Next Jodi: <b>"+sorted.slice(0,3).join(" , ")+"</b>"
-  :"Analyzing...";
 }
 
 /* ================= DATA ================= */
 function addRow(){data.push(["**","**","**","**","**","**"]);draw()}
-function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved")}
-function clearData(){if(confirm("Clear all?")){localStorage.clear();location.reload()}}
-csv.onchange=e=>{
- let f=new FileReader();
- f.onload=()=>{data=f.result.split("\n").map(l=>l.split(",").map(norm));draw()}
- f.readAsText(e.target.files[0]);
-};
+function saveData(){alert("Saved (demo)")}
+function clearData(){location.reload()}
 </script>
 </body>
 </html>
