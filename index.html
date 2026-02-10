@@ -73,36 +73,59 @@ function pm(n){ return [(n+1)%10,(n+9)%10]; }
 
 /* ================= CSV UPLOAD (FIXED) ================= */
 document.getElementById("csv").addEventListener("change",function(e){
- const file = e.target.files[0];
- if(!file) return;
+const csvInput = document.getElementById("csv");
 
- const reader = new FileReader();
- reader.onload = function(){
-  const lines = reader.result
-    .split(/\r?\n/)
-    .filter(l=>l.trim());
+csvInput.addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
 
-  if(!lines.length){
-    err.innerHTML="❌ CSV empty hai";
-    return;
-  }
+  const reader = new FileReader();
 
-  // last non-empty line use karenge
-  const lastLine = lines[lines.length-1];
-  const list = cleanJodiList(lastLine);
+  reader.onload = function () {
+    let text = reader.result;
 
-  if(list.length !== 6){
-    err.innerHTML="❌ CSV me 6 valid jodi nahi mili";
-    return;
-  }
+    // 🔹 normalize (comma / space / tab sab ek jaisa)
+    text = text.replace(/\t/g, ",").replace(/ +/g, ",");
 
-  jodi.value = list.join(",");
-  rows.push(list.join(","));
-  localStorage.setItem(KEY,JSON.stringify(rows));
+    const lines = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l);
 
-  err.innerHTML="✅ CSV loaded successfully";
- };
- reader.readAsText(file);
+    // 🔹 last valid line uthao (header ignore)
+    let lastValid = null;
+
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const parts = lines[i]
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => /^\d{2}$/.test(v));
+
+      if (parts.length === 6) {
+        lastValid = parts;
+        break;
+      }
+    }
+
+    if (!lastValid) {
+      alert("❌ CSV me 6 valid jodi nahi mili");
+      return;
+    }
+
+    // 🔹 input me bhar do
+    document.getElementById("jodi").value = lastValid.join(",");
+
+    // 🔹 localStorage save
+    rows.push(lastValid.join(","));
+    localStorage.setItem(KEY, JSON.stringify(rows));
+
+    alert("✅ CSV Loaded Successfully");
+  };
+
+  reader.readAsText(file);
+
+  // 🔹 IMPORTANT: same file dubara select karne ke liye reset
+  this.value = "";
 });
 
 /* ================= BUTTONS ================= */
