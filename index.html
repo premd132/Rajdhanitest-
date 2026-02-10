@@ -6,26 +6,13 @@
 <title>KALYAN / MAIN Figure System</title>
 
 <style>
-body{
- background:#0f172a;color:#fff;font-family:Arial;margin:0
-}
-.box{
- max-width:450px;margin:15px auto;background:#1e293b;
- padding:15px;border-radius:12px
-}
+body{background:#0f172a;color:#fff;font-family:Arial;margin:0}
+.box{max-width:450px;margin:15px auto;background:#1e293b;padding:15px;border-radius:12px}
 h2{color:#ffd700;text-align:center;margin:5px 0}
-input,button,select{
- width:100%;padding:10px;margin:6px 0;
- border:none;border-radius:6px;font-size:15px
-}
+input,button,select{width:100%;padding:10px;margin:6px 0;border:none;border-radius:6px;font-size:15px}
 button{background:#ffd700;font-weight:bold;cursor:pointer}
-.result{
- background:#020617;padding:10px;border-radius:8px;margin-top:10px
-}
-.fig{
- display:inline-block;background:#000;color:#00ff88;
- padding:8px 10px;margin:4px;border-radius:6px;font-size:18px
-}
+.result{background:#020617;padding:10px;border-radius:8px;margin-top:10px}
+.fig{display:inline-block;background:#000;color:#00ff88;padding:8px 10px;margin:4px;border-radius:6px;font-size:18px}
 .small{font-size:12px;opacity:.8}
 .error{color:#ff6b6b;font-size:13px}
 </style>
@@ -37,7 +24,7 @@ button{background:#ffd700;font-weight:bold;cursor:pointer}
 <h2>🔮 KALYAN / MAIN<br>FIGURE SYSTEM</h2>
 
 <div class="small">CSV Upload</div>
-<input type="file" id="csv">
+<input type="file" id="csv" accept=".csv">
 
 <div class="small">Last Week Jodi (6)</div>
 <input id="jodi" placeholder="51,80,90,41,73,72">
@@ -53,7 +40,7 @@ button{background:#ffd700;font-weight:bold;cursor:pointer}
 <div class="small">Base Figure (Option-1 ke liye)</div>
 <input id="base" type="number" min="0" max="9" placeholder="6">
 
-<button onclick="calculate()">SEARCH FIGURE</button>
+<button id="searchBtn">SEARCH FIGURE</button>
 
 <div id="err" class="error"></div>
 
@@ -63,8 +50,8 @@ button{background:#ffd700;font-weight:bold;cursor:pointer}
  <div id="info" class="small"></div>
 </div>
 
-<button onclick="addRow()">ADD ROW</button>
-<button onclick="saveData()">SAVE</button>
+<button id="addRow">ADD ROW</button>
+<button id="save">SAVE</button>
 
 </div>
 
@@ -76,123 +63,120 @@ let rows = JSON.parse(localStorage.getItem(KEY)) || [];
 /* ================= HELPERS ================= */
 function cleanJodiList(raw){
  return raw
+  .replace(/\s+/g,",")
   .split(",")
   .map(v=>v.trim())
-  .filter(v=>/^\d{2}$/.test(v)); // sirf 2 digit
+  .filter(v=>/^\d{2}$/.test(v));
 }
+function totalAnk(j){ return (+j[0] + +j[1]) % 10; }
+function pm(n){ return [(n+1)%10,(n+9)%10]; }
 
-function totalAnk(j){
- return (parseInt(j[0]) + parseInt(j[1])) % 10;
-}
+/* ================= CSV UPLOAD (FIXED) ================= */
+document.getElementById("csv").addEventListener("change",function(e){
+ const file = e.target.files[0];
+ if(!file) return;
 
-function pm(n){
- return [(n+1)%10, (n+9)%10];
-}
+ const reader = new FileReader();
+ reader.onload = function(){
+  const lines = reader.result
+    .split(/\r?\n/)
+    .filter(l=>l.trim());
 
-/* ================= CSV ================= */
-csv.onchange=e=>{
- let f=new FileReader();
- f.onload=()=>{
-  rows = f.result
-   .split("\n")
-   .map(l=>cleanJodiList(l).join(","))
-   .filter(v=>v);
-  if(rows.length){
-    jodi.value = rows[rows.length-1];
-    saveData(false);
-  }
- };
- f.readAsText(e.target.files[0]);
-};
-
-/* ================= ADD ROW ================= */
-function addRow(){
- let v = prompt("6 jodi dalo (comma se)");
- if(v){
-  let c = cleanJodiList(v);
-  if(c.length!==6){
-    alert("Sirf 6 valid jodi (2 digit) dalo");
+  if(!lines.length){
+    err.innerHTML="❌ CSV empty hai";
     return;
   }
-  rows.push(c.join(","));
-  jodi.value = c.join(",");
- }
-}
 
-/* ================= SAVE ================= */
-function saveData(show=true){
+  // last non-empty line use karenge
+  const lastLine = lines[lines.length-1];
+  const list = cleanJodiList(lastLine);
+
+  if(list.length !== 6){
+    err.innerHTML="❌ CSV me 6 valid jodi nahi mili";
+    return;
+  }
+
+  jodi.value = list.join(",");
+  rows.push(list.join(","));
+  localStorage.setItem(KEY,JSON.stringify(rows));
+
+  err.innerHTML="✅ CSV loaded successfully";
+ };
+ reader.readAsText(file);
+});
+
+/* ================= BUTTONS ================= */
+document.getElementById("addRow").onclick=function(){
+ const v = prompt("6 jodi dalo (comma ya space se)");
+ if(!v) return;
+ const c = cleanJodiList(v);
+ if(c.length!==6){
+  alert("Sirf 6 valid jodi (2 digit)");
+  return;
+ }
+ rows.push(c.join(","));
+ jodi.value = c.join(",");
+};
+
+document.getElementById("save").onclick=function(){
  localStorage.setItem(KEY,JSON.stringify(rows));
- if(show) alert("Saved");
-}
+ alert("Saved");
+};
 
 /* ================= MAIN LOGIC ================= */
-function calculate(){
+document.getElementById("searchBtn").onclick=function(){
  err.innerHTML="";
  out.style.display="none";
 
- let raw = jodi.value.trim();
- let list = cleanJodiList(raw);
-
- if(list.length !== 6){
-  err.innerHTML="❌ Sirf 6 valid jodi dalo (jaise: 51,80,90,41,73,72)";
+ const list = cleanJodiList(jodi.value);
+ if(list.length!==6){
+  err.innerHTML="❌ Sirf 6 valid jodi dalo";
   return;
  }
 
- let totals = list.map(totalAnk);
- let mode = modeSel.value || mode.value;
+ const totals = list.map(totalAnk);
+ const modeVal = document.getElementById("mode").value;
  let figures=[], info="";
 
- // OPTION 1
- if(mode==="1"){
-  let b = parseInt(base.value);
-  if(isNaN(b) || b<0 || b>9){
-    err.innerHTML="❌ Base figure 0–9 hona chahiye";
+ if(modeVal==="1"){
+  const b = +base.value;
+  if(isNaN(b)||b<0||b>9){
+    err.innerHTML="❌ Base figure 0–9";
     return;
   }
-  let [a,c] = pm(b);
+  const [a,c]=pm(b);
   figures=[a,c,(a+1)%10,(c+9)%10];
   info="Manual Base: "+b;
  }
 
- // OPTION 2
- if(mode==="2"){
-  let b = totals[totals.length-1];
-  let [a,c] = pm(b);
+ if(modeVal==="2"){
+  const b = totals[totals.length-1];
+  const [a,c]=pm(b);
   figures=[a,c,(a+1)%10,(c+9)%10];
   info="Auto Base (Last Total): "+b;
  }
 
- // OPTION 3
- if(mode==="3"){
-  let freq={};
+ if(modeVal==="3"){
+  const freq={};
   totals.forEach(t=>freq[t]=(freq[t]||0)+1);
-  let b = parseInt(
-    Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0]
-  );
-  let [a,c] = pm(b);
+  const b = +Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+  const [a,c]=pm(b);
   figures=[a,c,(a+1)%10,(c+9)%10];
   info="Auto Base (Common Total): "+b;
  }
 
- // OPTION 4
- if(mode==="4"){
-  let uniq=[...new Set(totals)];
-  uniq.slice(0,2).forEach(b=>{
-    let [a,c] = pm(b);
+ if(modeVal==="4"){
+  [...new Set(totals)].slice(0,2).forEach(b=>{
+    const [a,c]=pm(b);
     figures.push(a,c,(a+1)%10,(c+9)%10);
   });
-  info="All Strong Base: "+uniq.join(",");
+  info="All Strong Base";
  }
 
  fig.innerHTML = figures.map(f=>`<span class="fig">${f}</span>`).join("");
- infoDiv.innerHTML = `Totals: ${totals.join(", ")}<br>${info}`;
-
+ info.innerHTML = `Totals: ${totals.join(", ")}<br>${info}`;
  out.style.display="block";
-}
-
-/* FIX ID REFERENCES */
-const modeSel = document.getElementById("mode");
-const infoDiv = document.getElementById("info");
+};
 </script>
 
 </body>
