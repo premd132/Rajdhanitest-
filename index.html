@@ -27,6 +27,7 @@ button{background:#ffd700;font-weight:bold;cursor:pointer}
  padding:8px 10px;margin:4px;border-radius:6px;font-size:18px
 }
 .small{font-size:12px;opacity:.8}
+.error{color:#ff6b6b;font-size:13px}
 </style>
 </head>
 
@@ -54,6 +55,8 @@ button{background:#ffd700;font-weight:bold;cursor:pointer}
 
 <button onclick="calculate()">SEARCH FIGURE</button>
 
+<div id="err" class="error"></div>
+
 <div id="out" class="result" style="display:none">
  <div class="small">Result Figure</div>
  <div id="fig"></div>
@@ -71,55 +74,90 @@ const KEY="kalyan_figure_data";
 let rows = JSON.parse(localStorage.getItem(KEY)) || [];
 
 /* ================= HELPERS ================= */
-const totalAnk=j=>(+j[0]+ +j[1])%10;
-const pm=n=>[(n+1)%10,(n+9)%10];
+function cleanJodiList(raw){
+ return raw
+  .split(",")
+  .map(v=>v.trim())
+  .filter(v=>/^\d{2}$/.test(v)); // sirf 2 digit
+}
+
+function totalAnk(j){
+ return (parseInt(j[0]) + parseInt(j[1])) % 10;
+}
+
+function pm(n){
+ return [(n+1)%10, (n+9)%10];
+}
 
 /* ================= CSV ================= */
 csv.onchange=e=>{
  let f=new FileReader();
  f.onload=()=>{
-  rows=f.result.split("\n").filter(l=>l.trim());
-  localStorage.setItem(KEY,JSON.stringify(rows));
-  if(rows.length) jodi.value=rows[rows.length-1];
+  rows = f.result
+   .split("\n")
+   .map(l=>cleanJodiList(l).join(","))
+   .filter(v=>v);
+  if(rows.length){
+    jodi.value = rows[rows.length-1];
+    saveData(false);
+  }
  };
  f.readAsText(e.target.files[0]);
 };
 
 /* ================= ADD ROW ================= */
 function addRow(){
- let v=prompt("6 Jodi dalo (comma se)");
- if(v){ rows.push(v); jodi.value=v; }
+ let v = prompt("6 jodi dalo (comma se)");
+ if(v){
+  let c = cleanJodiList(v);
+  if(c.length!==6){
+    alert("Sirf 6 valid jodi (2 digit) dalo");
+    return;
+  }
+  rows.push(c.join(","));
+  jodi.value = c.join(",");
+ }
 }
 
 /* ================= SAVE ================= */
-function saveData(){
+function saveData(show=true){
  localStorage.setItem(KEY,JSON.stringify(rows));
- alert("Saved");
+ if(show) alert("Saved");
 }
 
 /* ================= MAIN LOGIC ================= */
 function calculate(){
- let j=jodi.value.trim();
- if(!j){alert("Jodi dalo");return;}
- let list=j.split(",").map(v=>v.trim());
- if(list.length!==6){alert("Sirf 6 jodi");return;}
+ err.innerHTML="";
+ out.style.display="none";
 
- let totals=list.map(totalAnk);
- let mode=document.getElementById("mode").value;
- let figures=[]; let info="";
+ let raw = jodi.value.trim();
+ let list = cleanJodiList(raw);
+
+ if(list.length !== 6){
+  err.innerHTML="❌ Sirf 6 valid jodi dalo (jaise: 51,80,90,41,73,72)";
+  return;
+ }
+
+ let totals = list.map(totalAnk);
+ let mode = modeSel.value || mode.value;
+ let figures=[], info="";
 
  // OPTION 1
  if(mode==="1"){
-  let b=+base.value;
-  let [a,c]=pm(b);
+  let b = parseInt(base.value);
+  if(isNaN(b) || b<0 || b>9){
+    err.innerHTML="❌ Base figure 0–9 hona chahiye";
+    return;
+  }
+  let [a,c] = pm(b);
   figures=[a,c,(a+1)%10,(c+9)%10];
   info="Manual Base: "+b;
  }
 
  // OPTION 2
  if(mode==="2"){
-  let b=totals[totals.length-1];
-  let [a,c]=pm(b);
+  let b = totals[totals.length-1];
+  let [a,c] = pm(b);
   figures=[a,c,(a+1)%10,(c+9)%10];
   info="Auto Base (Last Total): "+b;
  }
@@ -128,8 +166,10 @@ function calculate(){
  if(mode==="3"){
   let freq={};
   totals.forEach(t=>freq[t]=(freq[t]||0)+1);
-  let b=Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0]*1;
-  let [a,c]=pm(b);
+  let b = parseInt(
+    Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0]
+  );
+  let [a,c] = pm(b);
   figures=[a,c,(a+1)%10,(c+9)%10];
   info="Auto Base (Common Total): "+b;
  }
@@ -138,19 +178,21 @@ function calculate(){
  if(mode==="4"){
   let uniq=[...new Set(totals)];
   uniq.slice(0,2).forEach(b=>{
-   let [a,c]=pm(b);
-   figures.push(a,c,(a+1)%10,(c+9)%10);
+    let [a,c] = pm(b);
+    figures.push(a,c,(a+1)%10,(c+9)%10);
   });
   info="All Strong Base: "+uniq.join(",");
  }
 
- document.getElementById("fig").innerHTML=
-  figures.map(f=>`<span class="fig">${f}</span>`).join("");
- document.getElementById("info").innerHTML=
-  `Totals: ${totals.join(", ")}<br>${info}`;
+ fig.innerHTML = figures.map(f=>`<span class="fig">${f}</span>`).join("");
+ infoDiv.innerHTML = `Totals: ${totals.join(", ")}<br>${info}`;
 
  out.style.display="block";
 }
+
+/* FIX ID REFERENCES */
+const modeSel = document.getElementById("mode");
+const infoDiv = document.getElementById("info");
 </script>
 
 </body>
