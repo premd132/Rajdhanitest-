@@ -1,163 +1,157 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milan AI – Strong Blank Predictor</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>KALYAN / MAIN Figure System</title>
+
 <style>
-:root{--gold:#ffd700;--bg:#0f172a;--panel:#1e293b}
-*{box-sizing:border-box;font-family:Poppins}
-body{margin:0;background:var(--bg);color:#fff}
-#home{height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
-.btn{padding:14px 36px;border:0;border-radius:40px;background:var(--gold);font-weight:800}
-#app{display:none;padding:10px}
-.toolbar{background:var(--panel);padding:10px;border-radius:10px;display:flex;gap:8px;justify-content:center}
-table{border-collapse:collapse;background:#fff;color:#000;margin:auto}
-td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:bold}
-th{background:#1e293b;color:#fff;font-size:11px}
-.blank{background:#eee;color:#999}
-.card{margin-top:12px;background:var(--panel);padding:12px;border-radius:10px;border-top:3px solid var(--gold)}
-.tag{display:inline-block;padding:4px 8px;border-radius:6px;background:#222;margin:4px}
-.conf{height:10px;background:#222;border-radius:10px;overflow:hidden;margin-top:6px}
-.conf span{display:block;height:100%;background:#00ff88;width:0%}
+body{
+ background:#0f172a;color:#fff;font-family:Arial;margin:0
+}
+.box{
+ max-width:450px;margin:15px auto;background:#1e293b;
+ padding:15px;border-radius:12px
+}
+h2{color:#ffd700;text-align:center;margin:5px 0}
+input,button,select{
+ width:100%;padding:10px;margin:6px 0;
+ border:none;border-radius:6px;font-size:15px
+}
+button{background:#ffd700;font-weight:bold;cursor:pointer}
+.result{
+ background:#020617;padding:10px;border-radius:8px;margin-top:10px
+}
+.fig{
+ display:inline-block;background:#000;color:#00ff88;
+ padding:8px 10px;margin:4px;border-radius:6px;font-size:18px
+}
+.small{font-size:12px;opacity:.8}
 </style>
 </head>
+
 <body>
 
-<div id="home">
-  <h1 style="color:var(--gold)">Milan AI</h1>
-  <button class="btn" id="start">START</button>
+<div class="box">
+<h2>🔮 KALYAN / MAIN<br>FIGURE SYSTEM</h2>
+
+<div class="small">CSV Upload</div>
+<input type="file" id="csv">
+
+<div class="small">Last Week Jodi (6)</div>
+<input id="jodi" placeholder="51,80,90,41,73,72">
+
+<div class="small">Search Option</div>
+<select id="mode">
+ <option value="1">1️⃣ Manual Base Figure</option>
+ <option value="2">2️⃣ Auto (Last Jodi Total)</option>
+ <option value="3">3️⃣ Auto (Common Total)</option>
+ <option value="4">4️⃣ All Possible (Strong)</option>
+</select>
+
+<div class="small">Base Figure (Option-1 ke liye)</div>
+<input id="base" type="number" min="0" max="9" placeholder="6">
+
+<button onclick="calculate()">SEARCH FIGURE</button>
+
+<div id="out" class="result" style="display:none">
+ <div class="small">Result Figure</div>
+ <div id="fig"></div>
+ <div id="info" class="small"></div>
 </div>
 
-<div id="app">
-  <div class="toolbar">
-    <input type="file" id="csv" accept=".csv" style="display:none">
-    <button onclick="csv.click()">CSV</button>
-    <button id="add">ROW</button>
-    <button id="save">SAVE</button>
-    <button id="clear">CLEAR</button>
-  </div>
+<button onclick="addRow()">ADD ROW</button>
+<button onclick="saveData()">SAVE</button>
 
-  <table id="tbl"></table>
-
-  <div class="card">
-    <h3>🤖 Blank-AI Result</h3>
-    <div id="ai">Blank (** ) cell पर tap करो</div>
-    <div class="conf"><span id="bar"></span></div>
-  </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded",()=>{
+/* ================= STORAGE ================= */
+const KEY="kalyan_figure_data";
+let rows = JSON.parse(localStorage.getItem(KEY)) || [];
 
-const STORAGE="milan_strong_ai";
+/* ================= HELPERS ================= */
+const totalAnk=j=>(+j[0]+ +j[1])%10;
+const pm=n=>[(n+1)%10,(n+9)%10];
 
-// Families (same as you use)
-const families={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"],
-"HR":["05","16","27","38","49","50","61","72","83","94"],
-"FR":["00","11","22","33","44","55","66","77","88","99"]
+/* ================= CSV ================= */
+csv.onchange=e=>{
+ let f=new FileReader();
+ f.onload=()=>{
+  rows=f.result.split("\n").filter(l=>l.trim());
+  localStorage.setItem(KEY,JSON.stringify(rows));
+  if(rows.length) jodi.value=rows[rows.length-1];
+ };
+ f.readAsText(e.target.files[0]);
 };
 
-let data = JSON.parse(localStorage.getItem(STORAGE)) || [
- ["51","91","41","57","19","95"],
- ["05","90","74","06","19","63"],
- ["90","34","82","09","28","19"],
- ["**","**","**","**","**","**"]
-];
-
-const norm=v=>v==="**"?"**":String(v||"").trim().padStart(2,"0");
-const palti=v=>v[1]+v[0];
-const fam=v=>{for(let k in families) if(families[k].includes(v)) return k; return "";};
-
-document.getElementById("start").onclick=()=>{
-  home.style.display="none"; app.style.display="block"; draw();
-};
-
-function draw(){
-  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-  data.forEach((r,i)=>{
-    h+="<tr>";
-    r.forEach((c,j)=>{
-      h+=`<td class="${c==="**"?"blank":""}" data-r="${i}" data-c="${j}" contenteditable>${c}</td>`;
-    });
-    h+="</tr>";
-  });
-  tbl.innerHTML=h;
+/* ================= ADD ROW ================= */
+function addRow(){
+ let v=prompt("6 Jodi dalo (comma se)");
+ if(v){ rows.push(v); jodi.value=v; }
 }
 
-tbl.addEventListener("input",e=>{
-  const td=e.target.closest("td"); if(!td) return;
-  data[td.dataset.r][td.dataset.c]=norm(td.innerText);
-});
+/* ================= SAVE ================= */
+function saveData(){
+ localStorage.setItem(KEY,JSON.stringify(rows));
+ alert("Saved");
+}
 
-tbl.addEventListener("click",e=>{
-  const td=e.target.closest("td"); if(!td) return;
-  const r=+td.dataset.r, c=+td.dataset.c;
-  if(data[r][c]!=="**") return;
+/* ================= MAIN LOGIC ================= */
+function calculate(){
+ let j=jodi.value.trim();
+ if(!j){alert("Jodi dalo");return;}
+ let list=j.split(",").map(v=>v.trim());
+ if(list.length!==6){alert("Sirf 6 jodi");return;}
 
-  // ---- STRONG BLANK AI ----
-  let score={}, maxRow=data.length-1;
-  for(let i=0;i<data.length;i++){
-    const v=data[i][c];
-    if(v==="**") continue;
+ let totals=list.map(totalAnk);
+ let mode=document.getElementById("mode").value;
+ let figures=[]; let info="";
 
-    const recency = 1 + (i/maxRow)*2; // recent boost (1..3)
-    score[v]=(score[v]||0)+3*recency;         // column freq
-    score[palti(v)]=(score[palti(v)]||0)+1*recency;
+ // OPTION 1
+ if(mode==="1"){
+  let b=+base.value;
+  let [a,c]=pm(b);
+  figures=[a,c,(a+1)%10,(c+9)%10];
+  info="Manual Base: "+b;
+ }
 
-    const f=fam(v);
-    if(f) families[f].forEach(j=>{
-      score[j]=(score[j]||0)+0.6*recency;     // family support
-    });
-  }
+ // OPTION 2
+ if(mode==="2"){
+  let b=totals[totals.length-1];
+  let [a,c]=pm(b);
+  figures=[a,c,(a+1)%10,(c+9)%10];
+  info="Auto Base (Last Total): "+b;
+ }
 
-  // Noise cut
-  const entries=Object.entries(score).filter(([,s])=>s>=3);
+ // OPTION 3
+ if(mode==="3"){
+  let freq={};
+  totals.forEach(t=>freq[t]=(freq[t]||0)+1);
+  let b=Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0]*1;
+  let [a,c]=pm(b);
+  figures=[a,c,(a+1)%10,(c+9)%10];
+  info="Auto Base (Common Total): "+b;
+ }
 
-  // Top-4
-  const top=entries.sort((a,b)=>b[1]-a[1]).slice(0,4);
+ // OPTION 4
+ if(mode==="4"){
+  let uniq=[...new Set(totals)];
+  uniq.slice(0,2).forEach(b=>{
+   let [a,c]=pm(b);
+   figures.push(a,c,(a+1)%10,(c+9)%10);
+  });
+  info="All Strong Base: "+uniq.join(",");
+ }
 
-  if(!top.length){
-    ai.innerHTML="No strong signal yet"; bar.style.width="0%"; return;
-  }
+ document.getElementById("fig").innerHTML=
+  figures.map(f=>`<span class="fig">${f}</span>`).join("");
+ document.getElementById("info").innerHTML=
+  `Totals: ${totals.join(", ")}<br>${info}`;
 
-  const best=top[0][1];
-  const conf=Math.min(90, Math.round((best/(best+5))*100)); // honest relative confidence
-
-  ai.innerHTML =
-    `<b>${["MON","TUE","WED","THU","FRI","SAT"][c]}</b><br>`+
-    top.map(([j,s])=>`<span class="tag">${j} (${s.toFixed(1)})</span>`).join("")+
-    `<div style="margin-top:6px">Confidence (relative): <b>${conf}%</b></div>`;
-  bar.style.width=conf+"%";
-});
-
-// CSV
-csv.onchange=e=>{
-  const fr=new FileReader();
-  fr.onload=()=>{
-    data=fr.result.split("\n").filter(l=>l.trim())
-      .map(l=>l.split(",").map(v=>norm(v)));
-    draw(); localStorage.setItem(STORAGE,JSON.stringify(data));
-  };
-  fr.readAsText(e.target.files[0]);
-};
-
-add.onclick=()=>{data.push(["**","**","**","**","**","**"]); draw();};
-save.onclick=()=>{localStorage.setItem(STORAGE,JSON.stringify(data)); alert("Saved");};
-clear.onclick=()=>{localStorage.removeItem(STORAGE); location.reload();};
-
-});
+ out.style.display="block";
+}
 </script>
+
 </body>
 </html>
