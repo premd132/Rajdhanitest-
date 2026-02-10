@@ -6,199 +6,198 @@
 <title>KALYAN / MAIN Figure System</title>
 
 <style>
-body{background:#0f172a;color:#fff;font-family:Arial;margin:0}
-.box{max-width:450px;margin:15px auto;background:#1e293b;padding:15px;border-radius:12px}
-h2{color:#ffd700;text-align:center;margin:5px 0}
-input,button,select{width:100%;padding:10px;margin:6px 0;border:none;border-radius:6px;font-size:15px}
-button{background:#ffd700;font-weight:bold;cursor:pointer}
-.result{background:#020617;padding:10px;border-radius:8px;margin-top:10px}
-.fig{display:inline-block;background:#000;color:#00ff88;padding:8px 10px;margin:4px;border-radius:6px;font-size:18px}
-.small{font-size:12px;opacity:.8}
-.error{color:#ff6b6b;font-size:13px}
+body{background:#0f172a;color:#fff;font-family:Arial;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.box{width:90%;max-width:450px;background:#1e293b;padding:20px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,0.5)}
+h2{color:#ffd700;text-align:center;margin-bottom:15px;letter-spacing:1px;line-height:1.2}
+input,button,select{width:100%;padding:12px;margin:8px 0;border:none;border-radius:8px;font-size:15px;box-sizing:border-box}
+input,select{background:#334155;color:#fff;border:1px solid #475569}
+button{background:#ffd700;color:#000;font-weight:bold;cursor:pointer;transition:0.3s}
+button:hover{background:#e6c200;transform:scale(1.02)}
+.result{background:#020617;padding:15px;border-radius:10px;margin-top:15px;border:1px solid #ffd700;text-align:center}
+.fig{display:inline-block;background:#ffd700;color:#000;padding:10px 15px;margin:5px;border-radius:8px;font-size:22px;font-weight:bold}
+.small{font-size:12px;opacity:.8;margin-top:5px;display:block;color:#94a3b8}
+.error{color:#ff6b6b;font-size:13px;text-align:center;margin-top:5px}
+.btn-group{display:flex;gap:10px}
+#save{background:#22c55e;color:#fff}
+#addRow{background:#3b82f6;color:#fff}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-<h2>🔮 KALYAN / MAIN<br>FIGURE SYSTEM</h2>
+    <h2>🔮 KALYAN / MAIN<br>FIGURE SYSTEM</h2>
 
-<div class="small">CSV Upload</div>
-<input type="file" id="csv" accept=".csv">
+    <div class="small">CSV File Upload (Format: 6 Jodis)</div>
+    <input type="file" id="csv" accept=".csv">
 
-<div class="small">Last Week Jodi (6)</div>
-<input id="jodi" placeholder="51,80,90,41,73,72">
+    <div class="small">Last Week Jodi (6)</div>
+    <input id="jodi" placeholder="51,80,90,41,73,72">
 
-<div class="small">Search Option</div>
-<select id="mode">
- <option value="1">1️⃣ Manual Base Figure</option>
- <option value="2">2️⃣ Auto (Last Jodi Total)</option>
- <option value="3">3️⃣ Auto (Common Total)</option>
- <option value="4">4️⃣ All Possible (Strong)</option>
-</select>
+    <div class="small">Search Calculation Mode</div>
+    <select id="mode">
+        <option value="1">1️⃣ Manual Base Figure</option>
+        <option value="2">2️⃣ Auto (Last Jodi Total)</option>
+        <option value="3">3️⃣ Auto (Common Total)</option>
+        <option value="4">4️⃣ All Possible (Strong)</option>
+    </select>
 
-<div class="small">Base Figure (Option-1 ke liye)</div>
-<input id="base" type="number" min="0" max="9" placeholder="6">
+    <div class="small">Base Figure (For Option-1)</div>
+    <input id="base" type="number" min="0" max="9" placeholder="Enter 0-9">
 
-<button id="searchBtn">SEARCH FIGURE</button>
+    <button id="searchBtn">SEARCH FIGURE</button>
 
-<div id="err" class="error"></div>
+    <div id="err" class="error"></div>
 
-<div id="out" class="result" style="display:none">
- <div class="small">Result Figure</div>
- <div id="fig"></div>
- <div id="info" class="small"></div>
-</div>
+    <div id="out" class="result" style="display:none">
+        <div class="small" style="color:#ffd700">Recommended Figures</div>
+        <div id="fig"></div>
+        <div id="info" class="small"></div>
+    </div>
 
-<button id="addRow">ADD ROW</button>
-<button id="save">SAVE</button>
-
+    <div class="btn-group">
+        <button id="addRow">ADD ROW</button>
+        <button id="save">SAVE DATA</button>
+    </div>
 </div>
 
 <script>
-/* ================= STORAGE ================= */
-const KEY="kalyan_figure_data";
+/* ================= STORAGE & CONFIG ================= */
+const KEY = "kalyan_figure_data";
 let rows = JSON.parse(localStorage.getItem(KEY)) || [];
 
-/* ================= HELPERS ================= */
-function cleanJodiList(raw){
- return raw
-  .replace(/\s+/g,",")
-  .split(",")
-  .map(v=>v.trim())
-  .filter(v=>/^\d{2}$/.test(v));
-}
-function totalAnk(j){ return (+j[0] + +j[1]) % 10; }
-function pm(n){ return [(n+1)%10,(n+9)%10]; }
-
-/* ================= CSV UPLOAD (FIXED) ================= */
-document.getElementById("csv").addEventListener("change",function(e){
+// HTML Elements
+const jodiInput = document.getElementById("jodi");
 const csvInput = document.getElementById("csv");
+const outBox = document.getElementById("out");
+const figDisplay = document.getElementById("fig");
+const infoDisplay = document.getElementById("info");
+const errDisplay = document.getElementById("err");
 
-csvInput.addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = function () {
-    let text = reader.result;
-
-    // 🔹 normalize (comma / space / tab sab ek jaisa)
-    text = text.replace(/\t/g, ",").replace(/ +/g, ",");
-
-    const lines = text
-      .split(/\r?\n/)
-      .map(l => l.trim())
-      .filter(l => l);
-
-    // 🔹 last valid line uthao (header ignore)
-    let lastValid = null;
-
-    for (let i = lines.length - 1; i >= 0; i--) {
-      const parts = lines[i]
+/* ================= HELPERS ================= */
+function cleanJodiList(raw) {
+    return raw
+        .replace(/[^0-9]/g, ",") // अंकों के अलावा सब हटाओ
         .split(",")
         .map(v => v.trim())
-        .filter(v => /^\d{2}$/.test(v));
+        .filter(v => v.length === 2);
+}
 
-      if (parts.length === 6) {
-        lastValid = parts;
-        break;
-      }
-    }
+function totalAnk(j) { 
+    return (parseInt(j[0]) + parseInt(j[1])) % 10; 
+}
 
-    if (!lastValid) {
-      alert("❌ CSV me 6 valid jodi nahi mili");
-      return;
-    }
+function pm(n) { 
+    return [(n + 1) % 10, (n + 9) % 10]; 
+}
 
-    // 🔹 input me bhar do
-    document.getElementById("jodi").value = lastValid.join(",");
+/* ================= CSV UPLOAD LOGIC ================= */
+csvInput.addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    // 🔹 localStorage save
-    rows.push(lastValid.join(","));
-    localStorage.setItem(KEY, JSON.stringify(rows));
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        let text = e.target.result;
+        // Normalize: replace tabs and spaces with commas
+        text = text.replace(/\t/g, ",").replace(/ +/g, ",");
+        
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        let lastValid = null;
 
-    alert("✅ CSV Loaded Successfully");
-  };
+        // Find last line with 6 valid jodis
+        for (let i = lines.length - 1; i >= 0; i--) {
+            const parts = cleanJodiList(lines[i]);
+            if (parts.length === 6) {
+                lastValid = parts;
+                break;
+            }
+        }
 
-  reader.readAsText(file);
-
-  // 🔹 IMPORTANT: same file dubara select karne ke liye reset
-  this.value = "";
+        if (lastValid) {
+            jodiInput.value = lastValid.join(",");
+            rows.push(lastValid.join(","));
+            localStorage.setItem(KEY, JSON.stringify(rows));
+            alert("✅ CSV Loaded Successfully!");
+        } else {
+            alert("❌ No valid row with 6 jodis found.");
+        }
+    };
+    reader.readAsText(file);
+    this.value = ""; // Reset file input
 });
 
-/* ================= BUTTONS ================= */
-document.getElementById("addRow").onclick=function(){
- const v = prompt("6 jodi dalo (comma ya space se)");
- if(!v) return;
- const c = cleanJodiList(v);
- if(c.length!==6){
-  alert("Sirf 6 valid jodi (2 digit)");
-  return;
- }
- rows.push(c.join(","));
- jodi.value = c.join(",");
+/* ================= SEARCH LOGIC ================= */
+document.getElementById("searchBtn").onclick = function() {
+    errDisplay.innerHTML = "";
+    outBox.style.display = "none";
+
+    const list = cleanJodiList(jodiInput.value);
+    if (list.length !== 6) {
+        errDisplay.innerHTML = "❌ Please enter exactly 6 valid jodis (e.g. 51,80...)";
+        return;
+    }
+
+    const totals = list.map(totalAnk);
+    const modeVal = document.getElementById("mode").value;
+    let figures = [], infoStr = "";
+
+    if (modeVal === "1") {
+        const b = parseInt(document.getElementById("base").value);
+        if (isNaN(b) || b < 0 || b > 9) {
+            errDisplay.innerHTML = "❌ Please enter a base figure (0-9)";
+            return;
+        }
+        const [a, c] = pm(b);
+        figures = [a, c, (a + 1) % 10, (c + 9) % 10];
+        infoStr = "Manual Base: " + b;
+    } 
+    else if (modeVal === "2") {
+        const b = totals[totals.length - 1];
+        const [a, c] = pm(b);
+        figures = [a, c, (a + 1) % 10, (c + 9) % 10];
+        infoStr = "Auto Base (Last Total): " + b;
+    } 
+    else if (modeVal === "3") {
+        const freq = {};
+        totals.forEach(t => freq[t] = (freq[t] || 0) + 1);
+        const b = parseInt(Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0]);
+        const [a, c] = pm(b);
+        figures = [a, c, (a + 1) % 10, (c + 9) % 10];
+        infoStr = "Auto Base (Common Total): " + b;
+    } 
+    else if (modeVal === "4") {
+        const uniqueTotals = [...new Set(totals)].slice(0, 2);
+        uniqueTotals.forEach(b => {
+            const [a, c] = pm(b);
+            figures.push(a, c, (a + 1) % 10, (c + 9) % 10);
+        });
+        infoStr = "All Strong Base Figures";
+    }
+
+    // Display unique figures only
+    const finalFigs = [...new Set(figures)].sort((a,b)=>a-b);
+    figDisplay.innerHTML = finalFigs.map(f => `<span class="fig">${f}</span>`).join("");
+    infoDisplay.innerHTML = `Week Totals: ${totals.join(", ")}<br>${infoStr}`;
+    outBox.style.display = "block";
 };
 
-document.getElementById("save").onclick=function(){
- localStorage.setItem(KEY,JSON.stringify(rows));
- alert("Saved");
+/* ================= MANUAL BUTTONS ================= */
+document.getElementById("addRow").onclick = function() {
+    const v = prompt("Enter 6 jodis (comma or space separated):");
+    if (!v) return;
+    const c = cleanJodiList(v);
+    if (c.length !== 6) {
+        alert("Please enter exactly 6 valid 2-digit jodis.");
+        return;
+    }
+    rows.push(c.join(","));
+    jodiInput.value = c.join(",");
 };
 
-/* ================= MAIN LOGIC ================= */
-document.getElementById("searchBtn").onclick=function(){
- err.innerHTML="";
- out.style.display="none";
-
- const list = cleanJodiList(jodi.value);
- if(list.length!==6){
-  err.innerHTML="❌ Sirf 6 valid jodi dalo";
-  return;
- }
-
- const totals = list.map(totalAnk);
- const modeVal = document.getElementById("mode").value;
- let figures=[], info="";
-
- if(modeVal==="1"){
-  const b = +base.value;
-  if(isNaN(b)||b<0||b>9){
-    err.innerHTML="❌ Base figure 0–9";
-    return;
-  }
-  const [a,c]=pm(b);
-  figures=[a,c,(a+1)%10,(c+9)%10];
-  info="Manual Base: "+b;
- }
-
- if(modeVal==="2"){
-  const b = totals[totals.length-1];
-  const [a,c]=pm(b);
-  figures=[a,c,(a+1)%10,(c+9)%10];
-  info="Auto Base (Last Total): "+b;
- }
-
- if(modeVal==="3"){
-  const freq={};
-  totals.forEach(t=>freq[t]=(freq[t]||0)+1);
-  const b = +Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
-  const [a,c]=pm(b);
-  figures=[a,c,(a+1)%10,(c+9)%10];
-  info="Auto Base (Common Total): "+b;
- }
-
- if(modeVal==="4"){
-  [...new Set(totals)].slice(0,2).forEach(b=>{
-    const [a,c]=pm(b);
-    figures.push(a,c,(a+1)%10,(c+9)%10);
-  });
-  info="All Strong Base";
- }
-
- fig.innerHTML = figures.map(f=>`<span class="fig">${f}</span>`).join("");
- info.innerHTML = `Totals: ${totals.join(", ")}<br>${info}`;
- out.style.display="block";
+document.getElementById("save").onclick = function() {
+    localStorage.setItem(KEY, JSON.stringify(rows));
+    alert("Data saved in browser memory.");
 };
 </script>
 
