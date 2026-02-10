@@ -3,188 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KALYAN FIGURE SYSTEM & RECORD</title>
+<title>KALYAN FIGURE SYSTEM - PRO VIEW</title>
 
 <style>
-body{background:#0f172a;color:#fff;font-family:Arial;margin:0;padding:20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
-.box{width:100%;max-width:480px;background:#1e293b;padding:20px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,0.5);margin-bottom:20px}
-h2{color:#ffd700;text-align:center;margin-bottom:15px;text-transform:uppercase}
-input,button,select{width:100%;padding:12px;margin:8px 0;border:none;border-radius:8px;font-size:15px;box-sizing:border-box}
-input,select{background:#334155;color:#fff;border:1px solid #475569}
-button{background:#ffd700;color:#000;font-weight:bold;cursor:pointer;transition:0.3s}
-button:hover{background:#e6c200}
-.result{background:#020617;padding:15px;border-radius:10px;margin-top:15px;border:1px solid #ffd700;text-align:center}
-.fig{display:inline-block;background:#ffd700;color:#000;padding:10px 15px;margin:5px;border-radius:8px;font-size:22px;font-weight:bold}
-.small{font-size:12px;opacity:.8;display:block;color:#94a3b8}
-.btn-group{display:flex;gap:10px}
-#save{background:#22c55e;color:#fff}
-#clear{background:#ef4444;color:#fff;margin-top:10px}
+:root { --gold: #ffd700; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 15px; }
+.container { max-width: 600px; margin: 0 auto; }
 
-/* Table Style */
-.record-box{width:100%;max-width:480px;background:#1e293b;padding:15px;border-radius:15px;overflow-x:auto}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:10px;border:1px solid #475569;text-align:center;font-size:14px}
-th{background:#334155;color:#ffd700}
-tr:nth-child(even){background:#1e293b}
-tr:nth-child(odd){background:#0f172a}
+/* Main Box */
+.box { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #334155; }
+h2 { color: var(--gold); text-align: center; margin: 0 0 15px 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Form Elements */
+.label { font-size: 12px; color: #94a3b8; margin-bottom: 5px; font-weight: bold; }
+input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #475569; background: #334155; color: #fff; font-size: 15px; box-sizing: border-box; }
+button { background: var(--gold); color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+button:hover { background: #eab308; }
+
+/* Result Area */
+.result-box { background: #020617; padding: 15px; border-radius: 10px; border: 1px dashed var(--gold); text-align: center; display: none; margin-bottom: 15px; }
+.fig { display: inline-block; background: var(--gold); color: #000; padding: 10px 18px; margin: 5px; border-radius: 6px; font-size: 24px; font-weight: 800; }
+
+/* Record Table View */
+.record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.record-card { background: var(--card); border-radius: 10px; padding: 15px; border: 1px solid #334155; }
+.history-row { background: #0f172a; border-radius: 6px; padding: 10px; margin-bottom: 10px; display: grid; grid-template-columns: 30px 1fr 60px; align-items: center; gap: 10px; border-left: 4px solid var(--gold); }
+.jodi-grid { display: flex; gap: 5px; flex-wrap: wrap; }
+.jodi-item { background: #1e293b; color: var(--gold); padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 16px; border: 1px solid #334155; font-weight: bold; }
+.btn-use { background: #3b82f6; color: white; font-size: 11px; padding: 6px; margin: 0; }
+.btn-clear { background: #ef4444; color: white; width: auto; padding: 8px 15px; font-size: 12px; }
 </style>
 </head>
 
 <body>
 
-<div class="box">
-    <h2>🔮 FIGURE SYSTEM</h2>
+<div class="container">
+    <div class="box">
+        <h2>🔮 Figure Calculation</h2>
+        
+        <div class="label">UPLOAD CSV (6 JODIS PER ROW)</div>
+        <input type="file" id="csvFile" accept=".csv">
 
-    <div class="small">Upload Record (CSV)</div>
-    <input type="file" id="csv" accept=".csv">
+        <div class="label">LAST WEEK RECORD (6 JODIS)</div>
+        <input id="jodiInput" placeholder="12, 34, 56, 78, 90, 11">
 
-    <div class="small">Input Jodis (6)</div>
-    <input id="jodi" placeholder="12,34,56,78,90,22">
+        <div class="label">SELECT SYSTEM</div>
+        <select id="mode">
+            <option value="1">Manual Base Figure</option>
+            <option value="2">Auto (Last Total)</option>
+            <option value="3">Auto (Common Total)</option>
+            <option value="4">Strong All-Rounder</option>
+        </select>
+        
+        <input id="baseAnk" type="number" placeholder="Enter Base Figure (0-9)" style="display:none">
 
-    <select id="mode">
-        <option value="1">Manual Base Figure</option>
-        <option value="2">Auto (Last Total)</option>
-        <option value="3">Auto (Common Total)</option>
-        <option value="4">All Strong Base</option>
-    </select>
+        <button id="calcBtn">GET FIGURES</button>
 
-    <input id="base" type="number" min="0" max="9" placeholder="Base Figure (0-9)">
+        <div id="resultArea" class="result-box">
+            <div id="figOutput"></div>
+            <div id="detailOutput" style="font-size:12px; color:#94a3b8; margin-top:8px"></div>
+        </div>
 
-    <button id="searchBtn">SEARCH FIGURE</button>
-
-    <div id="out" class="result" style="display:none">
-        <div id="fig"></div>
-        <div id="info" class="small"></div>
+        <button id="saveBtn" style="background: #22c55e; color: white;">SAVE TO RECORD</button>
     </div>
 
-    <div class="btn-group">
-        <button id="save" onclick="saveToHistory()">SAVE TO RECORD</button>
+    <div class="record-card">
+        <div class="record-header">
+            <span style="font-weight:bold; color:var(--gold)">📊 HISTORY (CSV VIEW)</span>
+            <button class="btn-clear" onclick="clearAll()">CLEAR ALL</button>
+        </div>
+        <div id="historyList">
+            </div>
     </div>
-</div>
-
-<div class="record-box">
-    <h3 style="color:#ffd700;text-align:center;margin:0">📊 RECENT RECORDS</h3>
-    <table id="recordTable">
-        <thead>
-            <tr>
-                <th>S.N.</th>
-                <th>Jodis (6)</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="recordBody"></tbody>
-    </table>
-    <button id="clear" onclick="clearHistory()">CLEAR ALL HISTORY</button>
 </div>
 
 <script>
-const KEY = "kalyan_v2_history";
-let rows = JSON.parse(localStorage.getItem(KEY)) || [];
+const DB_KEY = "KALYAN_PRO_DATA";
+let historyData = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-window.onload = updateTable;
+// UI Elements
+const jodiInput = document.getElementById("jodiInput");
+const modeSelect = document.getElementById("mode");
+const baseAnk = document.getElementById("baseAnk");
 
-/* --- Helpers --- */
-function cleanJodiList(raw) {
-    return raw.replace(/[^0-9]/g, ",").split(",").map(v => v.trim()).filter(v => v.length === 2);
-}
-
-function totalAnk(j) { return (parseInt(j[0]) + parseInt(j[1])) % 10; }
-
-function pm(n) { return [(n + 1) % 10, (n + 9) % 10]; }
-
-/* --- CSV Logic --- */
-document.getElementById("csv").addEventListener("change", function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        let text = e.target.result.replace(/\t/g, ",").replace(/ +/g, ",");
-        const lines = text.split(/\r?\n/).filter(l => l.trim());
-        lines.forEach(line => {
-            const parts = cleanJodiList(line);
-            if (parts.length === 6) {
-                rows.push(parts.join(","));
-                document.getElementById("jodi").value = parts.join(",");
-            }
-        });
-        saveAndRefresh();
-        alert("Record Updated!");
-    };
-    reader.readAsText(file);
-});
-
-/* --- Search Logic --- */
-document.getElementById("searchBtn").onclick = function() {
-    const jInput = document.getElementById("jodi").value;
-    const list = cleanJodiList(jInput);
-    if (list.length !== 6) { alert("Enter 6 Jodis"); return; }
-
-    const totals = list.map(totalAnk);
-    const mode = document.getElementById("mode").value;
-    let figures = [];
-
-    if (mode === "1") {
-        const b = parseInt(document.getElementById("base").value);
-        if (isNaN(b)) { alert("Enter Base"); return; }
-        figures = [...pm(b), (b+2)%10, (b+8)%10];
-    } else if (mode === "2") {
-        const b = totals[5];
-        figures = [...pm(b), (b+2)%10, (b+8)%10];
-    } else if (mode === "3") {
-        const freq = {};
-        totals.forEach(t => freq[t] = (freq[t]||0)+1);
-        const b = parseInt(Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0]);
-        figures = [...pm(b), (b+2)%10, (b+8)%10];
-    } else {
-        [...new Set(totals)].slice(0,2).forEach(b => figures.push(...pm(b)));
-    }
-
-    const final = [...new Set(figures)].sort();
-    document.getElementById("fig").innerHTML = final.map(f => `<span class="fig">${f}</span>`).join("");
-    document.getElementById("info").innerHTML = "Totals: " + totals.join("-");
-    document.getElementById("out").style.display = "block";
+// Show/Hide Base Input
+modeSelect.onchange = () => {
+    baseAnk.style.display = (modeSelect.value === "1") ? "block" : "none";
 };
 
-/* --- History Functions --- */
-function saveToHistory() {
-    const val = document.getElementById("jodi").value;
-    const list = cleanJodiList(val);
-    if (list.length === 6) {
-        rows.push(list.join(","));
-        saveAndRefresh();
+window.onload = renderHistory;
+
+/* --- Core Logic --- */
+function getJodis(str) {
+    return str.replace(/[^0-9]/g, ",").split(",").filter(v => v.length === 2).slice(0, 6);
+}
+
+function getTotal(j) { return (parseInt(j[0]) + parseInt(j[1])) % 10; }
+
+function getNeighbors(n) { return [(n + 1) % 10, (n + 9) % 10, (n + 2) % 10, (n + 8) % 10]; }
+
+/* --- Search Action --- */
+document.getElementById("calcBtn").onclick = () => {
+    const list = getJodis(jodiInput.value);
+    if (list.length < 6) { alert("Please enter 6 Jodis"); return; }
+
+    const totals = list.map(getTotal);
+    const mode = modeSelect.value;
+    let base;
+
+    if (mode === "1") base = parseInt(baseAnk.value);
+    else if (mode === "2") base = totals[5];
+    else if (mode === "3") {
+        let counts = {};
+        totals.forEach(t => counts[t] = (counts[t] || 0) + 1);
+        base = parseInt(Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b));
     } else {
-        alert("Invalid Data");
+        base = totals[5]; // Default for mode 4 logic
     }
+
+    let finalFigs = [...new Set(getNeighbors(base))].sort();
+    
+    document.getElementById("figOutput").innerHTML = finalFigs.map(f => `<span class="fig">${f}</span>`).join("");
+    document.getElementById("detailOutput").innerHTML = `Week Totals: ${totals.join(" - ")}`;
+    document.getElementById("resultArea").style.display = "block";
+};
+
+/* --- CSV & History --- */
+document.getElementById("csvFile").onchange = (e) => {
+    const reader = new FileReader();
+    reader.onload = (f) => {
+        const lines = f.target.result.split(/\r?\n/);
+        lines.forEach(line => {
+            const jodis = getJodis(line);
+            if (jodis.length === 6) historyData.unshift(jodis.join(","));
+        });
+        saveData();
+    };
+    reader.readAsText(e.target.files[0]);
+};
+
+document.getElementById("saveBtn").onclick = () => {
+    const jodis = getJodis(jodiInput.value);
+    if (jodis.length === 6) {
+        historyData.unshift(jodis.join(","));
+        saveData();
+        alert("Saved!");
+    }
+};
+
+function saveData() {
+    localStorage.setItem(DB_KEY, JSON.stringify(historyData));
+    renderHistory();
 }
 
-function useRecord(str) {
-    document.getElementById("jodi").value = str;
-    window.scrollTo(0,0);
-}
-
-function saveAndRefresh() {
-    localStorage.setItem(KEY, JSON.stringify(rows));
-    updateTable();
-}
-
-function updateTable() {
-    const body = document.getElementById("recordBody");
-    body.innerHTML = "";
-    rows.slice().reverse().forEach((row, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${rows.length - index}</td>
-            <td style="font-size:12px">${row}</td>
-            <td><button style="padding:4px 8px; font-size:11px" onclick="useRecord('${row}')">USE</button></td>
+function renderHistory() {
+    const listDiv = document.getElementById("historyList");
+    listDiv.innerHTML = historyData.length ? "" : "<div style='text-align:center; padding:20px; opacity:0.5'>No Records Found</div>";
+    
+    historyData.forEach((row, idx) => {
+        const jodis = row.split(",");
+        const rowHTML = `
+            <div class="history-row">
+                <div style="font-size:10px; opacity:0.5">${historyData.length - idx}</div>
+                <div class="jodi-grid">
+                    ${jodis.map(j => `<span class="jodi-item">${j}</span>`).join("")}
+                </div>
+                <button class="btn-use" onclick="loadRow('${row}')">USE</button>
+            </div>
         `;
-        body.appendChild(tr);
+        listDiv.innerHTML += rowHTML;
     });
 }
 
-function clearHistory() {
-    if (confirm("Delete all records?")) {
-        rows = [];
-        saveAndRefresh();
+function loadRow(str) {
+    jodiInput.value = str;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function clearAll() {
+    if (confirm("Delete all history?")) {
+        historyData = [];
+        saveData();
     }
 }
 </script>
