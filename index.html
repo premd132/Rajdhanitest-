@@ -293,7 +293,7 @@ function showOne(shape, idx){
 function updateAI(shape, matches){
  let jc={};
  matches.forEach(m=>{
-  for(let i=0; i<shape.length; i++){
+  for(let i=0; i<shape.length; i+){
    for(let j=0; j<5; j++){
     if(shape[i][j]){ let v = data[m.index+i][j]; jc[v]=(jc[v]||0)+1; }
    }
