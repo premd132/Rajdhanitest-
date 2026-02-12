@@ -219,7 +219,7 @@ function searchMultiPattern(shape, b1, b2) {
     for (let i = 0; i <= data.length - shape.length; i++) {
         let ok = true;
         for (let k = 0; k < shape.length; k++) {
-            for (let j = 0; j < 5; j++) {
+            for (let j = 0; j < 2; j++) {
                 let expected = shape[k][j];
                 if (expected === 1 && !smartMatch(data[i + k][j], b1)) { ok = false; break; }
                 if (expected === 2 && !smartMatch(data[i + k][j], b2)) { ok = false; break; }
