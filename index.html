@@ -173,7 +173,7 @@ function makePattern(r, c) {
 
     // 1. Do alag-alag family ki Jodia dhoondhna (Upar ki 10 rows mein)
     // Hum pichle 10 hafte ka data check kar rahe hain
-    for (let i = r; i >= Math.max(0, r - 10); i-) {
+    for (let i = r; i >= Math.max(0, r - 10); i--) {
         for (let j = 0; j < 2; j+) {
             let val = data[i][j];
             if (val !== "**") {
@@ -218,7 +218,7 @@ function searchMultiPattern(shape, b1, b2) {
     // Poore record mein scan karega
     for (let i = 0; i <= data.length - shape.length; i+) {
         let ok = true;
-        for (let k = 0; k < shape.length; k++) {
+        for (let k = 0; k < shape.length; k+) {
             for (let j = 0; j < 2; j+) {
                 let expected = shape[k][j];
                 if (expected === 1 && !smartMatch(data[i + k][j], b1)) { ok = false; break; }
