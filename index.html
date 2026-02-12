@@ -174,7 +174,7 @@ function makePattern(r, c) {
     // 1. Do alag-alag family ki Jodia dhoondhna (Upar ki 10 rows mein)
     // Hum pichle 10 hafte ka data check kar rahe hain
     for (let i = r; i >= Math.max(0, r - 10); i--) {
-        for (let j = 0; j < 5; j++) {
+        for (let j = 0; j < 2; j++) {
             let val = data[i][j];
             if (val !== "**") {
                 if (base1 === "**") {
@@ -198,7 +198,7 @@ function makePattern(r, c) {
     // Hum current row 'r' se pichle 8-10 rows ka saancha le rahe hain
     for (let i = Math.max(0, r - 8); i <= r; i++) {
         let row = [];
-        for (let j = 0; j < 5; j++) {
+        for (let j = 0; j < 2; j++) {
             let cellVal = data[i][j];
             let type = 0; // 0 = no match, 1 = base1 family, 2 = base2 family
             if (cellVal !== "**") {
