@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI – Premium System</title>
+    <title>Rajdhani Pro AI – Fixed System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -13,7 +13,6 @@
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        /* Home Screen */
         #home-screen {
             height: 100vh; width: 100vw; display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center;
@@ -31,10 +30,9 @@
         
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; min-width: 45px; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* Markers */
         .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.2); }
         .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(46, 134, 222, 0.2); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
@@ -44,7 +42,6 @@
         .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
 
         .trace-btn { background: var(--green-line); color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -57,7 +54,7 @@
 
 <div id="main-app">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">System</h2>
+        <h2 style="color:var(--gold); margin:0;">Analysis</h2>
         <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
     </div>
 
@@ -77,19 +74,20 @@
     </center>
 
     <div class="dashboard">
-        <div class="card"><h3>✔ Matches Found</h3><div id="checks">Click cell...</div></div>
-        <div class="card"><h3>🤖 AI Logic</h3><div id="ai">Wait...</div></div>
-        <div class="card"><h3>🔮 Future Prediction</h3><div id="future">...</div></div>
+        <div class="card"><h3>✔ Checks Found</h3><div id="checks">Select blank...</div></div>
+        <div class="card"><h3>🤖 Logic</h3><div id="ai">Wait...</div></div>
+        <div class="card"><h3>🔮 Future AI</h3><div id="future">...</div></div>
     </div>
 </div>
 
 <script>
 const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("pdata_Rajdhani_v5")) || Array(20).fill().map(()=>Array(5).fill("**"));
+
+let data = JSON.parse(localStorage.getItem("pdata_Rajdhani_v6")) || Array(15).fill().map(()=>Array(5).fill("**"));
 let activeMark = null;
 
 function startApp() { document.getElementById('home-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; draw(); }
-function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
+function fam(v){ v = String(v).padStart(2, '0'); for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA"; }
 function smartMatch(a,b){ return fam(a)===fam(b); }
 
 function draw(){
@@ -102,7 +100,7 @@ function draw(){
                 let type = activeMark.shape[ri-activeMark.start][ci];
                 if(type===1) cls="circle-red"; else if(type===2) cls="circle-blue";
             }
-            h+=`<td id="td-${ri}-${ci}" class="${cls}" contenteditable oninput="data[${ri}][${ci}]=this.innerText" onclick="handleCell(${ri},${ci})">${c}</td>`;
+            h+=`<td id="td-${ri}-${ci}" class="${cls}" contenteditable oninput="updateCell(${ri},${ci},this)" onclick="handleCell(${ri},${ci})">${c}</td>`;
         });
         h+=`</tr>`;
     });
@@ -110,8 +108,11 @@ function draw(){
     if(activeMark) setTimeout(()=>drawLines("mainCanvas", "tbl"), 50);
 }
 
+function updateCell(r, c, el){ data[r][c] = el.innerText.trim(); }
+
 function handleCell(r, c){
-    if(data[r][c] === "**") makePattern(r, c);
+    let val = String(data[r][c]).trim();
+    if(val === "**" || val === ""){ makePattern(r, c); }
 }
 
 function makePattern(r, c) {
@@ -119,11 +120,10 @@ function makePattern(r, c) {
     let shape = Array(11).fill().map(()=>Array(5).fill(0));
     let startScan = Math.max(0, r-10);
 
-    // Build pattern from last 10 weeks
     for(let i=r-1; i>=startScan; i--){
         for(let j=0; j<5; j++){
-            let v = data[i][j];
-            if(v!=="**"){
+            let v = String(data[i][j]).trim();
+            if(v!=="**" && v!==""){
                 if(b1==="**"){ b1=v; b1c=1; shape[i-startScan][j]=1; }
                 else if(smartMatch(v,b1) && b1c<2){ b1c++; shape[i-startScan][j]=1; }
                 else if(b2==="**" && fam(v)!=fam(b1)){ b2=v; b2c=1; shape[i-startScan][j]=2; }
@@ -132,42 +132,39 @@ function makePattern(r, c) {
         }
     }
     
-    // Search history
     let matches = [];
     let patternRows = r - startScan;
     for(let i=0; i<=data.length - patternRows - 1; i++){
         let ok=true;
         for(let k=0; k<patternRows; k++){
             for(let j=0; j<5; j++){
-                if(shape[k][j]===1 && !smartMatch(data[i+k][j], b1)) ok=false;
-                if(shape[k][j]===2 && !smartMatch(data[i+k][j], b2)) ok=false;
+                let s = shape[k][j];
+                if(s===1 && !smartMatch(data[i+k][j], b1)) ok=false;
+                if(s===2 && !smartMatch(data[i+k][j], b2)) ok=false;
             }
         }
         if(ok && i !== startScan) matches.push({index: i, res: data[i+patternRows][c]});
     }
-    
     updateUI(shape, matches, startScan, patternRows);
 }
 
 function updateUI(shape, matches, start, len){
     let checks = document.getElementById("checks");
     checks.innerHTML = matches.map(m => `
-        <div style="background:#334155; padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:12px;">Row ${m.index+1}</span>
+        <div style="background:#334155; padding:8px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span>Row ${m.index+1}</span>
             <button class="trace-btn" onclick="traceOld(${m.index}, ${JSON.stringify(shape)})">TRACE</button>
-            <b style="color:var(--gold); font-size:18px;">${m.res}</b>
+            <b style="color:var(--gold); font-size:16px;">${m.res}</b>
         </div>
-    `).join("") || "No History.";
+    `).join("") || "No Match.";
 
     activeMark = {start: start, shape: shape};
     draw();
-
-    // AI Prediction (3 pairs)
+    
     let pool = matches.map(m => m.res).filter(v => v !== "**");
-    let unique = [...new Set(pool)].slice(0, 3);
-    document.getElementById("future").innerHTML = unique.length ? 
-        `<div style="font-size:1.5rem; color:var(--gold); font-weight:800;">${unique.join(" - ")}</div>` : "No data.";
-    document.getElementById("ai").innerHTML = `<span style="color:var(--green-line)">Match Found: ${matches.length}</span>`;
+    document.getElementById("future").innerHTML = pool.length ? 
+        `<div style="font-size:1.3rem; color:var(--gold); font-weight:800;">${[...new Set(pool)].slice(0,3).join(" - ")}</div>` : "...";
+    document.getElementById("ai").innerHTML = `<span style="color:var(--green-line)">Pattern: ${matches.length} Matches</span>`;
 }
 
 function traceOld(idx, shape){
@@ -198,8 +195,8 @@ function drawLines(cvId, tblId) {
 }
 
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("pdata_Rajdhani_v5", JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem("pdata_Rajdhani_v6", JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Delete All?")){ localStorage.clear(); location.reload(); }}
 
 document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
