@@ -165,7 +165,7 @@ function drawLines(cvsId, tblId) {
         const cells = tblEl.querySelectorAll(cls);
         if(cells.length < 2) return;
         ctx.strokeStyle = i === 0 ? "#ff4757" : "#0084ff"; 
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2.3;
         ctx.beginPath();
         cells.forEach((c, idx) => {
             const r = c.getBoundingClientRect();
@@ -185,12 +185,12 @@ function clearData(){ if(confirm("Clear all data?")){ localStorage.clear(); loca
 function makePattern(r,c){
  targetCol=c; 
  let b1="**", b2="**";
- let look = 10; 
+ let look = 6; 
  let shape = Array(look + 1).fill().map(()=>Array(6).fill(0));
 
  // Extract Dual Family
  for(let i=r-1; i>=Math.max(0, r-look); i--) {
-    for(let j=0; j<6; j++) {
+    for(let j=0; j<3; j++) {
         let v = data[i][j];
         if(v !== "**") {
             if(b1 === "**") { b1 = v; shape[i-(r-look)][j] = 1; }
@@ -209,7 +209,7 @@ function searchPattern(shape, b1, b2){
  for(let i=0; i <= data.length - shape.length; i++){
   let ok=true;
   for(let k=0; k<shape.length; k++){
-   for(let j=0; j<6; j++){
+   for(let j=0; j<3; j++){
     if(shape[k][j] === 1 && !smartMatch(data[i+k][j], b1)) { ok=false; break; }
     if(shape[k][j] === 2 && !smartMatch(data[i+k][j], b2)) { ok=false; break; }
    }
