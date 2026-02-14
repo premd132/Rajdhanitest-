@@ -8,8 +8,8 @@
     <style>
         :root { 
             --gold: #ffd700; 
-            --blue-circle: #0084ff; /* Family 2 */
-            --red-circle: #ff4757;  /* Family 1 */
+            --blue-circle: #0084ff; /* Blue Family */
+            --red-circle: #ff4757;  /* Red Family */
             --green-line: #00ff88; 
             --bg: #0f172a; 
             --panel: #1e293b; 
@@ -18,7 +18,7 @@
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        /* --- Aapka Home Page Styling --- */
+        /* --- Sab Aapka Home Page Styling --- */
         #home-screen {
             height: 100vh; width: 100vw; display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center;
@@ -32,16 +32,17 @@
             cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        /* --- Aapka Dashboard Styling --- */
+        /* --- Sab Aapka Dashboard Styling --- */
         #main-app { display: none; padding: 15px; }
         .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         
+        /* Table Styling */
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* DUAL FAMILY MARKING */
+        /* DUAL MARKING STYLE */
         .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.15); z-index: 10; }
         .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; }
         
@@ -86,18 +87,9 @@
     </center>
 
     <div class="dashboard">
-        <div class="card">
-            <h3>✔ Matches Found</h3>
-            <div id="checks"></div>
-        </div>
-        <div class="card">
-            <h3>🤖 AI Analysis</h3>
-            <div id="ai">Wait for input...</div>
-        </div>
-        <div class="card">
-            <h3>🔮 Future Prediction</h3>
-            <div id="future">Select a match...</div>
-        </div>
+        <div class="card"><h3>✔ Matches Found</h3><div id="checks"></div></div>
+        <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">Wait for input...</div></div>
+        <div class="card"><h3>🔮 Future Prediction</h3><div id="future">Select a match...</div></div>
     </div>
 </div>
 
@@ -123,12 +115,7 @@ let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["51","91","41","57",
 
 let activeMark = null;
 
-function startApp() {
-    document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    draw();
-}
-
+function startApp() { document.getElementById('home-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; draw(); }
 function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
 function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
 
@@ -165,7 +152,7 @@ function drawLines(cvId, tblId) {
         const cells = tbl.querySelectorAll(cls);
         if(cells.length < 2) return;
         ctx.strokeStyle = i === 0 ? "#ff4757" : "#0084ff"; 
-        ctx.lineWidth = 2.5; ctx.beginPath();
+        ctx.lineWidth = 3; ctx.beginPath();
         cells.forEach((c, idx) => {
             const r = c.getBoundingClientRect();
             const x = r.left - tRect.left + r.width/2;
@@ -182,7 +169,7 @@ function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); ale
 function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
 
 function makePattern(r,c){
- targetCol=c; activeMark = null; // Reset for new click
+ targetCol=c; activeMark = null; 
  let b1="**", b2="**";
  let look = 10;
  let shape = Array(look + 1).fill().map(()=>Array(6).fill(0));
@@ -224,11 +211,11 @@ function showChecks(shape, matches){
  matches.forEach((m,i)=>{
   let d = document.createElement("div");
   d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
-  d.innerText = `Pattern Match at Row ${m.index + 1}`;
+  d.innerText = `Match Row ${m.index + 1}`;
   d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
   div.appendChild(d);
  });
- if(matches.length > 0) { activeMark = {start: matches[0].index, shape: shape}; draw(); updateAI(shape, matches); }
+ if(matches.length > 0) { activeMark = {start: matches[0].index, shape: shape}; draw(); }
 }
 
 function showOne(shape, idx){
@@ -245,15 +232,6 @@ function showOne(shape, idx){
  document.getElementById("popup").style.display="block";
  document.getElementById("overlay").style.display="block";
  setTimeout(()=>drawLines("popCanvas", "popTbl"), 100);
-}
-
-function updateAI(shape, matches){
- let pool = [];
- matches.forEach(m => {
-  let nextR = m.index + shape.length;
-  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
- });
- document.getElementById("future").innerHTML = pool.length ? `Next: ${[...new Set(pool)].join(", ")}` : "Analyzing...";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
