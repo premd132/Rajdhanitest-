@@ -115,11 +115,11 @@ function makePattern(r,c){
  targetCol=c;
  activeMark=null; // Reset purana pattern
  let b1="**", b2="**";
- let look = 9;
+ let look = 6;
  let shape = Array(look + 1).fill().map(()=>Array(6).fill(0));
 
  for(let i=r-1; i>=Math.max(0, r-look); i--) {
-    for(let j=0; j<6; j++) {
+    for(let j=0; j<3; j++) {
         let v = data[i][j];
         if(v!=="**") {
             if(b1=="**") { b1=v; shape[i-(r-look)][j]=1; }
@@ -139,7 +139,7 @@ function searchPattern(shape, b1, b2, excludeIndex){
   if(i === excludeIndex) continue;
   let ok=true;
   for(let k=0; k<shape.length; k++){
-   for(let j=0; j<6; j++){
+   for(let j=0; j<3; j++){
     if(shape[k][j]===1 && !smartMatch(data[i+k][j],b1)) { ok=false; break; }
     if(shape[k][j]===2 && !smartMatch(data[i+k][j],b2)) { ok=false; break; }
    }
