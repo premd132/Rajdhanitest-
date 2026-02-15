@@ -38,7 +38,6 @@
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; transition: 0.2s; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* Two Different Circle Colors */
         .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.2); }
         .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(46, 134, 222, 0.2); }
         
@@ -85,7 +84,7 @@
     <div class="dashboard">
         <div class="card"><h3>✔ Matches Found</h3><div id="checks"></div></div>
         <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">Ready...</div></div>
-        <div class="card"><h3>🔮 Future Prediction</h3><div id="future">...</div></div>
+        <div class="card" style="border-top: 3px solid var(--green-line);"><h3>🔮 Future AI (3-Pair)</h3><div id="future">...</div></div>
     </div>
 </div>
 
@@ -108,13 +107,12 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(5).fill("**"));
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(12).fill().map(()=>Array(5).fill("**"));
 
 function startApp() { document.getElementById('home-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; draw(); }
-
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
 function smartMatch(a,b){ if(a=="**"||b=="**") return false; return fam(a)===fam(b); }
-function norm(v){if(!v||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function norm(v){if(!v||v=="**")return "**"; v=String(v).trim(); return v.length==1?"0"+v:v;}
 
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
@@ -148,10 +146,7 @@ function drawLines(cvsId, tblEl) {
     cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const tRect = tblEl.getBoundingClientRect();
-    
-    // Draw Red Lines
     drawGroup(tblEl, ".circle-red", "#ff4757", ctx, tRect);
-    // Draw Blue Lines
     drawGroup(tblEl, ".circle-blue", "#2e86de", ctx, tRect);
 }
 
@@ -168,22 +163,21 @@ function drawGroup(tblEl, selector, color, ctx, tRect) {
     ctx.stroke();
 }
 
-function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
 function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
-// Sirf ye logic aapke functions mein update/add karein
+// --- Naya Logic Jo Aapne Maanga Tha ---
 
 function makePattern(r, c) {
     targetCol = c;
-    activeMark = null; // Purana reset karein
-    
+    activeMark = null;
     let b1 = "**", b2 = "**";
     let b1Cells = [], b2Cells = [];
     let startR = Math.max(0, r - 10);
 
-    // 1. Upar ki 10 rows se Dual Family (2-2 markers) dhundhna
+    // 1. Har cell par alag pattern ke liye upar ki 10 rows scan
     for (let i = r - 1; i >= startR; i--) {
         for (let j = 0; j < 5; j++) {
             let val = data[i][j];
@@ -202,41 +196,37 @@ function makePattern(r, c) {
     }
 
     if (b1Cells.length < 2 || b2Cells.length < 2) {
-        alert("Pattern incomplete! Need 2 jodis of 2 different families in last 10 rows.");
+        alert("Dual Family Pattern (2+2) nahi mila! Is cell ke upar data kam hai.");
         return;
     }
 
-    // Pattern ki relative position (Gap) nikalna
-    let shape = Array(11).fill().map(() => Array(5).fill(0));
+    let shape = Array(r - startR).fill().map(() => Array(5).fill(0));
     b1Cells.forEach(c => shape[c.ri - startR][c.ci] = 1);
     b2Cells.forEach(c => shape[c.ri - startR][c.ci] = 2);
     
-    // 2. Real Record mein turant marking dikhana
-    activeMark = { start: startR, shape: shape.slice(0, r - startR) };
+    // 2. Real record mein turant circle mark
+    activeMark = { start: startR, shape: shape };
     draw();
 
-    // 3. Purane records mein SAME GAP ke saath search karna
-    searchMultiPattern(activeMark.shape, b1, b2);
+    // 3. Poore purane data mein search
+    searchMultiPattern(shape, b1, b2, r);
 }
 
-function searchMultiPattern(shape, b1, b2) {
+function searchMultiPattern(shape, b1, b2, currentR) {
     let matches = [];
-    // Poore data mein scan (current pattern se upar tak)
     for (let i = 0; i <= data.length - shape.length - 1; i++) {
-        if (i >= activeMark.start) break; 
-
-        let ok = true;
+        if (i >= currentR - shape.length) break; 
+        let score = 0;
         for (let k = 0; k < shape.length; k++) {
             for (let j = 0; j < 5; j++) {
                 let type = shape[k][j];
-                if (type === 1 && !smartMatch(data[i + k][j], b1)) { ok = false; break; }
-                if (type === 2 && !smartMatch(data[i + k][j], b2)) { ok = false; break; }
+                if (type === 1 && smartMatch(data[i+k][j], b1)) score++;
+                if (type === 2 && smartMatch(data[i+k][j], b2)) score++;
             }
-            if (!ok) break;
         }
-        if (ok) {
+        if (score === 4) { // 2+2 match confirmed
             matches.push({ index: i });
-            if (matches.length >= 3) break; // Max 3 check lines
+            if (matches.length >= 3) break; 
         }
     }
     showChecks(shape, matches, b1, b2);
@@ -244,24 +234,17 @@ function searchMultiPattern(shape, b1, b2) {
 
 function showChecks(shape, matches, b1, b2) {
     const container = document.getElementById("checks");
-    container.innerHTML = "";
+    container.innerHTML = matches.length ? "" : "<small>No matches in old records.</small>";
     
-    if (matches.length === 0) {
-        container.innerHTML = "<small>No historical matches found.</small>";
-        return;
-    }
-
     matches.forEach((m, idx) => {
         let d = document.createElement("div");
-        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:8px; border-left:4px solid var(--gold);";
-        d.innerHTML = `Check Line ${idx + 1}: Match at Row ${m.index + 1} ➔`;
-        // 4. Click karte hi popup mein real record pattern dikhana
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:8px; border-left:4px solid var(--green-line);";
+        d.innerHTML = `CHECK LINE ${idx + 1}: Match at Row ${m.index + 1} ➔`;
         d.onclick = () => showOne(shape, m.index);
         container.appendChild(d);
     });
-
     updateAdvancedAI(shape, matches);
-    }
+}
 
 function showOne(shape, idx){
     let html="<table id='popTbl'>";
@@ -285,15 +268,15 @@ function updateAdvancedAI(shape, matches) {
         let nextR = m.index + shape.length;
         if(nextR < data.length && data[nextR][targetCol] !== "**") pool.push(data[nextR][targetCol]);
     });
-
     document.getElementById("ai").innerHTML = pool.length ? 
-        `<p style='color:var(--green-line)'>Dual Pattern Confirmed</p><small>Hits found: ${pool.length}</small>` : "Seeking historical data...";
+        `<p style='color:var(--green-line)'>Pattern Matches Found: ${pool.length}</p>` : "Scanning historical records...";
     
+    let futureDiv = document.getElementById("future");
     if (pool.length > 0) {
         let unique = [...new Set(pool)].slice(0, 3);
-        document.getElementById("future").innerHTML = `<div style='font-size:1.4rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div><small>AI Prediction Pairs</small>`;
+        futureDiv.innerHTML = `<div style='font-size:1.4rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div><small>Historical Results</small>`;
     } else {
-        document.getElementById("future").innerHTML = "No direct matches.";
+        futureDiv.innerHTML = "Seeking matches...";
     }
 }
 
