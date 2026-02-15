@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI – Dual Pattern System</title>
+    <title>Kalyan Pro AI – Dual Family System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
             --gold: #ffd700; 
             --red-circle: #ff4757; 
-            --blue-circle: #2e86de; 
-            --green-line: #00ff88; 
+            --blue-circle: #0084ff; 
             --bg: #0f172a; 
             --panel: #1e293b; 
         }
+
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
@@ -35,11 +35,12 @@
         
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; transition: 0.2s; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.2); }
-        .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(46, 134, 222, 0.2); }
+        /* Dual Color Circles */
+        .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.2); z-index: 10; }
+        .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); z-index: 10; }
         
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
@@ -47,23 +48,23 @@
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
         .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
 
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; }
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 450px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="home-screen">
-    <h1 class="hero-title">Rajdhani PRO AI</h1>
-    <p class="hero-sub">DUAL PATTERN DETECTION SYSTEM</p>
+    <h1 class="hero-title">Kalyan PRO AI</h1>
+    <p class="hero-sub">DUAL PATTERN DETECTION</p>
     <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
 <div id="main-app">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">Rajdhani AI</h2>
-        <button onclick="location.reload()" style="background:#dc3545; color:white;">Reset</button>
+        <h2 style="color:var(--gold); margin:0;">DASHBOARD</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
     </div>
 
     <div class="toolbar">
@@ -71,7 +72,7 @@
         <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
         <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
         <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
-        <button onclick="clearData()" style="background:#777; color:white;">🗑️ CLEAR</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
 
     <center>
@@ -84,46 +85,41 @@
     <div class="dashboard">
         <div class="card"><h3>✔ Matches Found</h3><div id="checks"></div></div>
         <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">Ready...</div></div>
-        <div class="card" style="border-top: 3px solid var(--green-line);"><h3>🔮 Future AI (3-Pair)</h3><div id="future">...</div></div>
+        <div class="card"><h3>🔮 Future Prediction</h3><div id="future">...</div></div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">Dual-Pattern View</h3>
+    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0;">Dual Sequence View</h3>
     <center><div class="table-container" style="border: 1px solid #ddd;"><canvas id="popCanvas"></canvas><div id="popData"></div></div></center>
 </div>
 
 <script>
-const STORAGE_KEY="pdata_Rajdhani_v3";
+const STORAGE_KEY="pdata_Kalyan_v2";
 let targetCol=null, activeMark=null;
 
-const FAMILY = {
- "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
-};
+const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(12).fill().map(()=>Array(5).fill("**"));
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(6).fill("**"));
 
 function startApp() { document.getElementById('home-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; draw(); }
-function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
-function smartMatch(a,b){ if(a=="**"||b=="**") return false; return fam(a)===fam(b); }
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
 function norm(v){if(!v||v=="**")return "**"; v=String(v).trim(); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
 
 function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = "";
    if(activeMark) {
-       let val = getPatternType(ri, ci);
-       if(val === 1) cls = "circle-red";
-       if(val === 2) cls = "circle-blue";
+       let type = getPatternType(ri, ci);
+       if(type === 1) cls = "circle-red";
+       if(type === 2) cls = "circle-blue";
    }
    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
   });
@@ -146,8 +142,11 @@ function drawLines(cvsId, tblEl) {
     cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const tRect = tblEl.getBoundingClientRect();
+    
+    // Draw Red Connections
     drawGroup(tblEl, ".circle-red", "#ff4757", ctx, tRect);
-    drawGroup(tblEl, ".circle-blue", "#2e86de", ctx, tRect);
+    // Draw Blue Connections
+    drawGroup(tblEl, ".circle-blue", "#0084ff", ctx, tRect);
 }
 
 function drawGroup(tblEl, selector, color, ctx, tRect) {
@@ -163,91 +162,77 @@ function drawGroup(tblEl, selector, color, ctx, tRect) {
     ctx.stroke();
 }
 
-function edit(r,c,el){ data[r][c]=norm(el.innerText); }
-function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
+function clearData(){ if(confirm("Clear data?")){ localStorage.clear(); location.reload(); }}
 
-// --- Naya Logic Jo Aapne Maanga Tha ---
-
+// --- NEW DUAL FAMILY LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
-    activeMark = null;
-    let b1 = "**", b2 = "**";
-    let b1Cells = [], b2Cells = [];
+    let f1 = "**", f2 = "**";
+    let f1Cells = [], f2Cells = [];
     let startR = Math.max(0, r - 10);
 
-    // 1. Har cell par alag pattern ke liye upar ki 10 rows scan
     for (let i = r - 1; i >= startR; i--) {
-        for (let j = 0; j < 5; j++) {
+        for (let j = 0; j < 6; j++) {
             let val = data[i][j];
             if (val !== "**") {
-                if (b1 === "**") { 
-                    b1 = val; b1Cells.push({ri: i, ci: j}); 
-                } else if (smartMatch(val, b1) && b1Cells.length < 2 && !b1Cells.some(cell => cell.ri == i && cell.ci == j)) {
-                    b1Cells.push({ri: i, ci: j});
-                } else if (b2 === "**" && fam(val) !== fam(b1)) {
-                    b2 = val; b2Cells.push({ri: i, ci: j});
-                } else if (b2 !== "**" && smartMatch(val, b2) && b2Cells.length < 2 && !b2Cells.some(cell => cell.ri == i && cell.ci == j)) {
-                    b2Cells.push({ri: i, ci: j});
+                if (f1 === "**") { f1 = val; f1Cells.push({ri: i, ci: j}); } 
+                else if (smartMatch(val, f1) && f1Cells.length < 2) {
+                    if(!f1Cells.some(c => c.ri == i && c.ci == j)) f1Cells.push({ri: i, ci: j});
+                } else if (f2 === "**" && fam(val) !== fam(f1)) { f2 = val; f2Cells.push({ri: i, ci: j}); } 
+                else if (f2 !== "**" && smartMatch(val, f2) && f2Cells.length < 2) {
+                    if(!f2Cells.some(c => c.ri == i && c.ci == j)) f2Cells.push({ri: i, ci: j});
                 }
             }
         }
     }
 
-    if (b1Cells.length < 2 || b2Cells.length < 2) {
-        alert("Dual Family Pattern (2+2) nahi mila! Is cell ke upar data kam hai.");
-        return;
+    if (f1Cells.length < 2 || f2Cells.length < 2) {
+        alert("Dual Pattern (2+2) complete nahi mila!"); return;
     }
 
-    let shape = Array(r - startR).fill().map(() => Array(5).fill(0));
-    b1Cells.forEach(c => shape[c.ri - startR][c.ci] = 1);
-    b2Cells.forEach(c => shape[c.ri - startR][c.ci] = 2);
+    let shape = Array(r - startR).fill().map(() => Array(6).fill(0));
+    f1Cells.forEach(c => shape[c.ri - startR][c.ci] = 1);
+    f2Cells.forEach(c => shape[c.ri - startR][c.ci] = 2);
     
-    // 2. Real record mein turant circle mark
     activeMark = { start: startR, shape: shape };
     draw();
-
-    // 3. Poore purane data mein search
-    searchMultiPattern(shape, b1, b2, r);
+    searchDualPattern(shape, f1, f2, r);
 }
 
-function searchMultiPattern(shape, b1, b2, currentR) {
+function searchDualPattern(shape, f1, f2, currentR) {
     let matches = [];
     for (let i = 0; i <= data.length - shape.length - 1; i++) {
-        if (i >= currentR - shape.length) break; 
+        if (i >= currentR - shape.length) break;
         let score = 0;
         for (let k = 0; k < shape.length; k++) {
-            for (let j = 0; j < 5; j++) {
-                let type = shape[k][j];
-                if (type === 1 && smartMatch(data[i+k][j], b1)) score++;
-                if (type === 2 && smartMatch(data[i+k][j], b2)) score++;
+            for (let j = 0; j < 6; j++) {
+                if (shape[k][j] === 1 && smartMatch(data[i+k][j], f1)) score++;
+                if (shape[k][j] === 2 && smartMatch(data[i+k][j], f2)) score++;
             }
         }
-        if (score === 4) { // 2+2 match confirmed
-            matches.push({ index: i });
-            if (matches.length >= 3) break; 
-        }
+        if (score === 4) matches.push({ index: i });
     }
-    showChecks(shape, matches, b1, b2);
+    showChecks(shape, matches.slice(0, 3));
 }
 
-function showChecks(shape, matches, b1, b2) {
+function showChecks(shape, matches) {
     const container = document.getElementById("checks");
-    container.innerHTML = matches.length ? "" : "<small>No matches in old records.</small>";
-    
-    matches.forEach((m, idx) => {
+    container.innerHTML = matches.length ? "" : "No history found.";
+    matches.forEach((m, i) => {
         let d = document.createElement("div");
-        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:8px; border-left:4px solid var(--green-line);";
-        d.innerHTML = `CHECK LINE ${idx + 1}: Match at Row ${m.index + 1} ➔`;
-        d.onclick = () => showOne(shape, m.index);
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid var(--gold);";
+        d.innerHTML = `MATCH Found at Row ${m.index + 1} ➔`;
+        d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
         container.appendChild(d);
     });
-    updateAdvancedAI(shape, matches);
+    updateAI(shape, matches);
 }
 
 function showOne(shape, idx){
-    let html="<table id='popTbl'>";
+    let html="<table id='popTbl' style='color:#000'>";
     for(let i=0; i<shape.length; i++){
         html+="<tr>";
         data[idx+i].forEach((v,j)=>{
@@ -262,22 +247,14 @@ function showOne(shape, idx){
     setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
 }
 
-function updateAdvancedAI(shape, matches) {
+function updateAI(shape, matches){
     let pool = [];
     matches.forEach(m => {
         let nextR = m.index + shape.length;
-        if(nextR < data.length && data[nextR][targetCol] !== "**") pool.push(data[nextR][targetCol]);
+        if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
     });
-    document.getElementById("ai").innerHTML = pool.length ? 
-        `<p style='color:var(--green-line)'>Pattern Matches Found: ${pool.length}</p>` : "Scanning historical records...";
-    
-    let futureDiv = document.getElementById("future");
-    if (pool.length > 0) {
-        let unique = [...new Set(pool)].slice(0, 3);
-        futureDiv.innerHTML = `<div style='font-size:1.4rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div><small>Historical Results</small>`;
-    } else {
-        futureDiv.innerHTML = "Seeking matches...";
-    }
+    document.getElementById("ai").innerHTML = `Matches Found: ${matches.length}`;
+    document.getElementById("future").innerHTML = pool.length ? `<b>Next Probables:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing history...";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
@@ -285,7 +262,7 @@ function closePopup(){ document.getElementById("popup").style.display="none"; do
 document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())).slice(0,5));
+        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
         draw();
     };
     fr.readAsText(e.target.files[0]);
