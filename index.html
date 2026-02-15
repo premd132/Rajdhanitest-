@@ -1,131 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WORLD AI HUB – Dual Family</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-
-<style>
-:root{
- --gold:#ffd700; --blue:#0084ff; --green:#00ff88;
- --bg:#0f172a; --card:#1e293b; --line:#334155;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins}
-body{
- background:var(--bg); color:#fff;
- min-height:100vh; display:flex;
- flex-direction:column; align-items:center;
- padding:20px;
-}
-.header{text-align:center;margin:20px 0}
-.header h1{color:var(--gold);font-size:2.4rem}
-.header p{color:#94a3b8;font-size:.9rem}
-
-.user-info{
- background:var(--card); padding:12px 22px;
- border-radius:50px; display:flex; gap:12px;
- align-items:center; border:1px solid var(--line);
- margin-bottom:25px;
-}
-.user-dot{
- width:10px;height:10px;border-radius:50%;
- background:var(--green);box-shadow:0 0 10px var(--green)
-}
-
-.menu-grid{
- width:100%; max-width:420px;
- display:grid; gap:18px;
-}
-.menu-card{
- background:var(--card); padding:22px;
- border-radius:18px; text-decoration:none;
- color:#fff; display:flex;
- justify-content:space-between;
- align-items:center;
- border-left:5px solid transparent;
- transition:.25s;
-}
-.menu-card:active{transform:scale(.96)}
-.kalyan{border-left-color:var(--gold)}
-.milan{border-left-color:var(--blue)}
-.rajdhani{border-left-color:var(--green)}
-
-.arrow{font-size:1.5rem;color:#64748b}
-
-.ai-box{
- margin-top:30px; width:100%;
- max-width:420px;
- background:linear-gradient(145deg,#1e293b,#0f172a);
- border:1px solid var(--line);
- border-radius:18px;
- padding:20px;
-}
-.ai-box h3{color:var(--green);margin-bottom:10px}
-.ai-result{font-size:.9rem;color:#e2e8f0;line-height:1.6}
-
-input{
- width:100%; padding:12px;
- border-radius:10px;
- background:#020617;
- border:1px solid var(--line);
- color:white; margin:6px 0;
- text-align:center; font-size:1rem;
-}
-button{
- width:100%; margin-top:10px;
- padding:12px; border-radius:12px;
- border:none; background:var(--gold);
- font-weight:600; cursor:pointer;
-}
-
-.footer{
- margin-top:auto; padding:18px;
- color:#64748b; font-size:.8rem;
- border-top:1px solid var(--line);
- width:100%; text-align:center;
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">
-  <h1>WORLD AI HUB</h1>
-  <p>Dual Family Pattern Recognition</p>
-</div>
-
-<div class="user-info">
-  <div class="user-dot"></div>
-  <span>Presenting by AI</span>
-</div>
-
-<div class="menu-grid">
-  <div class="menu-card kalyan">KALYAN<div class="arrow">➜</div></div>
-  <div class="menu-card milan">MILAN<div class="arrow">➜</div></div>
-  <div class="menu-card rajdhani">RAJDHANI<div class="arrow">➜</div></div>
-</div>
-
-<!-- AI DUAL FAMILY PANEL -->
-<div class="ai-box">
-  <h3>🔥 Dual Family AI</h3>
-
-  <input id="jodi1" placeholder="Latest Jodi (ex: 12)">
-  <input id="jodi2" placeholder="Previous Jodi (ex: 35)">
-
-  <button onclick="runAI()">Generate Pattern</button>
-
-  <div class="ai-result" id="output"></div>
-</div>
-
-<div class="footer">
- System Ver 3.0 | Dual Family Engine | Feb-2026
-</div>
-
 <script>
-// ================= FAMILY DATA =================
-const FAMILY_MAP={
+/* ================= CONFIG ================= */
+const STORAGE_KEY="pdata_Kalyan_DUAL";
+const families={
  "12":["12","17","21","26","62","67","71","76"],
  "13":["13","18","31","36","63","68","81","86"],
  "14":["14","19","41","46","64","69","91","96"],
@@ -140,39 +16,140 @@ const FAMILY_MAP={
  "FR":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-function findFamily(j){
- for(let f in FAMILY_MAP)
-  if(FAMILY_MAP[f].includes(j)) return f;
- return "❌";
+/* ================= DATA ================= */
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+ ["40","92","89","81","10"],
+ ["29","05","03","87","43"],
+ ["19","35","38","36","81"],
+ ["20","00","17","57","45"],
+ ["42","92","43","57","22"],
+ ["37","86","27","80","85"],
+ ["41","76","67","47","27"],
+ ["63","75","71","05","64"],
+ ["86","73","34","46","67"],
+ ["33","09","08","84","62"],
+ ["**","**","**","**","**"]
+];
+
+/* ================= HELPERS ================= */
+const fam = v => Object.keys(families).find(f=>families[f].includes(v));
+const norm=v=>v=="**"?"**":String(v).padStart(2,"0");
+
+/* ================= DRAW TABLE ================= */
+function draw(){
+ let h="";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   h+=`<td contenteditable onclick="pickDual(${ri},${ci})">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ tbl.innerHTML=h;
+}
+draw();
+
+/* ================= DUAL PATTERN ================= */
+let dualMarks=null;
+
+function pickDual(r,c){
+ let base1=null, base2=null;
+
+ // last jodi
+ for(let i=r;i>=0;i--) if(data[i][c]!="**"){ base1=data[i][c]; break; }
+ // second last jodi
+ for(let i=r-1;i>=0;i--) if(data[i][c]!="**"){ base2=data[i][c]; break; }
+
+ if(!base1||!base2) return;
+
+ dualMarks = {
+  f1:fam(base1),
+  f2:fam(base2),
+  points1:[],
+  points2:[]
+ };
+
+ scanDual();
+ drawDual();
+ showAI();
 }
 
-function runAI(){
- let j1=document.getElementById("jodi1").value.padStart(2,"0");
- let j2=document.getElementById("jodi2").value.padStart(2,"0");
+/* ================= SCAN DUAL FAMILY ================= */
+function scanDual(){
+ dualMarks.points1=[];
+ dualMarks.points2=[];
+ data.forEach((row,ri)=>{
+  row.forEach((v,ci)=>{
+   if(v!="**"){
+    if(fam(v)==dualMarks.f1) dualMarks.points1.push({r:ri,c:ci});
+    if(fam(v)==dualMarks.f2) dualMarks.points2.push({r:ri,c:ci});
+   }
+  });
+ });
+}
 
- let f1=findFamily(j1);
- let f2=findFamily(j2);
+/* ================= DRAW CIRCLES + LINES ================= */
+function drawDual(){
+ document.querySelectorAll("td").forEach(td=>td.className="");
 
- if(f1==="❌"||f2==="❌"){
-  output.innerHTML="⚠ Invalid Jodi";
-  return;
- }
+ dualMarks.points1.forEach(p=>{
+  tbl.rows[p.r].cells[p.c].style.border="3px solid red";
+  tbl.rows[p.r].cells[p.c].style.background="rgba(255,0,0,0.15)";
+ });
 
- let picks=[
-  FAMILY_MAP[f1][0],
-  FAMILY_MAP[f1][1],
-  FAMILY_MAP[f2][0],
-  FAMILY_MAP[f2][1]
- ];
+ dualMarks.points2.forEach(p=>{
+  tbl.rows[p.r].cells[p.c].style.border="3px solid blue";
+  tbl.rows[p.r].cells[p.c].style.background="rgba(0,132,255,0.15)";
+ });
 
- output.innerHTML=`
-  <b>Dual Family:</b> ${f1} × ${f2}<br>
-  <b>AI Picks:</b> ${picks.join(", ")}<br>
-  <b>Logic:</b> Last 2 family overlap flow<br>
-  <b>Strength:</b> ${(Math.random()*20+70).toFixed(1)}%
+ drawLines("red");
+ drawLines("blue");
+}
+
+function drawLines(type){
+ const cvs=mainCanvas;
+ const ctx=cvs.getContext("2d");
+ cvs.width=tbl.offsetWidth;
+ cvs.height=tbl.offsetHeight;
+ ctx.clearRect(0,0,cvs.width,cvs.height);
+
+ let pts = type=="red"?dualMarks.points1:dualMarks.points2;
+ if(pts.length<2) return;
+
+ ctx.beginPath();
+ ctx.strokeStyle= type=="red" ? "red" : "#0084ff";
+ ctx.lineWidth=2.5;
+
+ const rect=tbl.getBoundingClientRect();
+ pts.forEach((p,i)=>{
+  const td=tbl.rows[p.r].cells[p.c].getBoundingClientRect();
+  let x=td.left-rect.left+td.width/2;
+  let y=td.top-rect.top+td.height/2;
+  if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+ });
+ ctx.stroke();
+}
+
+/* ================= AI PANEL ================= */
+function showAI(){
+ ai.innerHTML=`
+ <b>Dual Family Detected</b><br>
+ 🔴 Family-A : ${dualMarks.f1}<br>
+ 🔵 Family-B : ${dualMarks.f2}<br>
+ Pattern Flow : Diagonal / Zig-Zag
+ `;
+ future.innerHTML=`
+ Probable Next Families:<br>
+ ${dualMarks.f1} , ${dualMarks.f2}
  `;
 }
-</script>
 
-</body>
-</html>
+/* ================= SAVE / LOAD ================= */
+function saveData(){
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ alert("Saved");
+}
+function clearData(){
+ localStorage.clear(); location.reload();
+}
+</script>
