@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Dual Family System</title>
+    <title>Kalyan Pro AI – Premium System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
             --gold: #ffd700; 
-            --red-circle: #ff4757; 
             --blue-circle: #0084ff; 
+            --red-circle: #ff4757;
+            --green-line: #00ff88; 
             --bg: #0f172a; 
             --panel: #1e293b; 
         }
@@ -38,9 +39,9 @@
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* Dual Color Circles */
-        .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.2); z-index: 10; }
-        .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); z-index: 10; }
+        /* Marking Styles */
+        .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.15); z-index: 10; }
+        .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; }
         
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
@@ -57,7 +58,7 @@
 
 <div id="home-screen">
     <h1 class="hero-title">Kalyan PRO AI</h1>
-    <p class="hero-sub">DUAL PATTERN DETECTION</p>
+    <p class="hero-sub">ADVANCED PATTERN RECOGNITION</p>
     <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
@@ -92,7 +93,7 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">Dual Sequence View</h3>
+    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
     <center><div class="table-container" style="border: 1px solid #ddd;"><canvas id="popCanvas"></canvas><div id="popData"></div></div></center>
 </div>
 
@@ -142,10 +143,7 @@ function drawLines(cvsId, tblEl) {
     cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const tRect = tblEl.getBoundingClientRect();
-    
-    // Draw Red Connections
     drawGroup(tblEl, ".circle-red", "#ff4757", ctx, tRect);
-    // Draw Blue Connections
     drawGroup(tblEl, ".circle-blue", "#0084ff", ctx, tRect);
 }
 
@@ -165,13 +163,12 @@ function drawGroup(tblEl, selector, color, ctx, tRect) {
 function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear data?")){ localStorage.clear(); location.reload(); }}
+function clearData(){ if(confirm("Clear all?")){ localStorage.clear(); location.reload(); }}
 
-// --- NEW DUAL FAMILY LOGIC ---
+// --- DUAL PATTERN CORE ---
 function makePattern(r, c) {
     targetCol = c;
-    let f1 = "**", f2 = "**";
-    let f1Cells = [], f2Cells = [];
+    let f1 = "**", f2 = "**", f1Cells = [], f2Cells = [];
     let startR = Math.max(0, r - 10);
 
     for (let i = r - 1; i >= startR; i--) {
@@ -180,18 +177,16 @@ function makePattern(r, c) {
             if (val !== "**") {
                 if (f1 === "**") { f1 = val; f1Cells.push({ri: i, ci: j}); } 
                 else if (smartMatch(val, f1) && f1Cells.length < 2) {
-                    if(!f1Cells.some(c => c.ri == i && c.ci == j)) f1Cells.push({ri: i, ci: j});
+                    if(!f1Cells.some(cell => cell.ri == i && cell.ci == j)) f1Cells.push({ri: i, ci: j});
                 } else if (f2 === "**" && fam(val) !== fam(f1)) { f2 = val; f2Cells.push({ri: i, ci: j}); } 
                 else if (f2 !== "**" && smartMatch(val, f2) && f2Cells.length < 2) {
-                    if(!f2Cells.some(c => c.ri == i && c.ci == j)) f2Cells.push({ri: i, ci: j});
+                    if(!f2Cells.some(cell => cell.ri == i && cell.ci == j)) f2Cells.push({ri: i, ci: j});
                 }
             }
         }
     }
 
-    if (f1Cells.length < 2 || f2Cells.length < 2) {
-        alert("Dual Pattern (2+2) complete nahi mila!"); return;
-    }
+    if (f1Cells.length < 2 || f2Cells.length < 2) { alert("Dual family pattern not found!"); return; }
 
     let shape = Array(r - startR).fill().map(() => Array(6).fill(0));
     f1Cells.forEach(c => shape[c.ri - startR][c.ci] = 1);
@@ -199,10 +194,10 @@ function makePattern(r, c) {
     
     activeMark = { start: startR, shape: shape };
     draw();
-    searchDualPattern(shape, f1, f2, r);
+    searchDual(shape, f1, f2, r);
 }
 
-function searchDualPattern(shape, f1, f2, currentR) {
+function searchDual(shape, f1, f2, currentR) {
     let matches = [];
     for (let i = 0; i <= data.length - shape.length - 1; i++) {
         if (i >= currentR - shape.length) break;
@@ -220,11 +215,11 @@ function searchDualPattern(shape, f1, f2, currentR) {
 
 function showChecks(shape, matches) {
     const container = document.getElementById("checks");
-    container.innerHTML = matches.length ? "" : "No history found.";
+    container.innerHTML = matches.length ? "" : "<small>No matches found.</small>";
     matches.forEach((m, i) => {
         let d = document.createElement("div");
-        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid var(--gold);";
-        d.innerHTML = `MATCH Found at Row ${m.index + 1} ➔`;
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid var(--gold); font-size:12px;";
+        d.innerHTML = `Pattern Match Row ${m.index + 1} ➔`;
         d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
         container.appendChild(d);
     });
@@ -253,8 +248,7 @@ function updateAI(shape, matches){
         let nextR = m.index + shape.length;
         if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
     });
-    document.getElementById("ai").innerHTML = `Matches Found: ${matches.length}`;
-    document.getElementById("future").innerHTML = pool.length ? `<b>Next Probables:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing history...";
+    document.getElementById("future").innerHTML = pool.length ? `<b>Probable Next:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing patterns...";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
