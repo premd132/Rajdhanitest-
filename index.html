@@ -4,143 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Rajdhani Pro AI – Dual Family</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
-
 <style>
-:root{
- --gold:#ffd700;
- --blue:#0084ff;
- --green:#00ff88;
- --bg:#0f172a;
- --panel:#1e293b;
-}
+:root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --bg:#0f172a; --panel:#1e293b; }
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
-body{margin:0;background:var(--bg);color:#fff}
-
-#home{
- height:100vh;display:flex;flex-direction:column;
- align-items:center;justify-content:center;text-align:center
-}
+body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden;}
+#home{ height:100vh;display:flex;flex-direction:column; align-items:center;justify-content:center;text-align:center }
 h1{color:var(--gold);font-size:3rem;margin:0}
-button{cursor:pointer;font-weight:700;border-radius:6px;border:none}
-
-.enter{
- background:var(--gold);padding:15px 40px;font-size:1.2rem
-}
-
+button{cursor:pointer;font-weight:700;border-radius:6px;border:none; padding: 10px 15px;}
+.enter{ background:var(--gold);padding:15px 40px;font-size:1.2rem; margin-top:20px; }
 #app{display:none;padding:12px}
-
-.toolbar{
- background:var(--panel);padding:10px;border-radius:10px;
- display:flex;gap:10px;flex-wrap:wrap;justify-content:center
-}
-
-.table-wrap{position:relative;background:#fff;border-radius:10px;padding:5px}
+.toolbar{ background:var(--panel);padding:10px;border-radius:10px; display:flex;gap:10px;flex-wrap:wrap;justify-content:center; margin-bottom: 20px; }
+.table-wrap{position:relative;background:#fff;border-radius:10px;padding:5px; display: inline-block;}
 table{border-collapse:collapse;color:#000}
-td,th{
- border:1px solid #ddd;
- width:50px;height:50px;
- text-align:center;font-weight:700
-}
+td,th{ border:1px solid #ddd; width:50px;height:50px; text-align:center;font-weight:700; cursor: pointer; }
 th{background:#1e293b;color:#fff;font-size:11px}
-
-.circle{
- border:3px solid var(--blue)!important;
- border-radius:50%!important;
- background:rgba(0,132,255,.15)
-}
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-
-.dashboard{
- display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
- gap:10px;margin-top:15px
-}
-.card{
- background:var(--panel);padding:12px;border-radius:10px;
- border-top:3px solid var(--gold)
-}
+.circle-red { border:3px solid var(--red)!important; border-radius:50%!important; background:rgba(255,71,87,.15) }
+.circle-blue { border:3px solid var(--blue)!important; border-radius:50%!important; background:rgba(0,132,255,.15) }
+canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
+.dashboard{ display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;margin-top:15px }
+.card{ background:var(--panel);padding:12px;border-radius:10px; border-top:3px solid var(--gold) }
 .card h3{margin:0 0 8px 0;color:var(--gold);font-size:13px}
 </style>
 </head>
-
 <body>
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
  <p>DUAL FAMILY PATTERN SYSTEM</p>
- <button class="enter" onclick="start()">START</button>
+ <button class="enter" onclick="start()">START ANALYSIS</button>
 </div>
 
 <div id="app">
+    <div class="toolbar">
+        <input type="file" id="csv" hidden>
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="save()" style="background:#28a745; color:white;">💾 SAVE</button>
+        <button onclick="clearAll()" style="background:#dc3545; color:white;">🗑 CLEAR</button>
+    </div>
 
-<div class="toolbar">
- <input type="file" id="csv" hidden>
- <button onclick="csv.click()">📂 CSV</button>
- <button onclick="addRow()">➕ ROW</button>
- <button onclick="save()">💾 SAVE</button>
- <button onclick="clearAll()">🗑 CLEAR</button>
-</div>
+    <center>
+        <div class="table-wrap">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
 
-<center>
-<div class="table-wrap">
- <canvas id="mainCanvas"></canvas>
- <table id="tbl"></table>
-</div>
-</center>
-
-<div class="dashboard">
- <div class="card"><h3>✔ MATCHES</h3><div id="checks"></div></div>
- <div class="card"><h3>🤖 AI ANALYSIS</h3><div id="ai">Waiting…</div></div>
- <div class="card"><h3>🔮 FUTURE</h3><div id="future">—</div></div>
-</div>
-
+    <div class="dashboard">
+        <div class="card"><h3>✔ MATCHES</h3><div id="checks"></div></div>
+        <div class="card"><h3>🤖 AI ANALYSIS</h3><div id="ai">Ready...</div></div>
+        <div class="card"><h3>🔮 FUTURE</h3><div id="future">—</div></div>
+    </div>
 </div>
 
 <script>
-/* ===== DATA ===== */
 const STORE="rajdhani_dual_family";
+const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-const families={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"],
-"HR":["05","16","27","38","49","50","61","72","83","94"],
-"FR":["00","11","22","33","44","55","66","77","88","99"]
-};
-
-let data = JSON.parse(localStorage.getItem(STORE)) || [
- ["10","20","30","40","50"],
- ["**","**","**","**","**"]
-];
-
+let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
 let active=null, targetCol=null;
 
-/* ===== HELPERS ===== */
-const norm=v=>v=="**"?"**":v.padStart(2,"0");
+const norm=v=> (v=="**" || !v) ? "**" : v.toString().padStart(2,"0");
 const palti=v=>v[1]+v[0];
+function famOf(v){ for(let k in families) if(families[k].includes(v)) return k; return null; }
+function smartMatch(a, b) { if(a=="**" || b=="**") return false; return a===b || palti(a)===b || famOf(a)===famOf(b); }
 
-function famOf(v){
- for(let k in families) if(families[k].includes(v)) return k;
- return null;
-}
-function dualMatch(v,f1,f2){
- if(v=="**") return false;
- let f=famOf(v);
- return f===f1 || f===f2;
-}
-
-/* ===== UI ===== */
 function start(){
- home.style.display="none";
- app.style.display="block";
+ document.getElementById("home").style.display="none";
+ document.getElementById("app").style.display="block";
  draw();
 }
 
@@ -149,98 +81,111 @@ function draw(){
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   let cls=active && active.shape[ri-active.start]?.[ci]?"circle":"";
-   h+=`<td class="${cls}" contenteditable
-        onclick="makePattern(${ri},${ci})"
-        oninput="edit(${ri},${ci},this)">${c}</td>`;
+   let cls="";
+   if(active && ri >= active.start && ri < active.start + active.shape.length){
+       let type = active.shape[ri-active.start][ci];
+       if(type === 1) cls = "circle-red";
+       if(type === 2) cls = "circle-blue";
+   }
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="handleCell(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
- tbl.innerHTML=h;
- if(active) setTimeout(drawLines,50);
+ document.getElementById("tbl").innerHTML=h;
+ if(active) setTimeout(drawLines, 50);
+}
+
+function handleCell(ri, ci) {
+    if(data[ri][ci] === "**") makePattern(ri, ci);
+    else { active = null; draw(); }
 }
 
 function drawLines(){
- const cvs=mainCanvas,ctx=cvs.getContext("2d");
+ const cvs=document.getElementById("mainCanvas"), ctx=cvs.getContext("2d");
+ const tbl=document.getElementById("tbl");
  cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
  ctx.clearRect(0,0,cvs.width,cvs.height);
- let cells=[...tbl.querySelectorAll(".circle")];
- if(cells.length<2) return;
- let t=tbl.getBoundingClientRect();
- ctx.strokeStyle="#00ff88"; ctx.lineWidth=2.5; ctx.beginPath();
- cells.forEach((c,i)=>{
-  let r=c.getBoundingClientRect();
-  let x=r.left-t.left+r.width/2;
-  let y=r.top-t.top+r.height/2;
-  i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+ const t=tbl.getBoundingClientRect();
+
+ [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
+     let cells = [...tbl.querySelectorAll(cfg[0])];
+     if(cells.length < 2) return;
+     ctx.strokeStyle=cfg[1]; ctx.lineWidth=2.5; ctx.beginPath();
+     cells.forEach((c,i)=>{
+      let r=c.getBoundingClientRect();
+      let x=r.left-t.left+r.width/2;
+      let y=r.top-t.top+r.height/2;
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+     });
+     ctx.stroke();
  });
- ctx.stroke();
 }
 
-function edit(r,c,el){ data[ri][ci]=norm(el.innerText.trim()); }
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); active=null; }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function save(){ localStorage.setItem(STORE,JSON.stringify(data)); alert("Saved"); }
 function clearAll(){ if(confirm("Clear?")){localStorage.clear();location.reload();} }
 
-/* ===== DUAL FAMILY PATTERN ===== */
-function makePattern(ri,ci){
- targetCol=c;
+function makePattern(ri, ci){
+ targetCol=ci;
+ let f1="**", f2="**", f1c=[], f2c=[];
+ let look = Math.max(0, ri-10);
 
- let base="**";
- for(let i=r;i>=0;i--) if(data[ir][ic]!="**"){base=data[i][c];break;}
- if(base=="**") return;
-
- let f1=famOf(base);
- let f2=famOf(palti(base));
-
- let shape=[];
- for(let i=Math.max(0,r-4);i<=r;i++){
-  let row=[];
-  for(let j=0;j<5;j++){
-   row.push(dualMatch(data[i][j],f1,f2)?1:0);
-  }
-  shape.push(row);
- }
- search(shape,f1,f2);
-}
-
-function search(shape,f1,f2){
- let matches=[];
- for(let i=0;i<=data.length-shape.length;i++){
-  let ok=true;
-  for(let r=0;r<shape.length;r++){
-   for(let c=0;c<5;c++){
-    if(shape[r][c] && !dualMatch(data[i+r][c],f1,f2)){ok=false;break;}
+ for(let i=ri-1; i>=look; i--){
+  for(let j=0; j<5; j++){
+   let v = data[i][j];
+   if(v!="**"){
+    if(f1=="**") { f1=v; f1c.push({r:i, c:j}); }
+    else if(smartMatch(v, f1) && f1c.length<2) { if(!f1c.some(x=>x.r==i && x.c==j)) f1c.push({r:i, c:j}); }
+    else if(f2=="**" && famOf(v)!=famOf(f1)) { f2=v; f2c.push({r:i, c:j}); }
+    else if(f2!="**" && smartMatch(v, f2) && f2c.length<2) { if(!f2c.some(x=>x.r==i && x.c==j)) f2c.push({r:i, c:j}); }
    }
-   if(!ok) break;
   }
-  if(ok) matches.push(i);
  }
- show(shape,matches,f1,f2);
+
+ if(f1c.length<2 || f2c.length<2) { alert("Data कम है!"); return; }
+
+ let shape = Array(ri-look).fill().map(()=>Array(5).fill(0));
+ f1c.forEach(x => shape[x.r-look][x.c] = 1);
+ f2c.forEach(x => shape[x.r-look][x.c] = 2);
+
+ active={start:look, shape:shape};
+ draw();
+ search(shape, f1, f2, look);
 }
 
-function show(shape,matches,f1,f2){
- checks.innerHTML="";
+function search(shape, f1, f2, limit){
+ let matches=[];
+ for(let i=0; i<limit; i++){
+  let score=0;
+  for(let r=0; r<shape.length; r++){
+   for(let c=0; c<5; c++){
+    if(shape[r][c]==1 && smartMatch(data[i+r][c], f1)) score++;
+    if(shape[r][c]==2 && smartMatch(data[i+r][c], f2)) score++;
+   }
+  }
+  if(score==4) matches.push(i);
+ }
+ 
+ document.getElementById("checks").innerHTML="";
  matches.forEach(m=>{
   let d=document.createElement("div");
   d.textContent="Pattern at Row "+(m+1);
-  d.style="background:#2a2a2a;padding:6px;margin:4px 0;border-left:3px solid #0084ff;cursor:pointer";
-  d.onclick=()=>{active={start:m,shape};draw();}
-  checks.appendChild(d);
+  d.style="background:#2a2a2a;padding:10px;margin:5px 0;border-left:4px solid var(--gold);cursor:pointer";
+  d.onclick=()=>{active={start:m,shape}; draw();};
+  document.getElementById("checks").appendChild(d);
  });
-
- ai.innerHTML=`<b>Dual Family:</b> ${f1} + ${f2}<br><b>Matches:</b> ${matches.length}`;
 
  let fut=[];
  matches.forEach(m=>{
   let n=m+shape.length;
   if(n<data.length && data[n][targetCol]!="**") fut.push(data[n][targetCol]);
  });
- future.innerHTML=fut.length?fut.join(", "):"Analyzing…";
+ document.getElementById("future").innerHTML=fut.length?[...new Set(fut)].join(", "):"Analyzing…";
+ document.getElementById("ai").innerHTML=`Dual Found: ${f1} & ${f2}`;
 }
 
-/* CSV */
-csv.onchange=e=>{
+document.getElementById("csv").onchange=e=>{
  let fr=new FileReader();
  fr.onload=()=>{
   data=fr.result.split("\n").filter(x=>x.trim())
