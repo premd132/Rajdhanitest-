@@ -15,18 +15,20 @@ body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden;}
 table{border-collapse:collapse;color:#000}
 td,th{ border:1px solid #ddd; width:48px;height:48px; text-align:center;font-weight:700; cursor: pointer; position: relative;}
 th{background:#1e293b;color:#fff;font-size:11px}
+/* Marking Styles */
 .circle-red { border:3px solid var(--red)!important; border-radius:50%!important; background:rgba(255,71,87,.2); z-index: 5;}
 .circle-blue { border:3px solid var(--blue)!important; border-radius:50%!important; background:rgba(0,132,255,.2); z-index: 5;}
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 .dashboard{ display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;margin-top:15px }
 .card{ background:var(--panel);padding:12px;border-radius:10px; border-top:3px solid var(--gold) }
 button{cursor:pointer;font-weight:700;border-radius:6px;border:none; padding: 10px 15px;}
-#checks div:hover { background: #334155 !important; }
+#checks div { transition: 0.2s; }
+#checks div:hover { background: #334155 !important; transform: scale(1.02); }
 </style>
 </head>
 <body>
 
-<div id="app" style="display:block;">
+<div id="app">
     <div class="toolbar">
         <input type="file" id="csv" hidden>
         <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
@@ -40,11 +42,12 @@ button{cursor:pointer;font-weight:700;border-radius:6px;border:none; padding: 10
             <canvas id="mainCanvas"></canvas>
             <table id="tbl"></table>
         </div>
+        <p style="font-size: 10px; color: #aaa;">* Single click for Pattern | Double click to Edit</p>
     </center>
 
     <div class="dashboard">
-        <div class="card"><h3>✔ CHECK LINES (History)</h3><div id="checks">Click on ** to scan...</div></div>
-        <div class="card"><h3>🤖 AI ENGINE</h3><div id="ai">Ready...</div></div>
+        <div class="card"><h3>✔ CHECK LINES (Matches Found)</h3><div id="checks">Ready to scan...</div></div>
+        <div class="card"><h3>🤖 PATTERN INFO</h3><div id="ai">Select a blank cell</div></div>
         <div class="card"><h3>🔮 PREDICTION</h3><div id="future">—</div></div>
     </div>
 </div>
@@ -53,11 +56,11 @@ button{cursor:pointer;font-weight:700;border-radius:6px;border:none; padding: 10
 const STORE="rajdhani_dual_family";
 const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
+let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
 let active=null, targetCol=null;
 
 const norm=v=> (v=="**" || !v || v.trim()=="") ? "**" : v.toString().trim().padStart(2,"0");
-function famOf(v){ for(let k in families) if(families[k].includes(v)) return k; return null; }
+function famOf(v){ for(let k in families) if(families[k].includes(v)) return k; return "NA"; }
 function smartMatch(a, b) { if(a=="**" || b=="**") return false; return famOf(a)===famOf(b); }
 
 function draw(){
@@ -71,7 +74,9 @@ function draw(){
        if(type === 1) cls = "circle-red";
        if(type === 2) cls = "circle-blue";
    }
-   h+=`<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="handleCell(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" 
+        onclick="handleSingleClick(${ri},${ci})" 
+        ondblclick="enableEdit(this,${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -79,9 +84,9 @@ function draw(){
  if(active) setTimeout(drawLines, 60);
 }
 
-function handleCell(ri, ci) {
+function handleSingleClick(ri, ci) {
     if(data[ri][ci] === "**") {
-        active = null; // Reset current pattern
+        active = null; 
         makePattern(ri, ci);
     } else {
         active = null;
@@ -89,10 +94,15 @@ function handleCell(ri, ci) {
     }
 }
 
-function updateCell(ri, ci, el) {
-    let val = norm(el.innerText);
-    data[ri][ci] = val;
-    el.innerText = val;
+function enableEdit(el, ri, ci) {
+    el.contentEditable = "true";
+    el.focus();
+    el.onblur = () => {
+        data[ri][ci] = norm(el.innerText);
+        el.contentEditable = "false";
+        active = null;
+        draw();
+    };
 }
 
 function drawLines(){
@@ -105,7 +115,7 @@ function drawLines(){
  [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
      let cells = [...tbl.querySelectorAll(cfg[0])];
      if(cells.length < 2) return;
-     ctx.strokeStyle=cfg[1]; ctx.lineWidth=2.5; ctx.setLineDash([]); ctx.beginPath();
+     ctx.strokeStyle=cfg[1]; ctx.lineWidth=3; ctx.beginPath();
      cells.forEach((c,i)=>{
       let r=c.getBoundingClientRect();
       let x = r.left - t.left + r.width/2;
@@ -121,21 +131,21 @@ function makePattern(ri, ci){
  let f1="**", f2="**", f1c=[], f2c=[];
  let lookLimit = Math.max(0, ri-10);
 
- // Find 2 pairs of different families
+ // Logic to pick 2 families (2+2 pattern)
  for(let i=ri-1; i>=lookLimit; i--){
   for(let j=0; j<5; j++){
    let v = data[i][j];
    if(v!="**"){
     if(f1=="**") { f1=v; f1c.push({r:i, c:j}); }
-    else if(smartMatch(v, f1) && f1c.length<2) { if(!f1c.some(x=>x.r==i && x.c==j)) f1c.push({r:i, c:j}); }
+    else if(smartMatch(v, f1) && f1c.length<2 && !f1c.some(x=>x.r==i)) { f1c.push({r:i, c:j}); }
     else if(f2=="**" && famOf(v)!=famOf(f1)) { f2=v; f2c.push({r:i, c:j}); }
-    else if(f2!="**" && smartMatch(v, f2) && f2c.length<2) { if(!f2c.some(x=>x.r==i && x.c==j)) f2c.push({r:i, c:j}); }
+    else if(f2!="**" && smartMatch(v, f2) && f2c.length<2 && !f2c.some(x=>x.r==i)) { f2c.push({r:i, c:j}); }
    }
   }
  }
 
  if(f1c.length < 2 || f2c.length < 2) { 
-     document.getElementById("ai").innerText = "Not enough pairs in last 10 weeks.";
+     document.getElementById("ai").innerText = "Not enough Family Pairs found in 10 weeks.";
      return; 
  }
 
@@ -165,8 +175,8 @@ function searchHistory(shape, f1, f2, limit){
  checksUI.innerHTML="";
  matches.forEach((mIdx, i)=>{
   let btn=document.createElement("div");
-  btn.innerHTML = `⭐ <b>Check Line ${i+1}</b> (Found at Row ${mIdx+1})`;
-  btn.style = "background:#1e293b; padding:10px; margin:5px 0; border:1px solid var(--gold); border-radius:6px; cursor:pointer; font-size:13px; color:var(--gold);";
+  btn.innerHTML = `🏁 <b>Check Line ${i+1}</b> (Row ${mIdx+1})`;
+  btn.style = "background:#1e293b; padding:12px; margin:8px 0; border:1px solid var(--gold); border-radius:8px; cursor:pointer; color:var(--gold); font-weight:bold;";
   btn.onclick = () => { active={start:mIdx, shape:shape}; draw(); };
   checksUI.appendChild(btn);
  });
@@ -178,13 +188,13 @@ function searchHistory(shape, f1, f2, limit){
   let nextRow = m + shape.length;
   if(data[nextRow] && data[nextRow][targetCol]!="**") fut.push(data[nextRow][targetCol]);
  });
- document.getElementById("future").innerHTML=fut.length ? [...new Set(fut)].join(", ") : "Scanning...";
- document.getElementById("ai").innerHTML=`Pattern: Family(${f1}) & Family(${f2})`;
+ document.getElementById("future").innerHTML=fut.length ? [...new Set(fut)].join(", ") : "Analyzing...";
+ document.getElementById("ai").innerHTML = `<b>Pattern Base:</b> Family ${famOf(f1)} & ${famOf(f2)}`;
 }
 
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function save(){ localStorage.setItem(STORE,JSON.stringify(data)); alert("Data Saved!"); }
-function clearAll(){ if(confirm("Clear Everything?")){localStorage.clear(); location.reload();} }
+function save(){ localStorage.setItem(STORE,JSON.stringify(data)); alert("Saved Successfully!"); }
+function clearAll(){ if(confirm("Clear everything?")){localStorage.clear(); location.reload();} }
 
 document.getElementById("csv").onchange=e=>{
  let fr=new FileReader();
