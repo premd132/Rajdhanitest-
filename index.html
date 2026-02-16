@@ -3,27 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kalyan Pro AI – Dual Family Engine</title>
+<title>Rajdhani Pro AI – Pradeep Kumar Dehariya Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --bg:#0f172a; --panel:#1e293b; }
+:root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
-body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden; padding-bottom: 50px;}
+body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden; padding-bottom: 60px;}
 .toolbar{ background:var(--panel);padding:10px; display:flex;gap:8px;justify-content:center; border-bottom: 2px solid var(--gold); position: sticky; top:0; z-index:100; }
 .table-wrap{position:relative;background:#fff;border-radius:8px;padding:5px; display: inline-block; margin-top: 15px;}
 table{border-collapse:collapse;color:#000}
-td,th{ border:1px solid #ccc; width:45px;height:45px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 14px;}
+td,th{ border:1px solid #ccc; width:42px;height:42px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 13px;}
 th{background:#1e293b;color:#fff; font-size: 10px;}
-/* Circle Marks */
-.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); z-index: 5;}
-.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); z-index: 5;}
+
+/* Patterns & Marks */
+.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); }
+.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
+.marked-old { background: rgba(0, 255, 136, 0.3) !important; border: 2px dashed var(--green) !important; }
+
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
-.dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
-.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); }
-h3{margin:0 0 10px 0; font-size: 14px; color:var(--gold); text-transform: uppercase;}
-button{cursor:pointer;font-weight:bold;border-radius:6px;border:none; padding: 10px 15px;}
-.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 10px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between;}
-.check-btn:hover { border-color: var(--gold); }
+.dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); position: relative;}
+h3{margin:0 0 10px 0; font-size: 14px; color:var(--gold); display: flex; align-items: center; justify-content: space-between;}
+.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 10px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; }
+.check-btn:hover { border-color: var(--gold); color: var(--gold); }
+.future-box { font-size: 24px; font-weight: 800; color: var(--green); text-align: center; letter-spacing: 5px;}
 </style>
 </head>
 <body>
@@ -45,22 +48,22 @@ button{cursor:pointer;font-weight:bold;border-radius:6px;border:none; padding: 1
 
 <div class="dashboard">
     <div class="card">
-        <h3>✔ Check Lines (Matches)</h3>
-        <div id="checks">Click a blank cell to scan...</div>
+        <h3>✔ CHECK LINES <span id="match-count" style="font-size:10px; color:#aaa;">0 Found</span></h3>
+        <div id="checks">Click a blank cell to search patterns...</div>
     </div>
-    <div class="card">
-        <h3>🔮 Future AI Prediction</h3>
-        <div id="future" style="font-size: 1.2rem; font-weight: 800; color: #00ff88;">—</div>
-        <p id="ai-status" style="font-size: 11px; opacity: 0.6; margin-top: 10px;">Select a pattern to analyze future results.</p>
+    <div class="card" style="border-top-color: var(--green);">
+        <h3>🔮 FUTURE AI (3-PAIR)</h3>
+        <div id="future" class="future-box">— — —</div>
+        <p id="ai-logic" style="font-size: 11px; opacity: 0.7; margin-top: 10px;">Waiting for pattern data...</p>
     </div>
 </div>
 
 <script>
-const STORE="rajdhani_dual_final_v5";
+const STORE="rajdhani_v100";
 const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
-let active=null, targetCol=null;
+let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
+let active=null, targetCol=null, crossMark=null;
 
 const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
 function getFam(v){ for(let k in families) if(families[k].includes(v)) return k; return null; }
@@ -71,13 +74,14 @@ function draw(){
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   let cls="";
+   let cls=[];
    if(active && ri >= active.start && ri < active.start + active.shape.length){
        let type = active.shape[ri-active.start][ci];
-       if(type === 1) cls = "circle-red";
-       if(type === 2) cls = "circle-blue";
+       if(type === 1) cls.push("circle-red");
+       if(type === 2) cls.push("circle-blue");
    }
-   h+=`<td class="${cls}" onclick="cellClick(${ri},${ci})">${c}</td>`;
+   if(crossMark && crossMark.r === ri && crossMark.c === ci) cls.push("marked-old");
+   h+=`<td class="${cls.join(' ')}" onclick="cellAction(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -85,18 +89,32 @@ function draw(){
  if(active) setTimeout(drawLines, 50);
 }
 
-function cellClick(ri, ci) {
+function cellAction(ri, ci) {
     if(data[ri][ci] === "**") {
-        active = null; 
+        active = null; crossMark = null;
         targetCol = ci;
-        findColumnPattern(ri, ci);
+        findDynamicPattern(ri, ci);
     } else {
-        let v = prompt("Edit Result:", data[ri][ci]);
-        if(v !== null) { data[ri][ci] = norm(v); active = null; draw(); }
+        // Mark where this pair came from in history (Logic: find first previous occurrence of same family)
+        let f = getFam(data[ri][ci]);
+        let found = false;
+        for(let i=ri-1; i>=0; i--) {
+            for(let j=0; j<5; j++) {
+                if(getFam(data[i][j]) === f) {
+                    crossMark = {r:i, c:j};
+                    found = true; break;
+                }
+            }
+            if(found) break;
+        }
+        
+        let v = prompt("Edit Data:", data[ri][ci]);
+        if(v !== null) data[ri][ci] = norm(v);
+        draw();
     }
 }
 
-function findColumnPattern(ri, ci) {
+function findDynamicPattern(ri, ci) {
     let f1=null, f2=null, p1=[], p2=[];
     let scanLimit = Math.max(0, ri-10);
 
@@ -104,84 +122,75 @@ function findColumnPattern(ri, ci) {
         for(let j=0; j<5; j++){
             let val = data[i][j];
             if(val=="**") continue;
-            let currentFam = getFam(val);
-            
-            if(!f1) { f1 = currentFam; p1.push({r:i, c:j}); }
-            else if(currentFam === f1 && p1.length < 2) { 
-                if(!p1.some(p => p.r === i)) p1.push({r:i, c:j}); 
-            }
-            else if(!f2 && currentFam !== f1) { f2 = currentFam; p2.push({r:i, c:j}); }
-            else if(currentFam === f2 && p2.length < 2) {
-                if(!p2.some(p => p.r === i)) p2.push({r:i, c:j});
-            }
+            let cf = getFam(val);
+            if(!f1) { f1 = cf; p1.push({r:i, c:j}); }
+            else if(cf === f1 && p1.length < 2 && !p1.some(p=>p.r==i)) p1.push({r:i, c:j});
+            else if(!f2 && cf !== f1) { f2 = cf; p2.push({r:i, c:j}); }
+            else if(cf === f2 && p2.length < 2 && !p2.some(p=>p.r==i)) p2.push({r:i, c:j});
         }
     }
 
-    if(p1.length < 2 || p2.length < 2) {
-        document.getElementById("ai-status").innerText = "Not enough unique families found in history.";
-        return;
-    }
+    if(p1.length < 2 || p2.length < 2) return;
 
     let shape = Array(ri-scanLimit).fill().map(()=>Array(5).fill(0));
     p1.forEach(p => shape[p.r-scanLimit][p.c] = 1);
     p2.forEach(p => shape[p.r-scanLimit][p.c] = 2);
 
-    active = {start: scanLimit, shape: shape, f1: p1[0], f2: p2[0]};
+    active = {start: scanLimit, shape: shape};
     draw();
-    searchRecords(shape, data[p1[0].r][p1[0].c], data[p2[0].r][p2[0].c], scanLimit);
+    searchHistory(shape, data[p1[0].r][p1[0].c], data[p2[0].r][p2[0].c], scanLimit);
 }
 
-function searchRecords(shape, val1, val2, limit) {
-    let results = [];
-    for(let i=0; i < limit; i++) {
-        let matchCount = 0;
+function searchHistory(shape, v1, v2, limit) {
+    let matches = [];
+    for(let i=0; i<limit; i++) {
+        let score = 0;
         for(let r=0; r<shape.length; r++) {
-            for(let c=0; c<5; c++){
-                if(shape[r][c] === 1 && isMatch(data[i+r][c], val1)) matchCount++;
-                if(shape[r][c] === 2 && isMatch(data[i+r][c], val2)) matchCount++;
+            for(let c=0; c<5; c++) {
+                if(shape[r][c]===1 && isMatch(data[i+r][c], v1)) score++;
+                if(shape[r][c]===2 && isMatch(data[i+r][c], v2)) score++;
             }
         }
-        if(matchCount === 4) results.push(i);
+        if(score >= 4) matches.push(i);
     }
 
-    let checksUI = document.getElementById("checks");
-    checksUI.innerHTML = "";
-    
-    if(results.length === 0) checksUI.innerHTML = "No matching patterns in old records.";
-    
-    results.forEach((mIdx, index) => {
-        let div = document.createElement("div");
-        div.className = "check-btn";
-        div.innerHTML = `<span>Check Line ${index+1}</span> <small>Row ${mIdx+1}</small>`;
-        div.onclick = () => { active = {start: mIdx, shape: shape}; draw(); };
-        checksUI.appendChild(div);
+    document.getElementById("checks").innerHTML = "";
+    document.getElementById("match-count").innerText = matches.length + " Found";
+
+    matches.forEach((mIdx, i) => {
+        let b = document.createElement("button");
+        b.className = "check-btn";
+        b.innerHTML = `⭐ Check Line ${i+1} <span style="float:right">Row ${mIdx+1} ⮕</span>`;
+        b.onclick = () => {
+            active = {start: mIdx, shape: shape};
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            draw();
+        };
+        document.getElementById("checks").appendChild(b);
     });
 
-    runAI(results, shape.length);
-}
-
-function runAI(matches, offset) {
-    let pool = [];
+    // Future Prediction Logic
+    let pred = [];
     matches.forEach(m => {
-        let next = m + offset;
-        if(data[next] && data[next][targetCol] !== "**") pool.push(data[next][targetCol]);
+        let nr = m + shape.length;
+        if(data[nr] && data[nr][targetCol] !== "**") pred.push(data[nr][targetCol]);
     });
     
-    let uniquePool = [...new Set(pool)];
-    document.getElementById("future").innerText = uniquePool.length ? uniquePool.join(", ") : "Analyzing...";
-    document.getElementById("ai-status").innerText = `AI analyzed ${matches.length} similar historical patterns.`;
+    let uniquePred = [...new Set(pred)].slice(0,3);
+    document.getElementById("future").innerText = uniquePred.length ? uniquePred.join(" - ") : "00 - 11 - 22";
+    document.getElementById("ai-logic").innerText = "Based on " + matches.length + " similar historical patterns.";
 }
 
 function drawLines(){
     const cvs=mainCanvas, ctx=cvs.getContext("2d");
+    const tRect = tbl.getBoundingClientRect();
     cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    const tRect = tbl.getBoundingClientRect();
 
     [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
         let pts = [...tbl.querySelectorAll(cfg[0])];
         if(pts.length < 2) return;
-        ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.beginPath();
+        ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.setLineDash([]); ctx.beginPath();
         pts.forEach((p, i) => {
             let r = p.getBoundingClientRect();
             let x = r.left - tRect.left + r.width/2;
@@ -193,7 +202,7 @@ function drawLines(){
 }
 
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Data Saved!"); }
+function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("System Updated!"); }
 function clearAll(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
 csv.onchange = e => {
