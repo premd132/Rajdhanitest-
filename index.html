@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rajdhani Pro AI - Family Fixed</title>
+<title>Rajdhani AI Pro - Pradeep Edition FINAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
@@ -17,10 +17,16 @@ th{background:#1e293b;color:#fff; font-size: 10px;}
 .circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); }
 .circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
+
+/* Popup Styles */
+#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:15px; border-radius:12px; position:relative; width:95%; max-height:90vh; overflow-y:auto; color: #000; }
+.close-btn { position:absolute; top:10px; right:10px; background:var(--red); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; z-index:1001;}
+
 .dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
 .card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); }
-.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 12px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 600;}
-.future-box { font-size: 26px; font-weight: 800; color: var(--green); text-align: center; letter-spacing: 3px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;}
+.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 12px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+.future-box { font-size: 26px; font-weight: 800; color: var(--green); text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;}
 </style>
 </head>
 <body>
@@ -33,6 +39,17 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
     <button onclick="clearAll()" style="background:#dc3545; color:white;">🗑 CLEAR</button>
 </div>
 
+<div id="modal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</button>
+        <h3 style="margin-top:0;">Historical Record Found</h3>
+        <div id="modal-table-container" class="table-wrap">
+            <canvas id="popupCanvas"></canvas>
+            <table id="popupTbl"></table>
+        </div>
+    </div>
+</div>
+
 <center>
     <div class="table-wrap">
         <canvas id="mainCanvas"></canvas>
@@ -42,170 +59,154 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 
 <div class="dashboard">
     <div class="card">
-        <h3>✔ CHECK LINES <span id="match-count" style="font-size:10px; color:#aaa;">0 Found</span></h3>
-        <div id="checks">Click a blank cell...</div>
+        <h3>✔ CHECK LINES <span id="match-count" style="font-size:11px; opacity:0.6;">(0 Found)</span></h3>
+        <div id="checks">Click any blank cell (**) to start...</div>
     </div>
     <div class="card" style="border-top-color: var(--green);">
         <h3>🔮 FUTURE AI (3-PAIR)</h3>
         <div id="future" class="future-box">— — —</div>
+        <p style="font-size:10px; margin-top:10px; opacity:0.7;">Best predictions based on pattern repetition.</p>
     </div>
 </div>
 
 <script>
-const STORE="rajdhani_v103";
+const STORE="rajdhani_v109";
 const family={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
 let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
-let active=null, targetCol=null;
+let activePattern=null, targetColumn=null;
 
 const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
-function getFam(v){ for(let k in family) if(family[k].includes(v)) return k; return null; }
-function isMatch(a, b){ if(a=="**" || b=="**") return false; return getFam(a)===getFam(b); }
+function getFamilyKey(v){ for(let k in family) if(family[k].includes(v)) return k; return null; }
 
-function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls=[];
-   if(active && ri >= active.start && ri < active.start + active.shape.length){
-       let type = active.shape[ri-active.start][ci];
-       if(type === 1) cls.push("circle-red");
-       if(type === 2) cls.push("circle-blue");
-   }
-   h+=`<td class="${cls.join(' ')}" onclick="cellAction(${ri},${ci})">${c}</td>`;
-  });
-  h+="</tr>";
- });
- tbl.innerHTML=h;
- if(active) setTimeout(drawLines, 50);
+function draw(tblId, cvsId, pattern) {
+    let html="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+    data.forEach((row, ri) => {
+        html += "<tr>";
+        row.forEach((cell, ci) => {
+            let cls = "";
+            if(pattern && ri >= pattern.start && ri < pattern.start + pattern.shape.length) {
+                let type = pattern.shape[ri-pattern.start][ci];
+                if(type === 1) cls = "circle-red";
+                if(type === 2) cls = "circle-blue";
+            }
+            html += `<td class="${cls}" onclick="handleCell(${ri},${ci})">${cell}</td>`;
+        });
+        html += "</tr>";
+    });
+    document.getElementById(tblId).innerHTML = html;
+    if(pattern) setTimeout(() => renderLines(tblId, cvsId), 50);
 }
 
-function cellAction(ri, ci) {
+function handleCell(ri, ci) {
     if(data[ri][ci] === "**") {
-        active = null; targetCol = ci;
-        findDynamicPattern(ri, ci);
+        targetColumn = ci;
+        createPattern(ri, ci);
     } else {
-        let v = prompt("Edit Result:", data[ri][ci]);
-        if(v !== null) data[ri][ci] = norm(v);
-        draw();
+        let val = prompt("Enter Value:", data[ri][ci]);
+        if(val !== null) { data[ri][ci] = norm(val); activePattern = null; draw("tbl", "mainCanvas", null); }
     }
 }
 
-function findDynamicPattern(ri, ci) {
-    let p1=[], p2=[];
-    let scanLimit = Math.max(0, ri - 10);
+function createPattern(ri, ci) {
+    let limit = Math.max(0, ri-10);
+    let familiesFound = [];
     
-    // Step 1: Find 2 different families in the last 10 weeks
-    let foundFamilies = [];
-    for(let i = ri-1; i >= scanLimit; i--) {
+    // Scan for 2 distinct families with pairs
+    for(let i=ri-1; i>=limit; i--) {
         for(let j=0; j<5; j++) {
-            let f = getFam(data[i][j]);
-            if(f && !foundFamilies.some(x => x.name === f)) {
-                foundFamilies.push({name: f, first: {r:i, c:j}});
+            let val = data[i][j];
+            if(val === "**") continue;
+            let fKey = getFamilyKey(val);
+            if(!fKey) continue;
+            
+            let existing = familiesFound.find(f => f.key === fKey);
+            if(existing) {
+                if(existing.pts.length < 2 && !existing.pts.some(p => p.r === i)) existing.pts.push({r:i, c:j});
+            } else if(familiesFound.length < 2) {
+                familiesFound.push({key: fKey, pts: [{r:i, c:j}]});
             }
         }
     }
 
-    // Step 2: For each family, find a second matching member to form a pair
-    let finalPairs = [];
-    for(let famObj of foundFamilies) {
-        let pair = [famObj.first];
-        for(let i = ri-1; i >= scanLimit; i--) {
-            for(let j=0; j<5; j++) {
-                if(i === famObj.first.r && j === famObj.first.c) continue;
-                if(getFam(data[i][j]) === famObj.name) {
-                    pair.push({r:i, c:j});
-                    break;
-                }
-            }
-            if(pair.length === 2) break;
-        }
-        if(pair.length === 2) finalPairs.push(pair);
-        if(finalPairs.length === 2) break; // We found our 2 families
-    }
+    let finalFamilies = familiesFound.filter(f => f.pts.length === 2);
+    if(finalFamilies.length < 2) return;
 
-    if(finalPairs.length < 2) return;
+    let shape = Array(ri-limit).fill().map(()=>Array(5).fill(0));
+    finalFamilies[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
+    finalFamilies[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
 
-    p1 = finalPairs[0]; // Family 1
-    p2 = finalPairs[1]; // Family 2
-
-    let shape = Array(ri-scanLimit).fill().map(()=>Array(5).fill(0));
-    p1.forEach(p => shape[p.r-scanLimit][p.c] = 1);
-    p2.forEach(p => shape[p.r-scanLimit][p.c] = 2);
-
-    active = {start: scanLimit, shape: shape, v1: data[p1[0].r][p1[0].c], v2: data[p2[0].r][p2[0].c]};
-    draw();
-    searchHistory(shape, active.v1, active.v2, scanLimit);
+    activePattern = {start: limit, shape: shape, keys: [finalFamilies[0].key, finalFamilies[1].key]};
+    draw("tbl", "mainCanvas", activePattern);
+    runSearch(activePattern);
 }
 
-function searchHistory(shape, v1, v2, limit) {
-    let matches = [];
-    for(let i=0; i < limit; i++) {
-        let score = 0;
-        for(let r=0; r < shape.length; r++) {
-            if(i+r >= data.length) break;
-            for(let c=0; c<5; c++) {
-                if(shape[r][c]===1 && isMatch(data[i+r][c], v1)) score++;
-                if(shape[r][c]===2 && isMatch(data[i+r][c], v2)) score++;
-            }
-        }
-        if(score >= 3) matches.push(i);
-    }
-
-    document.getElementById("checks").innerHTML = "";
-    document.getElementById("match-count").innerText = matches.length + " Found";
-
-    matches.forEach((mIdx, i) => {
-        let b = document.createElement("button");
-        b.className = "check-btn";
-        b.innerHTML = `📋 Check Line ${i+1} (Row ${mIdx+1})`;
-        b.onclick = () => { active = {start: mIdx, shape: shape}; draw(); };
-        document.getElementById("checks").appendChild(b);
-    });
-
+function runSearch(pat) {
     let results = [];
-    matches.forEach(m => {
-        let nr = m + shape.length;
-        if(data[nr] && data[nr][targetCol] !== "**") results.push(data[nr][targetCol]);
+    for(let i=0; i < pat.start; i++) {
+        let score = 0;
+        for(let r=0; r < pat.shape.length; r++) {
+            for(let c=0; c<5; c++) {
+                if(pat.shape[r][c] === 1 && getFamilyKey(data[i+r][c]) === pat.keys[0]) score++;
+                if(pat.shape[r][c] === 2 && getFamilyKey(data[i+r][c]) === pat.keys[1]) score++;
+            }
+        }
+        if(score >= 3) results.push(i);
+    }
+
+    let checksDiv = document.getElementById("checks");
+    checksDiv.innerHTML = "";
+    document.getElementById("match-count").innerText = `(${results.length} Found)`;
+
+    results.forEach((mIdx, idx) => {
+        let btn = document.createElement("div");
+        btn.className = "check-btn";
+        btn.innerHTML = `<span>⭐ Match Line ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
+        btn.onclick = () => {
+            document.getElementById("modal").style.display = "flex";
+            draw("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape});
+        };
+        checksDiv.appendChild(btn);
     });
-    let finalAI = [...new Set(results)].slice(0,3);
-    document.getElementById("future").innerText = finalAI.length ? finalAI.join(" - ") : "Analyzing...";
+
+    let predictions = results.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][targetColumn] : null).filter(v => v && v!=="**");
+    document.getElementById("future").innerText = predictions.length ? [...new Set(predictions)].slice(0,3).join(" - ") : "00 - 11 - 22";
 }
 
-function drawLines(){
-    const cvs=mainCanvas, ctx=cvs.getContext("2d");
-    const tRect = tbl.getBoundingClientRect();
-    cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
+function renderLines(tblId, cvsId) {
+    const table = document.getElementById(tblId);
+    const canvas = document.getElementById(cvsId);
+    const ctx = canvas.getContext("2d");
+    const rect = table.getBoundingClientRect();
+    canvas.width = table.offsetWidth; canvas.height = table.offsetHeight;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
     [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
-        let pts = [...tbl.querySelectorAll(cfg[0])];
-        if(pts.length < 2) return;
+        let dots = [...table.querySelectorAll(cfg[0])];
+        if(dots.length < 2) return;
         ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.beginPath();
-        pts.forEach((p, i) => {
-            let r = p.getBoundingClientRect();
-            let x = r.left - tRect.left + r.width/2;
-            let y = r.top - tRect.top + r.height/2;
+        dots.forEach((d, i) => {
+            let r = d.getBoundingClientRect();
+            let x = r.left - rect.left + r.width/2;
+            let y = r.top - rect.top + r.height/2;
             i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
         });
         ctx.stroke();
     });
 }
 
-function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved!"); }
-function clearAll(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
-
+function addRow(){ data.push(["**","**","**","**","**"]); draw("tbl", "mainCanvas", activePattern); }
+function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("System Saved!"); }
+function clearAll(){ if(confirm("Clear Data?")){ localStorage.clear(); location.reload(); }}
 csv.onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        data = fr.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5));
-        draw();
+    let reader = new FileReader();
+    reader.onload = () => {
+        data = reader.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5));
+        draw("tbl", "mainCanvas", null);
     };
-    fr.readAsText(e.target.files[0]);
+    reader.readAsText(e.target.files[0]);
 };
-draw();
+draw("tbl", "mainCanvas", null);
 </script>
 </body>
 </html>
