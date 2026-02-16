@@ -177,17 +177,17 @@ function drawLines(){
  ctx.stroke();
 }
 
-function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function edit(r,c,el){ data[ri][ci]=norm(el.innerText.trim()); }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function save(){ localStorage.setItem(STORE,JSON.stringify(data)); alert("Saved"); }
 function clearAll(){ if(confirm("Clear?")){localStorage.clear();location.reload();} }
 
 /* ===== DUAL FAMILY PATTERN ===== */
-function makePattern(r,c){
+function makePattern(ri,ci){
  targetCol=c;
 
  let base="**";
- for(let i=r;i>=0;i--) if(data[i][c]!="**"){base=data[i][c];break;}
+ for(let i=r;i>=0;i--) if(data[ir][ic]!="**"){base=data[i][c];break;}
  if(base=="**") return;
 
  let f1=famOf(base);
