@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rajdhani Pro AI – Pradeep Edition V2</title>
+<title>Rajdhani Pro AI - Popup Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
@@ -14,17 +14,18 @@ body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden; padding-botto
 table{border-collapse:collapse;color:#000}
 td,th{ border:1px solid #ccc; width:45px;height:45px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 13px;}
 th{background:#1e293b;color:#fff; font-size: 10px;}
-
-.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.3); }
-.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.3); }
-.marked-old { background: rgba(0, 255, 136, 0.4) !important; border: 2px solid var(--green) !important; }
-
+.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); }
+.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
+
+/* Modal/Popup Style */
+#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:15px; border-radius:12px; position:relative; max-width:95%; max-height:80vh; overflow:auto; }
+.close-btn { position:fixed; top:20px; right:20px; background:var(--red); color:white; border:none; border-radius:50%; width:40px; height:40px; font-weight:bold; cursor:pointer; }
+
 .dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); position: relative;}
-h3{margin:0 0 10px 0; font-size: 14px; color:var(--gold); display: flex; align-items: center; justify-content: space-between;}
+.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); }
 .check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 12px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 600;}
-.check-btn:hover { border-color: var(--gold); color: var(--gold); }
 .future-box { font-size: 26px; font-weight: 800; color: var(--green); text-align: center; letter-spacing: 3px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;}
 </style>
 </head>
@@ -38,6 +39,17 @@ h3{margin:0 0 10px 0; font-size: 14px; color:var(--gold); display: flex; align-i
     <button onclick="clearAll()" style="background:#dc3545; color:white;">🗑 CLEAR</button>
 </div>
 
+<div id="modal" onclick="this.style.display='none'">
+    <button class="close-btn">&times;</button>
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="color:#000; margin-top:0;">Historical Record View</h3>
+        <div id="popup-table-wrap" class="table-wrap">
+            <canvas id="popupCanvas"></canvas>
+            <table id="popupTbl"></table>
+        </div>
+    </div>
+</div>
+
 <center>
     <div class="table-wrap">
         <canvas id="mainCanvas"></canvas>
@@ -48,153 +60,127 @@ h3{margin:0 0 10px 0; font-size: 14px; color:var(--gold); display: flex; align-i
 <div class="dashboard">
     <div class="card">
         <h3>✔ CHECK LINES <span id="match-count" style="font-size:10px; color:#aaa;">0 Found</span></h3>
-        <div id="checks" style="max-height: 250px; overflow-y: auto;">Click a blank cell...</div>
+        <div id="checks">Click a blank cell...</div>
     </div>
     <div class="card" style="border-top-color: var(--green);">
         <h3>🔮 FUTURE AI (3-PAIR)</h3>
         <div id="future" class="future-box">— — —</div>
-        <p id="ai-logic" style="font-size: 11px; opacity: 0.7; margin-top: 10px;">Status: Waiting for pattern...</p>
     </div>
 </div>
 
 <script>
-const STORE="rajdhani_v102";
+const STORE="rajdhani_v105";
 const family={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
 let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
-let active=null, targetCol=null, crossMark=null;
+let active=null, targetCol=null;
 
 const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
 function getFam(v){ for(let k in family) if(family[k].includes(v)) return k; return null; }
 function isMatch(a, b){ if(a=="**" || b=="**") return false; return getFam(a)===getFam(b); }
 
-function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls=[];
-   if(active && ri >= active.start && ri < active.start + active.shape.length){
-       let type = active.shape[ri-active.start][ci];
-       if(type === 1) cls.push("circle-red");
-       if(type === 2) cls.push("circle-blue");
-   }
-   if(crossMark && crossMark.r === ri && crossMark.c === ci) cls.push("marked-old");
-   h+=`<td class="${cls.join(' ')}" onclick="cellAction(${ri},${ci})">${c}</td>`;
-  });
-  h+="</tr>";
- });
- tbl.innerHTML=h;
- if(active) setTimeout(drawLines, 50);
+function drawGrid(tableId, canvasId, config) {
+    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+    data.forEach((r,ri)=>{
+        h+="<tr>";
+        r.forEach((c,ci)=>{
+            let cls=[];
+            if(config && ri >= config.start && ri < config.start + config.shape.length){
+                let type = config.shape[ri-config.start][ci];
+                if(type === 1) cls.push("circle-red");
+                if(type === 2) cls.push("circle-blue");
+            }
+            h+=`<td class="${cls.join(' ')}" onclick="cellAction(${ri},${ci})">${c}</td>`;
+        });
+        h+="</tr>";
+    });
+    document.getElementById(tableId).innerHTML=h;
+    if(config) setTimeout(() => drawLines(tableId, canvasId), 50);
 }
 
 function cellAction(ri, ci) {
     if(data[ri][ci] === "**") {
-        active = null; crossMark = null; // Clear all on new click
-        targetCol = ci;
+        active = null; targetCol = ci;
         findDynamicPattern(ri, ci);
     } else {
-        // Edit and Highlighting Logic
-        let currentVal = data[ri][ci];
-        let f = getFam(currentVal);
-        crossMark = null;
-        for(let i=ri-1; i>=0; i--) {
-            for(let j=0; j<5; j++) {
-                if(getFam(data[i][j]) === f) { crossMark = {r:i, c:j}; break; }
-            }
-            if(crossMark) break;
-        }
-        let v = prompt("Edit Data:", currentVal);
+        let v = prompt("Edit Result:", data[ri][ci]);
         if(v !== null) data[ri][ci] = norm(v);
-        draw();
+        drawGrid("tbl", "mainCanvas", active);
     }
 }
 
 function findDynamicPattern(ri, ci) {
-    let f1=null, f2=null, p1=[], p2=[];
-    let lookBack = 10; 
-    let scanLimit = Math.max(0, ri - lookBack);
-
-    // Dynamic Column Priority Scan
-    for(let i=ri-1; i>=scanLimit; i--){
-        let rowCells = [ci, 0, 1, 2, 3, 4]; // Prioritize clicked column
-        for(let j of rowCells){
-            let val = data[i][j];
-            if(val=="**") continue;
-            let cf = getFam(val);
-            if(!f1) { f1 = cf; p1.push({r:i, c:j}); }
-            else if(cf === f1 && p1.length < 2 && !p1.some(p=>p.r==i)) p1.push({r:i, c:j});
-            else if(!f2 && cf !== f1) { f2 = cf; p2.push({r:i, c:j}); }
-            else if(cf === f2 && p2.length < 2 && !p2.some(p=>p.r==i)) p2.push({r:i, c:j});
+    let scanLimit = Math.max(0, ri - 10);
+    let foundFamilies = [];
+    for(let i = ri-1; i >= scanLimit; i--) {
+        for(let j=0; j<5; j++) {
+            let f = getFam(data[i][j]);
+            if(f && !foundFamilies.some(x => x.name === f)) {
+                foundFamilies.push({name: f, first: {r:i, c:j}});
+            }
         }
-        if(p1.length==2 && p2.length==2) break;
     }
-
-    if(p1.length < 2 || p2.length < 2) {
-        document.getElementById("ai-logic").innerText = "Not enough data for pattern.";
-        draw(); return;
+    let finalPairs = [];
+    for(let famObj of foundFamilies) {
+        let pair = [famObj.first];
+        for(let i = ri-1; i >= scanLimit; i--) {
+            for(let j=0; j<5; j++) {
+                if(i === famObj.first.r && j === famObj.first.c) continue;
+                if(getFam(data[i][j]) === famObj.name) { pair.push({r:i, c:j}); break; }
+            }
+            if(pair.length === 2) break;
+        }
+        if(pair.length === 2) finalPairs.push(pair);
+        if(finalPairs.length === 2) break;
     }
-
+    if(finalPairs.length < 2) return;
     let shape = Array(ri-scanLimit).fill().map(()=>Array(5).fill(0));
-    p1.forEach(p => shape[p.r-scanLimit][p.c] = 1);
-    p2.forEach(p => shape[p.r-scanLimit][p.c] = 2);
+    finalPairs[0].forEach(p => shape[p.r-scanLimit][p.c] = 1);
+    finalPairs[1].forEach(p => shape[p.r-scanLimit][p.c] = 2);
 
-    active = {start: scanLimit, shape: shape, v1: data[p1[0].r][p1[0].c], v2: data[p2[0].r][p2[0].c]};
-    draw();
+    active = {start: scanLimit, shape: shape, v1: data[finalPairs[0][0].r][finalPairs[0][0].c], v2: data[finalPairs[1][0].r][finalPairs[1][0].c]};
+    drawGrid("tbl", "mainCanvas", active);
     searchHistory(shape, active.v1, active.v2, scanLimit);
 }
 
 function searchHistory(shape, v1, v2, limit) {
     let matches = [];
-    // Deep Search in all old records
     for(let i=0; i < limit; i++) {
         let score = 0;
         for(let r=0; r < shape.length; r++) {
-            if(i+r >= data.length) break;
             for(let c=0; c<5; c++) {
                 if(shape[r][c]===1 && isMatch(data[i+r][c], v1)) score++;
                 if(shape[r][c]===2 && isMatch(data[i+r][c], v2)) score++;
             }
         }
-        if(score >= 3) matches.push(i); // Score 3 or 4 is a match
+        if(score >= 3) matches.push(i);
     }
-
-    const checksDiv = document.getElementById("checks");
-    checksDiv.innerHTML = "";
+    document.getElementById("checks").innerHTML = "";
     document.getElementById("match-count").innerText = matches.length + " Found";
-
     matches.forEach((mIdx, i) => {
         let b = document.createElement("button");
         b.className = "check-btn";
-        b.innerHTML = `📋 Check Line ${i+1} <span style="float:right; font-size:10px;">Row ${mIdx+1}</span>`;
+        b.innerHTML = `⭐ Check Line ${i+1} (Popup View)`;
         b.onclick = () => {
-            active = {start: mIdx, shape: shape};
-            draw();
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            document.getElementById("modal").style.display = "flex";
+            drawGrid("popupTbl", "popupCanvas", {start: mIdx, shape: shape});
         };
-        checksDiv.appendChild(b);
+        document.getElementById("checks").appendChild(b);
     });
-
-    // Prediction Logic
-    let results = [];
-    matches.forEach(m => {
-        let nextRow = m + shape.length;
-        if(data[nextRow] && data[nextRow][targetCol] !== "**") results.push(data[nextRow][targetCol]);
-    });
-    
-    let finalAI = [...new Set(results)].slice(0,3);
-    document.getElementById("future").innerText = finalAI.length ? finalAI.join(" - ") : "No History";
-    document.getElementById("ai-logic").innerText = "AI matching " + matches.length + " historical zones.";
+    // Future AI Prediction
+    let results = matches.map(m => data[m+shape.length] ? data[m+shape.length][targetCol] : null).filter(x => x && x !== "**");
+    document.getElementById("future").innerText = results.length ? [...new Set(results)].slice(0,3).join(" - ") : "No Data";
 }
 
-function drawLines(){
-    const cvs=mainCanvas, ctx=cvs.getContext("2d");
-    const tRect = tbl.getBoundingClientRect();
-    cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
+function drawLines(tableId, canvasId){
+    const tblEl = document.getElementById(tableId);
+    const cvs = document.getElementById(canvasId);
+    const ctx = cvs.getContext("2d");
+    const tRect = tblEl.getBoundingClientRect();
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-
     [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
-        let pts = [...tbl.querySelectorAll(cfg[0])];
+        let pts = [...tblEl.querySelectorAll(cfg[0])];
         if(pts.length < 2) return;
         ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.beginPath();
         pts.forEach((p, i) => {
@@ -207,20 +193,18 @@ function drawLines(){
     });
 }
 
-function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved Successfully!"); }
-function clearAll(){ if(confirm("Delete All Data?")){ localStorage.clear(); location.reload(); }}
-
+function addRow(){ data.push(["**","**","**","**","**"]); drawGrid("tbl", "mainCanvas", active); }
+function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved!"); }
+function clearAll(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
 csv.onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
         data = fr.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5));
-        draw();
+        drawGrid("tbl", "mainCanvas", null);
     };
     fr.readAsText(e.target.files[0]);
 };
-
-draw();
+drawGrid("tbl", "mainCanvas", null);
 </script>
 </body>
 </html>
