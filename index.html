@@ -19,8 +19,9 @@ button{cursor:pointer;font-weight:700;border-radius:6px;border:none; padding: 10
 table{border-collapse:collapse;color:#000}
 td,th{ border:1px solid #ddd; width:50px;height:50px; text-align:center;font-weight:700; cursor: pointer; }
 th{background:#1e293b;color:#fff;font-size:11px}
-.circle-red { border:3px solid var(--red)!important; border-radius:50%!important; background:rgba(255,71,87,.15) }
-.circle-blue { border:3px solid var(--blue)!important; border-radius:50%!important; background:rgba(0,132,255,.15) }
+/* Marking Styles */
+.circle-red { border:3px solid var(--red)!important; border-radius:50%!important; background:rgba(255,71,87,.2) }
+.circle-blue { border:3px solid var(--blue)!important; border-radius:50%!important; background:rgba(0,132,255,.2) }
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 .dashboard{ display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;margin-top:15px }
 .card{ background:var(--panel);padding:12px;border-radius:10px; border-top:3px solid var(--gold) }
@@ -52,7 +53,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
     </center>
 
     <div class="dashboard">
-        <div class="card"><h3>✔ MATCHES</h3><div id="checks"></div></div>
+        <div class="card"><h3>✔ CHECK LINES</h3><div id="checks"></div></div>
         <div class="card"><h3>🤖 AI ANALYSIS</h3><div id="ai">Ready...</div></div>
         <div class="card"><h3>🔮 FUTURE</h3><div id="future">—</div></div>
     </div>
@@ -62,11 +63,11 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 const STORE="rajdhani_dual_family";
 const families={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
+let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
 let active=null, targetCol=null;
 
-const norm=v=> (v=="**" || !v) ? "**" : v.toString().padStart(2,"0");
-const palti=v=>v[1]+v[0];
+const norm=v=> (v=="**" || !v) ? "**" : v.toString().trim().padStart(2,"0");
+const palti=v=>v.length==2 ? v[1]+v[0] : v;
 function famOf(v){ for(let k in families) if(families[k].includes(v)) return k; return null; }
 function smartMatch(a, b) { if(a=="**" || b=="**") return false; return a===b || palti(a)===b || famOf(a)===famOf(b); }
 
@@ -87,7 +88,7 @@ function draw(){
        if(type === 1) cls = "circle-red";
        if(type === 2) cls = "circle-blue";
    }
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="handleCell(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable="true" onblur="edit(${ri},${ci},this)" onclick="handleCell(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -96,8 +97,10 @@ function draw(){
 }
 
 function handleCell(ri, ci) {
-    if(data[ri][ci] === "**") makePattern(ri, ci);
-    else { active = null; draw(); }
+    if(data[ri][ci] === "**") {
+        active = null; // Reset current pattern to allow new one
+        makePattern(ri, ci);
+    }
 }
 
 function drawLines(){
@@ -121,10 +124,15 @@ function drawLines(){
  });
 }
 
-function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); active=null; }
+function edit(ri,ci,el){ 
+    let val = norm(el.innerText.trim());
+    data[ri][ci] = val;
+    el.innerText = val; // Show normalized value
+}
+
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function save(){ localStorage.setItem(STORE,JSON.stringify(data)); alert("Saved"); }
-function clearAll(){ if(confirm("Clear?")){localStorage.clear();location.reload();} }
+function save(){ localStorage.setItem(STORE,JSON.stringify(data)); alert("Saved Successfully"); }
+function clearAll(){ if(confirm("Delete all data?")){localStorage.clear();location.reload();} }
 
 function makePattern(ri, ci){
  targetCol=ci;
@@ -143,7 +151,10 @@ function makePattern(ri, ci){
   }
  }
 
- if(f1c.length<2 || f2c.length<2) { alert("Data कम है!"); return; }
+ if(f1c.length<2 || f2c.length<2) { 
+     document.getElementById("ai").innerText = "Insufficient data above cell!";
+     return; 
+ }
 
  let shape = Array(ri-look).fill().map(()=>Array(5).fill(0));
  f1c.forEach(x => shape[x.r-look][x.c] = 1);
@@ -168,11 +179,11 @@ function search(shape, f1, f2, limit){
  }
  
  document.getElementById("checks").innerHTML="";
- matches.forEach(m=>{
+ matches.forEach((m, idx)=>{
   let d=document.createElement("div");
-  d.textContent="Pattern at Row "+(m+1);
-  d.style="background:#2a2a2a;padding:10px;margin:5px 0;border-left:4px solid var(--gold);cursor:pointer";
-  d.onclick=()=>{active={start:m,shape}; draw();};
+  d.textContent=`Check Line ${idx+1} (Row ${m+1})`;
+  d.style="background:#2a2a2a;padding:10px;margin:5px 0;border-left:4px solid var(--gold);cursor:pointer;font-size:12px";
+  d.onclick=()=>{ active={start:m, shape:shape}; draw(); };
   document.getElementById("checks").appendChild(d);
  });
 
@@ -182,7 +193,7 @@ function search(shape, f1, f2, limit){
   if(n<data.length && data[n][targetCol]!="**") fut.push(data[n][targetCol]);
  });
  document.getElementById("future").innerHTML=fut.length?[...new Set(fut)].join(", "):"Analyzing…";
- document.getElementById("ai").innerHTML=`Dual Found: ${f1} & ${f2}`;
+ document.getElementById("ai").innerHTML=`Families: ${f1} & ${f2} Found!`;
 }
 
 document.getElementById("csv").onchange=e=>{
