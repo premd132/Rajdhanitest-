@@ -172,7 +172,7 @@ function search(pat) {
         b.innerHTML = `<span>📋 Check Line ${idx+1}</span> <small>Row ${mIdx+1} ⮕</small>`;
         b.onclick = () => {
             document.getElementById("modal").style.display = "flex";
-            draw("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape});
+            draw("popupCanvas", {start: mIdx, shape: pat.shape});
         };
         checksDiv.appendChild(b);
     });
