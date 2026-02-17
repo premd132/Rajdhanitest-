@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rajdhani Pro AI - Pradeep Special V4</title>
+<title>Rajdhani Pro AI - Fixed Checklines</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
@@ -18,9 +18,8 @@ th{background:#1e293b;color:#fff; font-size: 10px;}
 .circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 
-/* Smart Snippet Popup */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; border-radius:12px; position:relative; max-width:95%; color: #000; text-align:center; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+.modal-content { background:#fff; padding:20px; border-radius:12px; position:relative; max-width:95%; color: #000; text-align:center; }
 .close-btn { position:absolute; top:-15px; right:-15px; background:var(--red); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; font-weight:bold; font-size: 20px; border: 2px solid #fff;}
 
 .dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
@@ -41,12 +40,11 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 <div id="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</button>
-        <h3 style="margin:0 0 10px 0; font-size: 14px; color:#333;">Historical Snippet</h3>
+        <h3 style="margin:0 0 10px 0; font-size: 14px; color:#333;">Pattern Snippet + Result</h3>
         <div id="popup-wrap" class="table-wrap">
             <canvas id="popupCanvas"></canvas>
             <table id="popupTbl"></table>
         </div>
-        <p style="font-size: 10px; color: #888; margin-top: 10px;">Showing: Pattern + Result Row</p>
     </div>
 </div>
 
@@ -60,7 +58,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 <div class="dashboard">
     <div class="card">
         <h3>✔ CHECK LINES <span id="match-count" style="font-size:11px; opacity:0.6;">0 Found</span></h3>
-        <div id="checks">Click any ** cell to scan...</div>
+        <div id="checks">Click any blank cell (**) to scan...</div>
     </div>
     <div class="card">
         <h3>🔮 FUTURE AI (3-PAIR)</h3>
@@ -69,10 +67,10 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 </div>
 
 <script>
-const STORE="raj_pro_v4_final";
+const STORE="raj_pro_v5";
 const family={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
+let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
 let currentActive=null, lastTargetCol=null;
 
 const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
@@ -105,28 +103,34 @@ function handleCell(ri, ci) {
 
 function analyze(ri, ci) {
     let limit = Math.max(0, ri-10);
-    let fams = [];
+    let foundFams = [];
+    
+    // Scan up to 10 weeks for 2 families
     for(let i=ri-1; i>=limit; i--) {
         for(let j=0; j<5; j++) {
             let f = getFam(data[i][j]);
             if(!f) continue;
-            let ex = fams.find(x => x.key === f);
+            let ex = foundFams.find(x => x.key === f);
             if(ex) { if(ex.pts.length < 2 && !ex.pts.some(p=>p.r===i)) ex.pts.push({r:i, c:j}); }
-            else if(fams.length < 2) fams.push({key: f, pts: [{r:i, c:j}]});
+            else if(foundFams.length < 2) foundFams.push({key: f, pts: [{r:i, c:j}]});
         }
-        if(fams.length==2 && fams[0].pts.length==2 && fams[1].pts.length==2) break;
+        if(foundFams.length==2 && foundFams[0].pts.length==2 && foundFams[1].pts.length==2) break;
     }
-    if(fams.length < 2 || fams.some(f=>f.pts.length<2)) return;
+
+    if(foundFams.length < 2) { alert("Not enough data to form pattern"); return; }
+
     let shape = Array(ri-limit).fill().map(()=>Array(5).fill(0));
-    fams[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
-    fams[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
-    currentActive = {start: limit, shape: shape, keys: [fams[0].key, fams[1].key]};
+    foundFams[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
+    foundFams[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
+
+    currentActive = {start: limit, shape: shape, keys: [foundFams[0].key, foundFams[1].key]};
     draw("tbl", "mainCanvas", currentActive, data);
     search(currentActive);
 }
 
 function search(pat) {
     let matches = [];
+    // Search in old records (before the current pattern start)
     for(let i=0; i < pat.start; i++) {
         let score = 0;
         for(let r=0; r < pat.shape.length; r++) {
@@ -135,24 +139,29 @@ function search(pat) {
                 if(pat.shape[r][c] === 2 && getFam(data[i+r][c]) === pat.keys[1]) score++;
             }
         }
+        // Match if at least 3 out of 4 points match family
         if(score >= 3) matches.push(i);
     }
-    let checks = document.getElementById("checks");
-    checks.innerHTML = "";
+
+    let checksDiv = document.getElementById("checks");
+    checksDiv.innerHTML = "";
     document.getElementById("match-count").innerText = `${matches.length} Found`;
+
     matches.forEach((mIdx, idx) => {
         let btn = document.createElement("div");
         btn.className = "check-btn";
         btn.innerHTML = `<span>📋 Line ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
         btn.onclick = () => {
+            // Snippet logic: show pattern rows + 1 row below
             let snippet = data.slice(mIdx, mIdx + pat.shape.length + 1);
             document.getElementById("modal").style.display = "flex";
             draw("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape}, snippet, mIdx);
         };
-        checks.appendChild(btn);
+        checksDiv.appendChild(btn);
     });
-    let pr = matches.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][lastTargetCol] : null).filter(v => v && v!=="**");
-    document.getElementById("future").innerText = pr.length ? [...new Set(pr)].slice(0,3).join(" - ") : "Analyzing...";
+
+    let pr = matches.map(m => (data[m + pat.shape.length] && data[m+pat.shape.length][lastTargetCol] !== "**") ? data[m + pat.shape.length][lastTargetCol] : null).filter(v => v);
+    document.getElementById("future").innerText = pr.length ? [...new Set(pr)].slice(0,3).join(" - ") : "No Match";
 }
 
 function renderLines(tId, cId, pat, offset) {
@@ -162,6 +171,7 @@ function renderLines(tId, cId, pat, offset) {
     const rect = table.getBoundingClientRect();
     canvas.width = table.offsetWidth; canvas.height = table.offsetHeight;
     ctx.clearRect(0,0,canvas.width,canvas.height);
+
     [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
         let dots = [...table.querySelectorAll(cfg[0])];
         if(dots.length < 2) return;
@@ -178,9 +188,13 @@ function renderLines(tId, cId, pat, offset) {
 
 function addRow(){ data.push(["**","**","**","**","**"]); draw("tbl", "mainCanvas", null, data); }
 function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved!"); }
+
 csv.onchange = e => {
     let r = new FileReader();
-    r.onload = () => { data = r.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5)); draw("tbl", "mainCanvas", null, data); };
+    r.onload = () => { 
+        data = r.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5)); 
+        draw("tbl", "mainCanvas", null, data); 
+    };
     r.readAsText(e.target.files[0]);
 };
 draw("tbl", "mainCanvas", null, data);
