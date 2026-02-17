@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rajdhani Pro AI – Strict Family Edition</title>
+<title>Rajdhani AI Pro - Mirror Pattern</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
@@ -14,23 +14,39 @@ body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden; padding-botto
 table{border-collapse:collapse;color:#000}
 td,th{ border:1px solid #ccc; width:45px;height:45px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 13px;}
 th{background:#1e293b;color:#fff; font-size: 10px;}
-.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.3); }
-.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.3); }
+.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); }
+.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
+
+/* Popup Modal */
+#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:15px; border-radius:12px; position:relative; width:95%; max-height:85vh; overflow-y:auto; color: #000; text-align: center;}
+.close-btn { position:absolute; top:10px; right:10px; background:var(--red); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; font-weight:bold; font-size: 20px;}
+
 .dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
 .card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); }
-.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 12px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; font-weight: 600;}
-.future-box { font-size: 26px; font-weight: 800; color: var(--green); text-align: center; letter-spacing: 3px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;}
+.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 12px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between;}
+.future-box { font-size: 26px; font-weight: 800; color: var(--green); text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
     <input type="file" id="csv" hidden>
-    <button onclick="csv.click()" style="background:#444; color:white;">📂 CSV</button>
-    <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
-    <button onclick="save()" style="background:#28a745; color:white;">💾 SAVE</button>
-    <button onclick="clearAll()" style="background:#dc3545; color:white;">🗑 CLEAR</button>
+    <button onclick="csv.click()">📂 CSV</button>
+    <button onclick="addRow()">➕ ROW</button>
+    <button onclick="save()" style="background:var(--green); color:#000;">💾 SAVE</button>
+</div>
+
+<div id="modal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</button>
+        <h3 style="margin:0 0 10px 0;">Historical Pattern Match</h3>
+        <div id="modal-container" class="table-wrap">
+            <canvas id="popupCanvas"></canvas>
+            <table id="popupTbl"></table>
+        </div>
+    </div>
 </div>
 
 <center>
@@ -42,170 +58,140 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 
 <div class="dashboard">
     <div class="card">
-        <h3>✔ CHECK LINES <span id="match-count" style="font-size:10px; color:#aaa;">0 Found</span></h3>
-        <div id="checks">Click a blank cell...</div>
+        <h3>✔ CHECK LINES <span id="match-count" style="font-size:11px; opacity:0.6;">(0)</span></h3>
+        <div id="checks">Click on any ** cell...</div>
     </div>
-    <div class="card" style="border-top-color: var(--green);">
-        <h3>🔮 FUTURE AI (3-PAIR)</h3>
+    <div class="card">
+        <h3>🔮 FUTURE AI</h3>
         <div id="future" class="future-box">— — —</div>
-        <p id="ai-logic" style="font-size: 11px; opacity: 0.7; margin-top: 10px;">Status: Waiting for pattern...</p>
     </div>
 </div>
 
 <script>
-const STORE="rajdhani_v105";
+const STORE="raj_v115";
 const family={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
-let active=null, targetCol=null;
+let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
+let currentPat=null, targetCol=null;
 
 const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
 function getFam(v){ for(let k in family) if(family[k].includes(v)) return k; return null; }
 
-function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls=[];
-   if(active && ri >= active.start && ri < active.start + active.shape.length){
-       let type = active.shape[ri-active.start][ci];
-       if(type === 1) cls.push("circle-red");
-       if(type === 2) cls.push("circle-blue");
-   }
-   h+=`<td class="${cls.join(' ')}" onclick="cellAction(${ri},${ci})">${c}</td>`;
-  });
-  h+="</tr>";
- });
- tbl.innerHTML=h;
- if(active) setTimeout(drawLines, 50);
+function draw(tId, cId, pat) {
+    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+    data.forEach((r, ri) => {
+        h += "<tr>";
+        r.forEach((c, ci) => {
+            let cls = "";
+            if(pat && ri >= pat.start && ri < pat.start + pat.shape.length) {
+                let type = pat.shape[ri-pat.start][ci];
+                if(type === 1) cls = "circle-red";
+                if(type === 2) cls = "circle-blue";
+            }
+            h += `<td class="${cls}" onclick="handleCell(${ri},${ci})">${c}</td>`;
+        });
+        h += "</tr>";
+    });
+    document.getElementById(tId).innerHTML = h;
+    if(pat) setTimeout(() => renderLines(tId, cId), 50);
 }
 
-function cellAction(ri, ci) {
+function handleCell(ri, ci) {
     if(data[ri][ci] === "**") {
-        active = null; targetCol = ci;
-        findDynamicPattern(ri, ci);
+        targetCol = ci;
+        analyze(ri, ci);
     } else {
-        let v = prompt("Edit Result:", data[ri][ci]);
-        if(v !== null) data[ri][ci] = norm(v);
-        draw();
+        let v = prompt("Edit:", data[ri][ci]);
+        if(v !== null) { data[ri][ci] = norm(v); currentPat = null; draw("tbl", "mainCanvas", null); }
     }
 }
 
-function findDynamicPattern(ri, ci) {
-    let f1=null, f2=null, p1=[], p2=[];
-    let lookBack = 10; 
-    let scanLimit = Math.max(0, ri - lookBack);
-
-    // 1. सबसे पहले वर्तमान पैटर्न के लिए 2 अलग-अलग फैमिली चुनें
-    for(let i=ri-1; i>=scanLimit; i--){
-        for(let j=0; j<5; j++){
-            let val = data[i][j];
-            if(val=="**") continue;
-            let cf = getFam(val);
-            if(!f1) { f1 = cf; p1.push({r:i, c:j}); }
-            else if(cf === f1 && p1.length < 2 && !p1.some(p=>p.r==i)) p1.push({r:i, c:j});
-            else if(!f2 && cf !== f1) { f2 = cf; p2.push({r:i, c:j}); }
-            else if(cf === f2 && p2.length < 2 && !p2.some(p=>p.r==i)) p2.push({r:i, c:j});
-        }
-        if(p1.length==2 && p2.length==2) break;
-    }
-
-    if(p1.length < 2 || p2.length < 2) return;
-
-    let shape = Array(ri-scanLimit).fill().map(()=>Array(5).fill(0));
-    p1.forEach(p => shape[p.r-scanLimit][p.c] = 1);
-    p2.forEach(p => shape[p.r-scanLimit][p.c] = 2);
-
-    active = {start: scanLimit, shape: shape, f1: f1, f2: f2};
-    draw();
-    searchHistory(shape, f1, f2, scanLimit);
-}
-
-function searchHistory(shape, f1, f2, limit) {
-    let matches = [];
-    // 2. पुराने रिकॉर्ड्स में वही SAME FAMILY पैटर्न ढूँढना
-    for(let i=0; i < limit; i++) {
-        let score = 0;
-        let totalDots = 0;
-        for(let r=0; r < shape.length; r++) {
-            for(let c=0; c<5; c++) {
-                if(shape[r][c] === 0) continue;
-                totalDots++;
-                let currentVal = data[i+r] ? data[i+r][c] : "**";
-                let currentFam = getFam(currentVal);
-                
-                // लाल घेरा (1) वाली जगह पर f1 फैमिली ही होनी चाहिए
-                if(shape[r][c] === 1 && currentFam === f1) score++;
-                // नीला घेरा (2) वाली जगह पर f2 फैमिली ही होनी चाहिए
-                if(shape[r][c] === 2 && currentFam === f2) score++;
+function analyze(ri, ci) {
+    let limit = Math.max(0, ri-10);
+    let fams = [];
+    
+    // Find two distinct families in recent history
+    for(let i=ri-1; i>=limit; i--) {
+        for(let j=0; j<5; j++) {
+            let f = getFam(data[i][j]);
+            if(!f) continue;
+            let found = fams.find(x => x.key === f);
+            if(found) {
+                if(found.pts.length < 2) found.pts.push({r:i, c:j});
+            } else if(fams.length < 2) {
+                fams.push({key:f, pts:[{r:i, c:j}]});
             }
         }
-        // अगर 3 या 4 पॉइंट मैच होते हैं तो उसे 'Check Line' मानेंगे
+    }
+
+    if(fams.length < 2 || fams.some(f=>f.pts.length < 2)) return;
+
+    let shape = Array(ri-limit).fill().map(()=>Array(5).fill(0));
+    fams[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
+    fams[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
+
+    currentPat = {start: limit, shape: shape, keys: [fams[0].key, fams[1].key]};
+    draw("tbl", "mainCanvas", currentPat);
+    search(currentPat);
+}
+
+function search(pat) {
+    let matches = [];
+    for(let i=0; i < pat.start; i++) {
+        let score = 0;
+        for(let r=0; r < pat.shape.length; r++) {
+            for(let c=0; c<5; c++) {
+                if(pat.shape[r][c] === 1 && getFam(data[i+r][c]) === pat.keys[0]) score++;
+                if(pat.shape[r][c] === 2 && getFam(data[i+r][c]) === pat.keys[1]) score++;
+            }
+        }
         if(score >= 3) matches.push(i);
     }
 
-    const checksDiv = document.getElementById("checks");
-    checksDiv.innerHTML = "";
-    document.getElementById("match-count").innerText = matches.length + " Found";
+    let div = document.getElementById("checks");
+    div.innerHTML = "";
+    document.getElementById("match-count").innerText = `(${matches.length})`;
 
     matches.forEach((mIdx, idx) => {
-        let b = document.createElement("button");
-        b.className = "check-btn";
-        b.innerHTML = `📋 Check Line ${idx+1} <span style="float:right; font-size:10px;">Row ${mIdx+1}</span>`;
-        b.onclick = () => {
-            active = {start: mIdx, shape: shape};
-            draw();
-            window.scrollTo({top: 0, behavior: 'smooth'});
+        let btn = document.createElement("div");
+        btn.className = "check-btn";
+        btn.innerHTML = `<span>📋 Check Pattern ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
+        btn.onclick = () => {
+            document.getElementById("modal").style.display = "flex";
+            draw("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape});
         };
-        checksDiv.appendChild(b);
+        div.appendChild(btn);
     });
 
-    let pred = [];
-    matches.forEach(m => {
-        let nr = m + shape.length;
-        if(data[nr] && data[nr][targetCol] !== "**") pred.push(data[nr][targetCol]);
-    });
-    
-    let finalAI = [...new Set(pred)].slice(0,3);
-    document.getElementById("future").innerText = finalAI.length ? finalAI.join(" - ") : "No History";
-    document.getElementById("ai-logic").innerText = "Strict matching based on Families: " + f1 + " & " + f2;
+    let results = matches.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][targetCol] : null).filter(v => v && v!=="**");
+    document.getElementById("future").innerText = results.length ? [...new Set(results)].slice(0,3).join(" - ") : "?? - ??";
 }
 
-function drawLines(){
-    const cvs=mainCanvas, ctx=cvs.getContext("2d");
-    const tRect = tbl.getBoundingClientRect();
-    cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
+function renderLines(tId, cId) {
+    const table = document.getElementById(tId);
+    const canvas = document.getElementById(cId);
+    const ctx = canvas.getContext("2d");
+    const rect = table.getBoundingClientRect();
+    canvas.width = table.offsetWidth; canvas.height = table.offsetHeight;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
     [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
-        let pts = [...tbl.querySelectorAll(cfg[0])];
-        if(pts.length < 2) return;
+        let dots = [...table.querySelectorAll(`#${tId} ${cfg[0]}`)];
+        if(dots.length < 2) return;
         ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.beginPath();
-        pts.forEach((p, i) => {
-            let r = p.getBoundingClientRect();
-            let x = r.left - tRect.left + r.width/2;
-            let y = r.top - tRect.top + r.height/2;
+        dots.forEach((d, i) => {
+            let r = d.getBoundingClientRect();
+            let x = r.left - rect.left + r.width/2;
+            let y = r.top - rect.top + r.height/2;
             i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
         });
         ctx.stroke();
     });
 }
 
-function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("System Updated!"); }
-function clearAll(){ if(confirm("Clear Everything?")){ localStorage.clear(); location.reload(); }}
-
-csv.onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        data = fr.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5));
-        draw();
-    };
-    fr.readAsText(e.target.files[0]);
-};
-
-draw();
+function addRow(){ data.push(["**","**","**","**","**"]); draw("tbl", "mainCanvas", currentPat); }
+function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved!"); }
+draw("tbl", "mainCanvas", null);
 </script>
 </body>
 </html>
