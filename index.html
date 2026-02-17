@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rajdhani Pro AI - Popup Focus Edition</title>
+<title>Rajdhani Pro AI - Pradeep Special V4</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
@@ -12,15 +12,15 @@ body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden; padding-botto
 .toolbar{ background:var(--panel);padding:10px; display:flex;gap:8px;justify-content:center; border-bottom: 2px solid var(--gold); position: sticky; top:0; z-index:100; }
 .table-wrap{position:relative;background:#fff;border-radius:8px;padding:5px; display: inline-block; margin-top: 15px;}
 table{border-collapse:collapse;color:#000}
-td,th{ border:1px solid #ccc; width:43px;height:43px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 13px;}
+td,th{ border:1px solid #ccc; width:45px;height:45px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 13px;}
 th{background:#1e293b;color:#fff; font-size: 10px;}
 .circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); }
 .circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
 canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 
-/* Popup Modal */
+/* Smart Snippet Popup */
 #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; border-radius:12px; position:relative; max-width:95%; color: #000; text-align:center; box-shadow: 0 0 20px var(--gold); }
+.modal-content { background:#fff; padding:20px; border-radius:12px; position:relative; max-width:95%; color: #000; text-align:center; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
 .close-btn { position:absolute; top:-15px; right:-15px; background:var(--red); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; font-weight:bold; font-size: 20px; border: 2px solid #fff;}
 
 .dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
@@ -41,12 +41,12 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 <div id="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</button>
-        <h3 style="margin:0 0 10px 0; color:#000; font-size: 14px;">Historical Pattern Area</h3>
+        <h3 style="margin:0 0 10px 0; font-size: 14px; color:#333;">Historical Snippet</h3>
         <div id="popup-wrap" class="table-wrap">
             <canvas id="popupCanvas"></canvas>
             <table id="popupTbl"></table>
         </div>
-        <p style="font-size: 10px; color: #666; margin-top: 10px;">Showing Pattern + 1 Result Row</p>
+        <p style="font-size: 10px; color: #888; margin-top: 10px;">Showing: Pattern + Result Row</p>
     </div>
 </div>
 
@@ -60,7 +60,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 <div class="dashboard">
     <div class="card">
         <h3>✔ CHECK LINES <span id="match-count" style="font-size:11px; opacity:0.6;">0 Found</span></h3>
-        <div id="checks">Click any blank cell (**)</div>
+        <div id="checks">Click any ** cell to scan...</div>
     </div>
     <div class="card">
         <h3>🔮 FUTURE AI (3-PAIR)</h3>
@@ -69,7 +69,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 </div>
 
 <script>
-const STORE="raj_pro_v201";
+const STORE="raj_pro_v4_final";
 const family={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
 let data = JSON.parse(localStorage.getItem(STORE)) || Array(12).fill().map(()=>Array(5).fill("**"));
@@ -78,55 +78,50 @@ let currentActive=null, lastTargetCol=null;
 const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
 function getFam(v){ for(let k in family) if(family[k].includes(v)) return k; return null; }
 
-// Main Draw function
-function drawTable(tblId, cvsId, pat, fullData) {
+function draw(tblId, cvsId, pat, viewData, offset = 0) {
     let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-    
-    // Logic to show only partial data in popup
-    let startRow = (pat && tblId === "popupTbl") ? pat.start : 0;
-    let endRow = (pat && tblId === "popupTbl") ? Math.min(fullData.length, pat.start + pat.shape.length + 1) : fullData.length;
-
-    for(let ri = startRow; ri < endRow; ri++) {
+    viewData.forEach((r, ri) => {
+        let actualIdx = ri + offset;
         h += "<tr>";
-        fullData[ri].forEach((c, ci) => {
+        r.forEach((c, ci) => {
             let cls = "";
-            if(pat && ri >= pat.start && ri < pat.start + pat.shape.length) {
-                let type = pat.shape[ri-pat.start][ci];
+            if(pat && actualIdx >= pat.start && actualIdx < pat.start + pat.shape.length) {
+                let type = pat.shape[actualIdx - pat.start][ci];
                 if(type === 1) cls = "circle-red";
                 if(type === 2) cls = "circle-blue";
             }
-            h += `<td class="${cls}" onclick="handleCell(${ri},${ci})">${c}</td>`;
+            h += `<td class="${cls}" onclick="handleCell(${actualIdx},${ci})">${c}</td>`;
         });
         h += "</tr>";
-    }
+    });
     document.getElementById(tblId).innerHTML = h;
-    if(pat) setTimeout(() => renderLines(tblId, cvsId, pat, startRow), 50);
+    if(pat) setTimeout(() => renderLines(tblId, cvsId, pat, offset), 50);
 }
 
 function handleCell(ri, ci) {
-    if(data[ri][ci] === "**") { lastTargetCol = ci; findPattern(ri, ci); }
-    else { let v = prompt("Edit:", data[ri][ci]); if(v !== null) { data[ri][ci] = norm(v); currentActive = null; drawTable("tbl", "mainCanvas", null, data); } }
+    if(data[ri][ci] === "**") { lastTargetCol = ci; analyze(ri, ci); }
+    else { let v = prompt("Edit:", data[ri][ci]); if(v !== null) { data[ri][ci] = norm(v); currentActive = null; draw("tbl", "mainCanvas", null, data); } }
 }
 
-function findPattern(ri, ci) {
+function analyze(ri, ci) {
     let limit = Math.max(0, ri-10);
-    let famPairs = [];
+    let fams = [];
     for(let i=ri-1; i>=limit; i--) {
-        for(let j=0; j<5; j++){
+        for(let j=0; j<5; j++) {
             let f = getFam(data[i][j]);
             if(!f) continue;
-            let ex = famPairs.find(x => x.key === f);
+            let ex = fams.find(x => x.key === f);
             if(ex) { if(ex.pts.length < 2 && !ex.pts.some(p=>p.r===i)) ex.pts.push({r:i, c:j}); }
-            else if(famPairs.length < 2) famPairs.push({key: f, pts: [{r:i, c:j}]});
+            else if(fams.length < 2) fams.push({key: f, pts: [{r:i, c:j}]});
         }
-        if(famPairs.length==2 && famPairs[0].pts.length==2 && famPairs[1].pts.length==2) break;
+        if(fams.length==2 && fams[0].pts.length==2 && fams[1].pts.length==2) break;
     }
-    if(famPairs.length < 2 || famPairs.some(f=>f.pts.length<2)) return;
+    if(fams.length < 2 || fams.some(f=>f.pts.length<2)) return;
     let shape = Array(ri-limit).fill().map(()=>Array(5).fill(0));
-    famPairs[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
-    famPairs[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
-    currentActive = {start: limit, shape: shape, keys: [famPairs[0].key, famPairs[1].key]};
-    drawTable("tbl", "mainCanvas", currentActive, data);
+    fams[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
+    fams[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
+    currentActive = {start: limit, shape: shape, keys: [fams[0].key, fams[1].key]};
+    draw("tbl", "mainCanvas", currentActive, data);
     search(currentActive);
 }
 
@@ -142,24 +137,25 @@ function search(pat) {
         }
         if(score >= 3) matches.push(i);
     }
-    let div = document.getElementById("checks");
-    div.innerHTML = "";
+    let checks = document.getElementById("checks");
+    checks.innerHTML = "";
     document.getElementById("match-count").innerText = `${matches.length} Found`;
     matches.forEach((mIdx, idx) => {
-        let b = document.createElement("div");
-        b.className = "check-btn";
-        b.innerHTML = `<span>📋 Check Line ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
-        b.onclick = () => {
+        let btn = document.createElement("div");
+        btn.className = "check-btn";
+        btn.innerHTML = `<span>📋 Line ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
+        btn.onclick = () => {
+            let snippet = data.slice(mIdx, mIdx + pat.shape.length + 1);
             document.getElementById("modal").style.display = "flex";
-            drawTable("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape}, data);
+            draw("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape}, snippet, mIdx);
         };
-        div.appendChild(b);
+        checks.appendChild(btn);
     });
-    let preds = matches.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][lastTargetCol] : null).filter(v => v && v!=="**");
-    document.getElementById("future").innerText = preds.length ? [...new Set(preds)].slice(0,3).join(" - ") : "Analyzing...";
+    let pr = matches.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][lastTargetCol] : null).filter(v => v && v!=="**");
+    document.getElementById("future").innerText = pr.length ? [...new Set(pr)].slice(0,3).join(" - ") : "Analyzing...";
 }
 
-function renderLines(tId, cId, pat, startRow) {
+function renderLines(tId, cId, pat, offset) {
     const table = document.getElementById(tId);
     const canvas = document.getElementById(cId);
     const ctx = canvas.getContext("2d");
@@ -171,26 +167,23 @@ function renderLines(tId, cId, pat, startRow) {
         if(dots.length < 2) return;
         ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.beginPath();
         dots.forEach((d, i) => {
-            let r = d.getBoundingClientRect();
-            let x = r.left - rect.left + r.width/2;
-            let y = r.top - rect.top + r.height/2;
+            let dr = d.getBoundingClientRect();
+            let x = dr.left - rect.left + dr.width/2;
+            let y = dr.top - rect.top + dr.height/2;
             i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
         });
         ctx.stroke();
     });
 }
 
-function addRow(){ data.push(["**","**","**","**","**"]); drawTable("tbl", "mainCanvas", null, data); }
+function addRow(){ data.push(["**","**","**","**","**"]); draw("tbl", "mainCanvas", null, data); }
 function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved!"); }
 csv.onchange = e => {
-    let reader = new FileReader();
-    reader.onload = () => {
-        data = reader.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5));
-        drawTable("tbl", "mainCanvas", null, data);
-    };
-    reader.readAsText(e.target.files[0]);
+    let r = new FileReader();
+    r.onload = () => { data = r.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5)); draw("tbl", "mainCanvas", null, data); };
+    r.readAsText(e.target.files[0]);
 };
-drawTable("tbl", "mainCanvas", null, data);
+draw("tbl", "mainCanvas", null, data);
 </script>
 </body>
 </html>
