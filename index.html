@@ -119,7 +119,7 @@ function runAnalysis(r, c) {
     }
     
     let shape = [];
-    for(let i=Math.max(0, r-10); i<r; i++){
+    for(let i=Math.max(0, r-6); i<r; i++){
         let row = [];
         for(let j=0; j<2; j++){
             if(smartMatch(data[i][j], bases[0])) row.push(1);
