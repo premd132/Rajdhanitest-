@@ -3,37 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Milan Pro AI – Real Record System</title>
+    <title>Milan Pro AI - Master System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --blue-circle: #0084ff; --green-line: #00ff88; --bg: #0f172a; --panel: #1e293b; --history-mark: #e74c3c; }
+        :root { 
+            --gold: #ffd700; --blue-circle: #0084ff; --green-line: #00ff88; 
+            --bg: #0f172a; --panel: #1e293b; --history-red: #ff4757; 
+        }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        .toolbar { background: var(--panel); padding: 12px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); }
-        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; margin: 20px auto; display: inline-block; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; font-size: 13px; z-index: 5; position: relative; }
-        td { border: 1px solid #ccc; padding: 8px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
+        /* Toolbar & Header */
+        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); }
+        .toolbar { background: var(--panel); padding: 10px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         
-        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0,132,255,0.1); }
-        .old-mark { border: 3px solid var(--history-mark) !important; border-radius: 50% !important; background: rgba(231,76,60,0.1); }
-        
+        /* Main Table Styles */
+        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; margin: 20px auto; display: inline-block; box-shadow: 0 0 25px rgba(0,0,0,0.5); }
+        table { border-collapse: collapse; color: #000; font-size: 13px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ccc; padding: 8px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
+        th { background: #1e293b; color: #fff; }
+
+        /* Pattern Marking */
+        .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0,132,255,0.1); }
+        .mark-origin { border: 3px solid var(--history-red) !important; border-radius: 50% !important; background: rgba(255,71,87,0.1); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
-        .card { background: var(--panel); border: 1px solid #334155; padding: 15px; border-radius: 12px; }
-        .check-line { color: var(--green-line); text-decoration: underline; cursor: pointer; font-weight: bold; display: block; margin-top: 10px; }
+        /* AI Dashboard */
+        .ai-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; padding: 20px; }
+        .card { background: var(--panel); border: 1px solid #334155; padding: 20px; border-radius: 15px; position: relative; }
+        .card h3 { color: var(--gold); margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; }
+        .check-line-btn { color: var(--green-line); text-decoration: underline; cursor: pointer; font-weight: 600; display: block; margin-top: 10px; }
 
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 100; padding: 20px; color: #000; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 90; }
-        button { cursor: pointer; border: none; font-weight: bold; border-radius: 5px; }
+        /* Popup Styles */
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 100; padding: 20px; color: #000; width: 95%; max-width: 500px; box-shadow: 0 0 50px #000; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        
+        button { cursor: pointer; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-dark { background: #444; color: #fff; }
     </style>
 </head>
 <body>
 
+<div class="header">
+    <h2 style="margin:0; color:var(--gold);">Milan Pro AI <span style="font-size:12px; color:#fff;">v4.0</span></h2>
+    <div style="font-size:12px;">User: Pradeep Kumar</div>
+</div>
+
 <div class="toolbar">
-    <button onclick="addRow()" style="background:#444; color:#fff; padding:8px 15px;">+ Add Row</button>
-    <button onclick="saveData()" style="background:var(--gold); padding:8px 15px;">Save Data</button>
+    <input type="file" id="csv" style="display:none">
+    <button class="btn-dark" onclick="document.getElementById('csv').click()">📂 Import CSV</button>
+    <button class="btn-dark" onclick="addRow()">➕ Add Row</button>
+    <button class="btn-gold" onclick="saveData()">💾 Save Local Storage</button>
+    <button style="background:#ff4757; color:white;" onclick="clearData()">🗑️ Clear</button>
 </div>
 
 <center>
@@ -43,23 +65,23 @@
     </div>
 </center>
 
-<div class="dashboard">
+<div class="ai-dashboard">
     <div class="card">
-        <h3>🤖 Best Possible Result</h3>
-        <div id="ai-best">Click a blank cell...</div>
+        <h3>🚀 Advanced AI Tool (Best Results)</h3>
+        <div id="ai-best" style="font-size:1.5rem; font-weight:800; color:var(--green-line);">Select a blank cell</div>
         <div id="check-link-area"></div>
     </div>
     <div class="card">
-        <h3>🔮 Future AI (3-Pair)</h3>
-        <div id="ai-future" style="color:var(--gold); font-size: 1.2rem; font-weight: 800;">-- -- --</div>
+        <h3>🔮 Future AI (3-Pair Prediction)</h3>
+        <div id="ai-future" style="font-size:1.5rem; font-weight:800; color:var(--gold);">-- -- --</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="margin:0">Real Record Pattern</h3>
-        <button onclick="closePopup()" style="background:#000; color:#fff; padding:5px 10px;">CLOSE</button>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin:0;">Real Record Pattern</h3>
+        <button onclick="closePopup()" class="btn-dark">CLOSE</button>
     </div>
     <div class="table-container" style="border: 1px solid #ddd; width: 100%; overflow-x: auto;">
         <canvas id="popCanvas"></canvas>
@@ -68,20 +90,19 @@
 </div>
 
 <script>
-const STORAGE_KEY = "milan_v4_pro";
+const STORAGE_KEY = "milan_master_v4";
 const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
-let currentHistoryMatch = null;
+let currentOrigin = null;
 
 function draw() {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     data.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = "";
-            if(currentHistoryMatch && currentHistoryMatch.r === ri && currentHistoryMatch.c === ci) cls = "old-mark";
-            h += `<td class="${cls}" onclick="handleCellClick(${ri},${ci})">${c}</td>`;
+            let cls = (currentOrigin && currentOrigin.r === ri && currentOrigin.c === ci) ? "mark-origin" : "";
+            h += `<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="handleCellClick(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
@@ -91,57 +112,68 @@ function draw() {
 function handleCellClick(r, c) {
     let val = data[r][c];
     if(val === "**") {
-        findPatternFromOld(r, c);
+        findPattern(r, c);
     } else {
-        // Marking where this pair came from in history
-        showPairOrigin(r, c, val);
+        findOrigin(r, c, val);
     }
 }
 
-function findPatternFromOld(currR, currC) {
-    // Mondays to Friday Pattern (Last 10 weeks = approx 60 rows)
-    let lookbackLimit = Math.max(0, currR - 60);
-    let top3 = [];
-    
-    // Logic: Look for pairs in the row directly above or current column history
+// Requirement 1 & 4: Monday-Friday Pattern & Advanced AI
+function findPattern(currR, currC) {
+    let lookback = Math.max(0, currR - 60); // 10 weeks
+    let matches = [];
     let abovePair = data[currR-1] ? data[currR-1][currC] : null;
-    
-    for(let i = currR - 1; i >= lookbackLimit; i--) {
+
+    for(let i = currR - 1; i >= lookback; i--) {
         for(let j = 0; j < 6; j++) {
             if(abovePair && isMatch(data[i][j], abovePair)) {
-                let possibleNext = (data[i+1]) ? data[i+1][j] : null;
-                if(possibleNext && possibleNext !== "**") top3.push({val: possibleNext, row: i+1, col: j});
+                let next = (data[i+1]) ? data[i+1][j] : null;
+                if(next && next !== "**") matches.push({val: next, r: i+1, c: j});
             }
         }
     }
 
-    if(top3.length > 0) {
-        let best = top3[0];
-        document.getElementById("ai-best").innerHTML = `<b>Best Result: ${best.val}</b>`;
-        document.getElementById("ai-future").innerText = top3.slice(0,3).map(x => x.val).join(" | ");
-        
-        // Add Check Line
-        document.getElementById("check-link-area").innerHTML = 
-            `<span class="check-line" onclick="openPatternPopup(${best.row}, ${best.col})">Click here for Check Line</span>`;
+    if(matches.length > 0) {
+        let best = matches[0];
+        document.getElementById("ai-best").innerHTML = `Result: ${best.val}`;
+        document.getElementById("ai-future").innerText = matches.slice(0,3).map(m => m.val).join(" | ");
+        // Requirement 2: Check Line
+        document.getElementById("check-link-area").innerHTML = `<span class="check-line-btn" onclick="openPopup(${best.r}, ${best.c})">View Pattern Check Line</span>`;
+    }
+}
+
+// Requirement 3: History Marking (Where it came from)
+function findOrigin(r, c, val) {
+    currentOrigin = null;
+    for(let i = r - 1; i >= Math.max(0, r-60); i--) {
+        for(let j = 0; j < 6; j++) {
+            if(isMatch(data[i][j], val)) {
+                currentOrigin = {r: i, c: j};
+                draw();
+                setTimeout(() => drawLines("mainCanvas", "tbl"), 50);
+                return;
+            }
+        }
     }
 }
 
 function isMatch(a, b) {
-    if(!a || !b || a === "**" || b === "**") return false;
+    if(!a || !b || a==="**" || b==="**") return false;
     if(a === b || a[1]+a[0] === b) return true;
     for(let k in FAMILY) if(FAMILY[k].includes(a) && FAMILY[k].includes(b)) return true;
     return false;
 }
 
-function openPatternPopup(r, c) {
+// Requirement 2: Popup with circles and lines
+function openPopup(r, c) {
     let html = "<table id='popTbl'>";
     let start = Math.max(0, r-2);
-    let end = Math.min(data.length-1, r+2);
+    let end = Math.min(data.length-1, r+1);
     
     for(let i=start; i<=end; i++) {
         html += "<tr>";
         data[i].forEach((v, ci) => {
-            let cls = (i === r && ci === c) ? "circle" : "";
+            let cls = (i === r && ci === c) ? "circle-blue" : "";
             html += `<td class="${cls}">${v}</td>`;
         });
         html += "</tr>";
@@ -149,24 +181,7 @@ function openPatternPopup(r, c) {
     document.getElementById("popContent").innerHTML = html + "</table>";
     document.getElementById("popup").style.display = "block";
     document.getElementById("overlay").style.display = "block";
-    
-    // Draw connection lines in popup
     setTimeout(() => drawLines("popCanvas", "popTbl"), 100);
-}
-
-function showPairOrigin(r, c, val) {
-    // Find where this 'val' appeared before in 10 weeks
-    for(let i = r - 1; i >= Math.max(0, r-60); i--) {
-        for(let j = 0; j < 6; j++) {
-            if(isMatch(data[i][j], val)) {
-                currentHistoryMatch = {r: i, c: j};
-                draw();
-                // Draw connection line on main table
-                setTimeout(() => drawLines("mainCanvas", "tbl"), 50);
-                return;
-            }
-        }
-    }
 }
 
 function drawLines(cvsId, tblId) {
@@ -176,26 +191,37 @@ function drawLines(cvsId, tblId) {
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    const marks = tbl.querySelectorAll(".circle, .old-mark");
+    const marks = tbl.querySelectorAll(".circle-blue, .mark-origin");
     if(marks.length < 1) return;
     
     ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
     const tRect = tbl.getBoundingClientRect();
-    
-    let first = marks[0].getBoundingClientRect();
     ctx.beginPath();
-    ctx.moveTo(first.left - tRect.left + 22, first.top - tRect.top + 22);
     
-    marks.forEach(m => {
+    marks.forEach((m, i) => {
         let r = m.getBoundingClientRect();
-        ctx.lineTo(r.left - tRect.left + 22, r.top - tRect.top + 22);
+        let x = r.left - tRect.left + r.width/2;
+        let y = r.top - tRect.top + r.height/2;
+        if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
 }
 
+// Requirement 5: Local Storage & Data Handling
+function updateCell(r, c, el) { data[r][c] = el.innerText.trim(); }
 function addRow() { data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("History Saved!"); }
-function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Data Saved Successfully!"); }
+function clearData() { if(confirm("Clear everything?")) { localStorage.clear(); location.reload(); } }
+function closePopup() { document.getElementById("popup").style.display = "none"; document.getElementById("overlay").style.display = "none"; }
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').slice(0,6));
+        draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
 
 draw();
 </script>
