@@ -114,7 +114,7 @@ function runAnalysis(r, c) {
     let shape = [];
     for(let i=Math.max(0, r-6); i<r; i++){
         let row = [];
-        for(let j=0; j<6; j++){
+        for(let j=0; j<3; j++){
             if(smartMatch(data[i][j], bases[0])) row.push(1);
             else if(smartMatch(data[i][j], bases[1])) row.push(2);
             else row.push(0);
@@ -126,7 +126,7 @@ function runAnalysis(r, c) {
     for(let i=0; i < data.length - shape.length; i++){
         let score = 0;
         for(let k=0; k<shape.length; k++){
-            for(let j=0; j<6; j++){
+            for(let j=0; j<3; j++){
                 if(shape[k][j]===1 && smartMatch(data[i+k][j], bases[0])) score++;
                 if(shape[k][j]===2 && smartMatch(data[i+k][j], bases[1])) score++;
             }
