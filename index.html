@@ -1,55 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Rajdhani Pro AI - Fixed Checklines</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root{ --gold:#ffd700; --blue:#0084ff; --red:#ff4757; --green:#00ff88; --bg:#0f172a; --panel:#1e293b; }
-*{box-sizing:border-box;font-family:Poppins,sans-serif}
-body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden; padding-bottom: 60px;}
-.toolbar{ background:var(--panel);padding:10px; display:flex;gap:8px;justify-content:center; border-bottom: 2px solid var(--gold); position: sticky; top:0; z-index:100; }
-.table-wrap{position:relative;background:#fff;border-radius:8px;padding:5px; display: inline-block; margin-top: 15px;}
-table{border-collapse:collapse;color:#000}
-td,th{ border:1px solid #ccc; width:45px;height:45px; text-align:center;font-weight:bold; cursor: pointer; position: relative; font-size: 13px;}
-th{background:#1e293b;color:#fff; font-size: 10px;}
-.circle-red { border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.2); }
-.circle-blue { border:3px solid var(--blue)!important; border-radius:50%; background:rgba(0,132,255,.2); }
-canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Milan Pro AI – Real Record System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #ffd700; --blue-circle: #0084ff; --green-line: #00ff88; --bg: #0f172a; --panel: #1e293b; --history-mark: #e74c3c; }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; }
 
-#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; border-radius:12px; position:relative; max-width:95%; color: #000; text-align:center; }
-.close-btn { position:absolute; top:-15px; right:-15px; background:var(--red); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; font-weight:bold; font-size: 20px; border: 2px solid #fff;}
+        .toolbar { background: var(--panel); padding: 12px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); }
+        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; margin: 20px auto; display: inline-block; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        table { border-collapse: collapse; color: #000; font-size: 13px; z-index: 5; position: relative; }
+        td { border: 1px solid #ccc; padding: 8px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
+        
+        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0,132,255,0.1); }
+        .old-mark { border: 3px solid var(--history-mark) !important; border-radius: 50% !important; background: rgba(231,76,60,0.1); }
+        
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-.dashboard{ padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:3px solid var(--gold); }
-.check-btn { background: #0f172a; color: #fff; border: 1px solid #444; padding: 12px; margin: 5px 0; width: 100%; text-align: left; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; font-weight: 600;}
-.future-box { font-size: 26px; font-weight: 800; color: var(--green); text-align: center; letter-spacing: 3px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;}
-</style>
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        .card { background: var(--panel); border: 1px solid #334155; padding: 15px; border-radius: 12px; }
+        .check-line { color: var(--green-line); text-decoration: underline; cursor: pointer; font-weight: bold; display: block; margin-top: 10px; }
+
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 100; padding: 20px; color: #000; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px rgba(0,0,0,1); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 90; }
+        button { cursor: pointer; border: none; font-weight: bold; border-radius: 5px; }
+    </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <input type="file" id="csv" hidden>
-    <button onclick="csv.click()">📂 CSV</button>
-    <button onclick="addRow()">➕ ROW</button>
-    <button onclick="save()" style="background:var(--green); color:#000;">💾 SAVE</button>
-</div>
-
-<div id="modal" onclick="this.style.display='none'">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</button>
-        <h3 style="margin:0 0 10px 0; font-size: 14px; color:#333;">Pattern Snippet + Result</h3>
-        <div id="popup-wrap" class="table-wrap">
-            <canvas id="popupCanvas"></canvas>
-            <table id="popupTbl"></table>
-        </div>
-    </div>
+    <button onclick="addRow()" style="background:#444; color:#fff; padding:8px 15px;">+ Add Row</button>
+    <button onclick="saveData()" style="background:var(--gold); padding:8px 15px;">Save Data</button>
 </div>
 
 <center>
-    <div class="table-wrap">
+    <div class="table-container" id="mainWrapper">
         <canvas id="mainCanvas"></canvas>
         <table id="tbl"></table>
     </div>
@@ -57,147 +45,159 @@ canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 4;}
 
 <div class="dashboard">
     <div class="card">
-        <h3>✔ CHECK LINES <span id="match-count" style="font-size:11px; opacity:0.6;">0 Found</span></h3>
-        <div id="checks">Click any blank cell (**) to scan...</div>
+        <h3>🤖 Best Possible Result</h3>
+        <div id="ai-best">Click a blank cell...</div>
+        <div id="check-link-area"></div>
     </div>
     <div class="card">
-        <h3>🔮 FUTURE AI (3-PAIR)</h3>
-        <div id="future" class="future-box">— — —</div>
+        <h3>🔮 Future AI (3-Pair)</h3>
+        <div id="ai-future" style="color:var(--gold); font-size: 1.2rem; font-weight: 800;">-- -- --</div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin:0">Real Record Pattern</h3>
+        <button onclick="closePopup()" style="background:#000; color:#fff; padding:5px 10px;">CLOSE</button>
+    </div>
+    <div class="table-container" style="border: 1px solid #ddd; width: 100%; overflow-x: auto;">
+        <canvas id="popCanvas"></canvas>
+        <div id="popContent"></div>
     </div>
 </div>
 
 <script>
-const STORE="raj_pro_v5";
-const family={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
+const STORAGE_KEY = "milan_v4_pro";
+const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let data = JSON.parse(localStorage.getItem(STORE)) || Array(15).fill().map(()=>Array(5).fill("**"));
-let currentActive=null, lastTargetCol=null;
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
+let currentHistoryMatch = null;
 
-const norm=v=> (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
-function getFam(v){ for(let k in family) if(family[k].includes(v)) return k; return null; }
-
-function draw(tblId, cvsId, pat, viewData, offset = 0) {
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-    viewData.forEach((r, ri) => {
-        let actualIdx = ri + offset;
+function draw() {
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
             let cls = "";
-            if(pat && actualIdx >= pat.start && actualIdx < pat.start + pat.shape.length) {
-                let type = pat.shape[actualIdx - pat.start][ci];
-                if(type === 1) cls = "circle-red";
-                if(type === 2) cls = "circle-blue";
-            }
-            h += `<td class="${cls}" onclick="handleCell(${actualIdx},${ci})">${c}</td>`;
+            if(currentHistoryMatch && currentHistoryMatch.r === ri && currentHistoryMatch.c === ci) cls = "old-mark";
+            h += `<td class="${cls}" onclick="handleCellClick(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById(tblId).innerHTML = h;
-    if(pat) setTimeout(() => renderLines(tblId, cvsId, pat, offset), 50);
+    document.getElementById("tbl").innerHTML = h;
 }
 
-function handleCell(ri, ci) {
-    if(data[ri][ci] === "**") { lastTargetCol = ci; analyze(ri, ci); }
-    else { let v = prompt("Edit:", data[ri][ci]); if(v !== null) { data[ri][ci] = norm(v); currentActive = null; draw("tbl", "mainCanvas", null, data); } }
-}
-
-function analyze(ri, ci) {
-    let limit = Math.max(0, ri-10);
-    let foundFams = [];
-    
-    // Scan up to 10 weeks for 2 families
-    for(let i=ri-1; i>=limit; i--) {
-        for(let j=0; j<5; j++) {
-            let f = getFam(data[i][j]);
-            if(!f) continue;
-            let ex = foundFams.find(x => x.key === f);
-            if(ex) { if(ex.pts.length < 2 && !ex.pts.some(p=>p.r===i)) ex.pts.push({r:i, c:j}); }
-            else if(foundFams.length < 2) foundFams.push({key: f, pts: [{r:i, c:j}]});
-        }
-        if(foundFams.length==2 && foundFams[0].pts.length==2 && foundFams[1].pts.length==2) break;
+function handleCellClick(r, c) {
+    let val = data[r][c];
+    if(val === "**") {
+        findPatternFromOld(r, c);
+    } else {
+        // Marking where this pair came from in history
+        showPairOrigin(r, c, val);
     }
-
-    if(foundFams.length < 2) { alert("Not enough data to form pattern"); return; }
-
-    let shape = Array(ri-limit).fill().map(()=>Array(5).fill(0));
-    foundFams[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
-    foundFams[1].pts.forEach(p => shape[p.r-limit][p.c] = 2);
-
-    currentActive = {start: limit, shape: shape, keys: [foundFams[0].key, foundFams[1].key]};
-    draw("tbl", "mainCanvas", currentActive, data);
-    search(currentActive);
 }
 
-function search(pat) {
-    let matches = [];
-    // Search in old records (before the current pattern start)
-    for(let i=0; i < pat.start; i++) {
-        let score = 0;
-        for(let r=0; r < pat.shape.length; r++) {
-            for(let c=0; c<5; c++) {
-                if(pat.shape[r][c] === 1 && getFam(data[i+r][c]) === pat.keys[0]) score++;
-                if(pat.shape[r][c] === 2 && getFam(data[i+r][c]) === pat.keys[1]) score++;
+function findPatternFromOld(currR, currC) {
+    // Mondays to Friday Pattern (Last 10 weeks = approx 60 rows)
+    let lookbackLimit = Math.max(0, currR - 60);
+    let top3 = [];
+    
+    // Logic: Look for pairs in the row directly above or current column history
+    let abovePair = data[currR-1] ? data[currR-1][currC] : null;
+    
+    for(let i = currR - 1; i >= lookbackLimit; i--) {
+        for(let j = 0; j < 6; j++) {
+            if(abovePair && isMatch(data[i][j], abovePair)) {
+                let possibleNext = (data[i+1]) ? data[i+1][j] : null;
+                if(possibleNext && possibleNext !== "**") top3.push({val: possibleNext, row: i+1, col: j});
             }
         }
-        // Match if at least 3 out of 4 points match family
-        if(score >= 3) matches.push(i);
     }
 
-    let checksDiv = document.getElementById("checks");
-    checksDiv.innerHTML = "";
-    document.getElementById("match-count").innerText = `${matches.length} Found`;
-
-    matches.forEach((mIdx, idx) => {
-        let btn = document.createElement("div");
-        btn.className = "check-btn";
-        btn.innerHTML = `<span>📋 Line ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
-        btn.onclick = () => {
-            // Snippet logic: show pattern rows + 1 row below
-            let snippet = data.slice(mIdx, mIdx + pat.shape.length + 1);
-            document.getElementById("modal").style.display = "flex";
-            draw("popupTbl", "popupCanvas", {start: mIdx, shape: pat.shape}, snippet, mIdx);
-        };
-        checksDiv.appendChild(btn);
-    });
-
-    let pr = matches.map(m => (data[m + pat.shape.length] && data[m+pat.shape.length][lastTargetCol] !== "**") ? data[m + pat.shape.length][lastTargetCol] : null).filter(v => v);
-    document.getElementById("future").innerText = pr.length ? [...new Set(pr)].slice(0,3).join(" - ") : "No Match";
+    if(top3.length > 0) {
+        let best = top3[0];
+        document.getElementById("ai-best").innerHTML = `<b>Best Result: ${best.val}</b>`;
+        document.getElementById("ai-future").innerText = top3.slice(0,3).map(x => x.val).join(" | ");
+        
+        // Add Check Line
+        document.getElementById("check-link-area").innerHTML = 
+            `<span class="check-line" onclick="openPatternPopup(${best.row}, ${best.col})">Click here for Check Line</span>`;
+    }
 }
 
-function renderLines(tId, cId, pat, offset) {
-    const table = document.getElementById(tId);
-    const canvas = document.getElementById(cId);
-    const ctx = canvas.getContext("2d");
-    const rect = table.getBoundingClientRect();
-    canvas.width = table.offsetWidth; canvas.height = table.offsetHeight;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function isMatch(a, b) {
+    if(!a || !b || a === "**" || b === "**") return false;
+    if(a === b || a[1]+a[0] === b) return true;
+    for(let k in FAMILY) if(FAMILY[k].includes(a) && FAMILY[k].includes(b)) return true;
+    return false;
+}
 
-    [[".circle-red", "#ff4757"], [".circle-blue", "#0084ff"]].forEach(cfg => {
-        let dots = [...table.querySelectorAll(cfg[0])];
-        if(dots.length < 2) return;
-        ctx.strokeStyle = cfg[1]; ctx.lineWidth = 3; ctx.beginPath();
-        dots.forEach((d, i) => {
-            let dr = d.getBoundingClientRect();
-            let x = dr.left - rect.left + dr.width/2;
-            let y = dr.top - rect.top + dr.height/2;
-            i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+function openPatternPopup(r, c) {
+    let html = "<table id='popTbl'>";
+    let start = Math.max(0, r-2);
+    let end = Math.min(data.length-1, r+2);
+    
+    for(let i=start; i<=end; i++) {
+        html += "<tr>";
+        data[i].forEach((v, ci) => {
+            let cls = (i === r && ci === c) ? "circle" : "";
+            html += `<td class="${cls}">${v}</td>`;
         });
-        ctx.stroke();
-    });
+        html += "</tr>";
+    }
+    document.getElementById("popContent").innerHTML = html + "</table>";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
+    
+    // Draw connection lines in popup
+    setTimeout(() => drawLines("popCanvas", "popTbl"), 100);
 }
 
-function addRow(){ data.push(["**","**","**","**","**"]); draw("tbl", "mainCanvas", null, data); }
-function save(){ localStorage.setItem(STORE, JSON.stringify(data)); alert("Saved!"); }
+function showPairOrigin(r, c, val) {
+    // Find where this 'val' appeared before in 10 weeks
+    for(let i = r - 1; i >= Math.max(0, r-60); i--) {
+        for(let j = 0; j < 6; j++) {
+            if(isMatch(data[i][j], val)) {
+                currentHistoryMatch = {r: i, c: j};
+                draw();
+                // Draw connection line on main table
+                setTimeout(() => drawLines("mainCanvas", "tbl"), 50);
+                return;
+            }
+        }
+    }
+}
 
-csv.onchange = e => {
-    let r = new FileReader();
-    r.onload = () => { 
-        data = r.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>norm(v.trim())).slice(0,5)); 
-        draw("tbl", "mainCanvas", null, data); 
-    };
-    r.readAsText(e.target.files[0]);
-};
-draw("tbl", "mainCanvas", null, data);
+function drawLines(cvsId, tblId) {
+    const cvs = document.getElementById(cvsId);
+    const tbl = document.getElementById(tblId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    
+    const marks = tbl.querySelectorAll(".circle, .old-mark");
+    if(marks.length < 1) return;
+    
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
+    const tRect = tbl.getBoundingClientRect();
+    
+    let first = marks[0].getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(first.left - tRect.left + 22, first.top - tRect.top + 22);
+    
+    marks.forEach(m => {
+        let r = m.getBoundingClientRect();
+        ctx.lineTo(r.left - tRect.left + 22, r.top - tRect.top + 22);
+    });
+    ctx.stroke();
+}
+
+function addRow() { data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("History Saved!"); }
+function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+draw();
 </script>
 </body>
 </html>
