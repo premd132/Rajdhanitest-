@@ -3,82 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Premium System</title>
+    <title>Kalyan Pro AI – Dual Family System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --gold: #ffd700; 
-            --blue-circle: #0084ff; /* Blue Circle */
-            --green-line: #00ff88; /* Green Connection Line */
-            --bg: #0f172a; 
-            --panel: #1e293b; 
-        }
-
+        :root { --gold: #ffd700; --blue-circle: #0084ff; --green-line: #00ff88; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        /* --- Home Page Styling --- */
-        #home-screen {
-            height: 100vh; width: 100vw; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
+        #home-screen { height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
         .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
-        .enter-btn {
-            background: var(--gold); color: #000; padding: 15px 40px;
-            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-        .enter-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255,215,0,0.2); }
+        .enter-btn { background: var(--gold); color: #000; padding: 15px 40px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; margin-top: 20px; }
 
-        /* --- Dashboard Styling --- */
         #main-app { display: none; padding: 15px; }
         .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         
-        /* Table Styling */
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* --- NEW MARKING STYLE --- */
-        .circle { 
-            border: 3px solid var(--blue-circle) !important; 
-            border-radius: 50% !important; 
-            background: rgba(0, 132, 255, 0.15); 
-            z-index: 10;
-        }
+        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-        .Kalyan { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; }
         .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
 
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 10px; }
     </style>
 </head>
 <body>
 
 <div id="home-screen">
     <h1 class="hero-title">Kalyan PRO AI</h1>
-    <p class="hero-sub">ADVANCED PATTERN RECOGNITION</p>
+    <p style="opacity:0.7">DUAL FAMILY GEOMETRY</p>
     <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
 <div id="main-app">
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">Kalyan</h2>
-        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
-    </div>
-
     <div class="toolbar">
         <input type="file" id="csv" style="display:none">
         <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
         <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
-        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
         <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
 
@@ -89,28 +57,18 @@
         </div>
     </center>
 
-    <div class="dashboard">
-        <div class="card">
-            <h3>✔ Matches Found</h3>
-            <div id="checks"></div>
-        </div>
-        <div class="card">
-            <h3>🤖 AI Analysis</h3>
-            <div id="ai">Wait for input...</div>
-        </div>
-        <div class="card">
-            <h3>🔮 Future Prediction</h3>
-            <div id="future">Select a match...</div>
-        </div>
+    <div class="card">
+        <h3>✔ Matches Found (2-Family Logic)</h3>
+        <div id="checks">Click on any ** to find patterns</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
+    <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
+    <h3 style="margin-bottom:15px;">Historical Sequence</h3>
     <center>
-        <div class="table-container" style="border: 1px solid #ddd;">
+        <div class="table-container" style="border:1px solid #ddd; overflow:auto; max-height:300px;">
             <canvas id="popCanvas"></canvas>
             <div id="popData"></div>
         </div>
@@ -118,11 +76,8 @@
 </div>
 
 <script>
-// --- CORE LOGIC (UNTOUCHED) ---
-const STORAGE_KEY="pdata_Kalyan_v2";
+const STORAGE_KEY="pdata_Kalyan_v3";
 let targetCol=null;
-    
-// Aapka original FAMILY object
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -130,29 +85,20 @@ const FAMILY = {
  "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
  "45":["04","09","40","45","54","59","90","95"]
 };
-    
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50"],["**","**","**","**","**"]];
 
-function startApp() {
-    document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    draw();
-}
-
-function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
-function palti(v){return v[1]+v[0];}
-function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
-function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
-
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(6).fill("**"));
 let activeMark=null;
+
+function startApp() { document.getElementById('home-screen').style.display='none'; document.getElementById('main-app').style.display='block'; draw(); }
+function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
 
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
-   if(c=="**") cls += " blank";
+   let cls = isPartOfPattern(ri, ci) ? "circle" : "";
    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
   });
   h+="</tr>";
@@ -162,12 +108,10 @@ function draw(){
 }
 
 function isPartOfPattern(ri, ci){
-    if(!activeMark) return false;
-    let i = ri - activeMark.start;
-    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
+    if (!activeMark || !activeMark.points) return false;
+    return activeMark.points.some(p => p.r === ri && p.c === ci);
 }
 
-// --- UPDATED VISUALS: GREEN LINES ---
 function drawLines(cvsId, tblEl) {
     const cvs = document.getElementById(cvsId);
     const ctx = cvs.getContext("2d");
@@ -175,133 +119,98 @@ function drawLines(cvsId, tblEl) {
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const cells = tblEl.querySelectorAll(".circle");
     if(cells.length < 2) return;
-    
     const tRect = tblEl.getBoundingClientRect();
-    ctx.strokeStyle = "#00ff88"; // GREEN LINE
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    
-    ctx.beginPath();
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3; ctx.beginPath();
     cells.forEach((c, idx) => {
         const r = c.getBoundingClientRect();
         const x = r.left - tRect.left + r.width/2;
         const y = r.top - tRect.top + r.height/2;
-        if(idx === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved Successfully!"); }
-function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear all?")){ localStorage.clear(); location.reload(); }}
 
-function makePattern(r,c){
-<script>
-// ... (FAMILY और बाकी बेसिक फंक्शन्स वही रहेंगे) ...
-
+// --- DUAL FAMILY LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
-    let foundPoints = [];
-    
-    // 2 अलग-अलग फैमिली ढूंढना (ऊपर की तरफ स्कैन करते हुए)
-    for (let i = r - 1; i >= 0 && foundPoints.length < 2; i--) {
+    let points = [];
+    // पिछले रिकॉर्ड में 2 अलग फैमिली की जोड़ियाँ ढूंढना
+    for (let i = r - 1; i >= 0 && points.length < 2; i--) {
         for (let j = 0; j < 6; j++) {
             let val = data[i][j];
             if (val !== "**") {
                 let fKey = fam(val);
-                // अगर पहली बार मिली या पिछली वाली से अलग फैमिली है
-                if (foundPoints.length === 0 || fam(foundPoints[0].val) !== fKey) {
-                    foundPoints.push({ r: i, c: j, val: val, fKey: fKey, rowDist: r - i });
+                if (points.length === 0 || fam(points[0].val) !== fKey) {
+                    points.push({ r: i, c: j, val: val, fKey: fKey, dist: r - i });
                 }
             }
         }
     }
-
-    if (foundPoints.length < 2) return alert("कम से कम 2 अलग फैमिली वाली जोड़ियाँ चाहिए!");
-
-    // अब इन 2 पॉइंट्स के आधार पर पूरे रिकॉर्ड में सर्च करना
-    searchDualPattern(foundPoints, r);
+    if (points.length < 2) return alert("Need 2 different family pairs above!");
+    searchDual(points, r);
 }
 
-function searchDualPattern(points, targetRow) {
+function searchDual(pts, targetR) {
     let matches = [];
-    let p1 = points[0];
-    let p2 = points[1];
-
-    // पुराने रिकॉर्ड में वही 'Geometry' और 'Family' ढूंढना
-    for (let i = 0; i < targetRow - 5; i++) {
-        // चेक करना कि क्या उसी दूरी पर p1 और p2 की फैमिली मौजूद है?
-        let checkR1 = i - p1.rowDist;
-        let checkR2 = i - p2.rowDist;
-
-        if (chartExists(checkR1) && chartExists(checkR2)) {
-            if (fam(data[checkR1][p1.c]) === p1.fKey && fam(data[checkR2][p2.c]) === p2.fKey) {
-                matches.push({ index: i, p1: {r: checkR1, c: p1.c}, p2: {r: checkR2, c: p2.c} });
+    for (let i = 0; i < targetR - 5; i++) {
+        let r1 = i - pts[0].dist, r2 = i - pts[1].dist;
+        if (r1 >= 0 && r2 >= 0) {
+            if (fam(data[r1][pts[0].c]) === pts[0].fKey && fam(data[r2][pts[1].c]) === pts[1].fKey) {
+                matches.push({ idx: i, p1: {r: r1, c: pts[0].c}, p2: {r: r2, c: pts[1].c} });
             }
         }
     }
-    
-    showChecksDual(matches, points);
+    displayChecks(matches);
 }
 
-function chartExists(r) { return r >= 0 && r < data.length; }
-
-function showChecksDual(matches, originalPoints) {
-    const list = document.getElementById("checks");
-    list.innerHTML = "";
-    
-    if (matches.length === 0) {
-        list.innerHTML = "<div style='color:orange; font-size:12px;'>No Strong 2-Family Match Found</div>";
-        return;
-    }
-
+function displayChecks(matches) {
+    let div = document.getElementById("checks");
+    div.innerHTML = matches.length ? "" : "No strong matches found.";
     matches.forEach((m, i) => {
-        let d = document.createElement("div");
-        d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid #00ff88;";
-        d.innerHTML = `<b>Strong Match ${i+1}</b> <br> <small>Row ${m.index + 1} (2-Family Logic)</small>`;
-        
-        d.onclick = () => {
-            // मेन टेबल पर मार्किंग
-            activeMark = { 
-                points: [ {r: m.p1.r, c: m.p1.c}, {r: m.p2.r, c: m.p2.c} ] 
-            };
-            draw(); 
-            // पॉपअप में दिखाना
-            showPopupDual(m);
+        let btn = document.createElement("div");
+        btn.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid #00ff88;";
+        btn.innerHTML = `Check Line ${i+1} (Row ${m.idx+1})`;
+        btn.onclick = () => {
+            activeMark = { points: [m.p1, m.p2] };
+            draw();
+            showPopup(m);
         };
-        list.appendChild(d);
+        div.appendChild(btn);
     });
 }
 
-function showPopupDual(match) {
-    let startRow = Math.min(match.p1.r, match.p2.r) - 1;
-    let endRow = match.index;
-    let html = "<table id='popTbl' style='color:#000'>";
-    
-    for (let i = startRow; i <= endRow; i++) {
-        if (!data[i]) continue;
+function showPopup(m) {
+    let start = Math.min(m.p1.r, m.p2.r) - 1;
+    let html = "<table id='popTbl'>";
+    for (let i = start; i <= m.idx; i++) {
         html += "<tr>";
         data[i].forEach((v, j) => {
-            let isCircle = (i === match.p1.r && j === match.p1.c) || (i === match.p2.r && j === match.p2.c);
-            html += `<td class="${isCircle ? 'circle' : ''}">${v}</td>`;
+            let cls = (i==m.p1.r && j==m.p1.c) || (i==m.p2.r && j==m.p2.c) ? "circle" : "";
+            html += `<td class="${cls}">${v}</td>`;
         });
         html += "</tr>";
     }
-    
     document.getElementById("popData").innerHTML = html + "</table>";
     document.getElementById("popup").style.display = "block";
     document.getElementById("overlay").style.display = "block";
     setTimeout(() => drawLines("popCanvas", document.getElementById("popTbl")), 100);
 }
 
-// draw() फंक्शन में एक छोटा सुधार ताकि वो मल्टीपल पॉइंट्स को सर्कल कर सके:
-function isPartOfPattern(ri, ci) {
-    if (!activeMark || !activeMark.points) return false;
-    return activeMark.points.some(p => p.r === ri && p.c === ci);
-}
+function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
 </script>
 </body>
 </html>
-
