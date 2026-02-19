@@ -3,173 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - Dpboss Engine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Kalyan Pro AI - Step-by-Step</title>
     <style>
-        :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; padding-bottom: 50px; }
-        .header { background: var(--panel); padding: 15px; text-align: center; border-bottom: 3px solid var(--gold); position: sticky; top:0; z-index:100; }
-        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
-        button { padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
+        :root { --gold: #ffd700; --blue: #0084ff; --bg: #0f172a; --panel: #1e293b; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; }
+        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; border-bottom: 2px solid var(--gold); position: sticky; top:0; z-index:100; }
         
-        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; margin: 20px auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; font-size: 14px; }
+        .table-wrap { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; margin: 20px; }
+        table { border-collapse: collapse; color: #000; }
         td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        .circle-p1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); }
-        .circle-p2 { border: 3px solid #ff4757 !important; border-radius: 50%; background: rgba(255, 71, 87, 0.2); }
+        /* पैटर्न वाले गोले */
+        .circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
 
-        .dashboard { padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .check-line { background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 5px solid var(--blue); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .check-line:hover { background: #1e293b; transform: scale(1.02); }
-        .line-num { background: var(--gold); color: #000; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .card { background: var(--panel); padding: 15px; margin: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        
+        /* चेक लाइन बटन */
+        .check-btn { 
+            background: #0f172a; color: #fff; padding: 15px; margin: 10px 0; 
+            border-radius: 8px; border-left: 5px solid var(--gold); cursor: pointer;
+            display: flex; justify-content: space-between; font-weight: bold;
+        }
 
-        #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; padding: 10px; }
-        .modal-box { background:#fff; padding:20px; border-radius:15px; max-width:100%; color:#000; position:relative; }
-        .close-btn { position:absolute; top:-15px; right:-15px; background:#ff4757; color:#fff; border-radius:50%; width:35px; height:35px; border:none; cursor:pointer; font-weight:bold; }
+        /* छोटा पॉपअप विंडो */
+        #popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
+        .pop-box { background:#fff; padding:20px; border-radius:15px; color:#000; position:relative; }
+        .close { position:absolute; top:-10px; right:-10px; background:red; color:white; border-radius:50%; width:30px; height:30px; border:none; cursor:pointer; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0; color:var(--gold);">Dpbossking AI Engine</h2>
-    <div class="btn-group">
-        <input type="file" id="csv" hidden>
-        <button onclick="csv.click()" style="background:#444; color:#fff;">📂 CSV</button>
-        <button onclick="addRow()" style="background:#444; color:#fff;">➕ ROW</button>
-        <button onclick="saveData()" style="background:var(--green); color:#000;">💾 SAVE</button>
-    </div>
+<div class="toolbar">
+    <input type="file" id="csv" hidden>
+    <button onclick="csv.click()">📂 CSV लोड करें</button>
+    <button onclick="addRow()">➕ लाइन जोड़ें</button>
+    <button onclick="save()" style="background:var(--gold)">💾 सेव करें</button>
 </div>
 
 <center>
-    <div class="table-container" id="main-wrap">
+    <div class="table-wrap">
         <canvas id="mainCvs"></canvas>
         <table id="mainTbl"></table>
     </div>
 </center>
 
-<div class="dashboard">
-    <div class="card">
-        <h3 style="margin-top:0;">📡 CHECK LINES (1.2.3)</h3>
-        <div id="check-list">Click a blank cell (**) to find patterns...</div>
-    </div>
-    <div class="card">
-        <h3 style="margin-top:0;">🔮 FUTURE AI (3-PAIR)</h3>
-        <div id="prediction" style="font-size: 28px; color: var(--green); text-align: center; font-weight: 800;">-- -- --</div>
-    </div>
+<div class="card">
+    <h3>✔ चेक लाइन्स (1.2.3)</h3>
+    <div id="checks">किसी खाली सेल (**) पर क्लिक करें...</div>
 </div>
 
-<div id="modal" onclick="closePopup()">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <button class="close-btn" onclick="closePopup()">X</button>
-        <h4 style="margin:0 0 10px 0; text-align:center;">Pattern Snapshot</h4>
-        <div class="table-container" style="border:1px solid #ddd; margin:0;">
+<div id="popup" onclick="this.style.display='none'">
+    <div class="pop-box" onclick="event.stopPropagation()">
+        <button class="close" onclick="document.getElementById('popup').style.display='none'">X</button>
+        <h4 style="margin:0 0 10px 0">पुराना रिकॉर्ड (Snapshot)</h4>
+        <div id="popData" class="table-wrap" style="margin:0">
             <canvas id="popCvs"></canvas>
-            <div id="popContent"></div>
+            <table id="popTbl"></table>
         </div>
     </div>
 </div>
 
 <script>
-const STORAGE = "dp_engine_v1";
 const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORAGE)) || Array(15).fill().map(()=>Array(6).fill("**"));
-let currentActivePat = null;
-let lastTarget = {r:0, c:0};
+let data = JSON.parse(localStorage.getItem("pro_v4")) || Array(10).fill().map(()=>Array(6).fill("**"));
+let currentPat = null;
 
-const norm = v => (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
 function getFam(v) { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
 
-function drawTable(targetId, cvsId, pat, viewData, offset=0) {
+function draw(tblId, cvsId, pat, viewData, offset=0) {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
     viewData.forEach((row, ri) => {
         let actualR = ri + offset;
         h += "<tr>";
         row.forEach((cell, ci) => {
-            let cls = "";
-            if(pat && actualR >= pat.start && actualR < pat.start + pat.shape.length) {
-                let type = pat.shape[actualR - pat.start][ci];
-                if(type === 1) cls = "circle-p1";
-                if(type === 2) cls = "circle-p2";
-            }
-            h += `<td class="${cls}" onclick="handleCell(${actualR},${ci})">${cell}</td>`;
+            let cls = (pat && pat.points.some(p => p.r === actualR && p.c === ci)) ? "circle" : "";
+            h += `<td class="${cls}" onclick="handle(${actualR},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById(targetId).innerHTML = h;
-    if(pat) setTimeout(() => renderLines(cvsId, targetId), 50);
+    document.getElementById(tblId).innerHTML = h;
+    if(pat) setTimeout(() => renderLines(cvsId, tblId), 50);
 }
 
-function handleCell(r, c) {
+function handle(r, c) {
     if(data[r][c] === "**") {
-        lastTarget = {r, c};
-        findBestPattern(r, c);
+        findPattern(r, c);
     } else {
-        let v = prompt("Edit:", data[r][c]);
-        if(v !== null) { data[r][c] = norm(v); currentActivePat = null; drawTable("mainTbl", "mainCvs", null, data); }
+        let v = prompt("अंक भरें:", data[r][c]);
+        if(v) { data[r][c] = v.padStart(2,'0').slice(-2); draw("mainTbl", "mainCvs", null, data); }
     }
 }
 
-function findBestPattern(ri, ci) {
-    let limit = Math.max(0, ri - 10);
-    let foundFams = [];
-    
-    // Scan back 10 weeks to find 2 distinct families
-    for(let i = ri - 1; i >= limit; i--) {
-        for(let j = 0; j < 6; j++) {
+function findPattern(ri, ci) {
+    let points = [];
+    let keys = [];
+    // पिछले 10 हफ्तों में से 2 फैमिली उठाना
+    for(let i=ri-1; i>=Math.max(0, ri-10); i--) {
+        for(let j=0; j<6; j++) {
             let f = getFam(data[i][j]);
-            if(f && !foundFams.find(x => x.key === f) && foundFams.length < 2) {
-                foundFams.push({key: f, pos: {r: i, c: j}});
+            if(f && keys.length < 2) { 
+                points.push({r:i, c:j, k:f}); 
+                if(!keys.includes(f)) keys.push(f);
             }
         }
     }
-
-    if(foundFams.length < 2) return alert("Pattern के लिए कम से कम 2 अलग फैमिली वाला डेटा चाहिए।");
-
-    let shape = Array(ri - limit).fill().map(()=>Array(6).fill(0));
-    shape[foundFams[0].pos.r - limit][foundFams[0].pos.c] = 1;
-    shape[foundFams[1].pos.r - limit][foundFams[1].pos.c] = 2;
-
-    currentActivePat = {start: limit, shape: shape, keys: [foundFams[0].key, foundFams[1].key]};
-    drawTable("mainTbl", "mainCvs", currentActivePat, data);
-    runSearch(currentActivePat);
+    currentPat = {points, keys};
+    draw("mainTbl", "mainCvs", currentPat, data);
+    search(currentPat, ri, ci);
 }
 
-function runSearch(pat) {
+function search(pat, ri, targetCol) {
     let matches = [];
-    // Searching ONLY in the same column/position (Dpboss Logic)
-    for(let i = 0; i < pat.start; i++) {
-        let matchCount = 0;
-        for(let r = 0; r < pat.shape.length; r++) {
-            for(let c = 0; c < 6; c++) {
-                if(pat.shape[r][c] === 1 && getFam(data[i+r][c]) === pat.keys[0]) matchCount++;
-                if(pat.shape[r][c] === 2 && getFam(data[i+r][c]) === pat.keys[1]) matchCount++;
-            }
-        }
-        if(matchCount >= 2) matches.push(i);
+    for(let i=0; i<pat.points[0].r; i++) {
+        let score = 0;
+        pat.points.forEach(p => {
+            let rowDiff = ri - p.r;
+            let checkRow = i + (ri - p.r); // logic to find same distance
+            if(data[i] && getFam(data[i][p.c]) === p.k) score++;
+        });
+        if(score >= 1) matches.push(i);
     }
 
-    const list = document.getElementById("check-list");
-    list.innerHTML = "";
-    matches.slice(0, 5).forEach((mIdx, i) => {
-        let d = document.createElement("div");
-        d.className = "check-line";
-        d.innerHTML = `<div class="line-num">${i+1}</div> <b>Check Line: Pattern found at Row ${mIdx+1}</b>`;
-        d.onclick = () => {
-            let snippet = data.slice(mIdx, mIdx + pat.shape.length + 1);
-            document.getElementById("modal").style.display = "flex";
-            drawTable("popContent", "popCvs", {start: mIdx, shape: pat.shape}, snippet, mIdx);
+    let div = document.getElementById("checks");
+    div.innerHTML = "";
+    matches.slice(0,3).forEach((mIdx, i) => {
+        let btn = document.createElement("div");
+        btn.className = "check-btn";
+        btn.innerHTML = `<span>Check Line ${i+1}</span> <span>रो नंबर: ${mIdx+1} ➔</span>`;
+        btn.onclick = () => {
+            document.getElementById("popup").style.display = "flex";
+            let snippet = data.slice(Math.max(0, mIdx-2), mIdx+2);
+            draw("popTbl", "popCvs", pat, snippet, Math.max(0, mIdx-2));
         };
-        list.appendChild(d);
+        div.appendChild(btn);
     });
-
-    let preds = matches.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][lastTarget.c] : null).filter(v => v && v !== "**");
-    document.getElementById("prediction").innerText = preds.length ? [...new Set(preds)].slice(0,3).join(" - ") : "Analyzing...";
 }
 
 function renderLines(cvsId, tblId) {
@@ -178,36 +148,21 @@ function renderLines(cvsId, tblId) {
     const ctx = cvs.getContext("2d");
     cvs.width = table.offsetWidth; cvs.height = table.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    
-    [".circle-p1", ".circle-p2"].forEach((cls, idx) => {
-        let dots = [...table.querySelectorAll(cls)];
-        if(dots.length < 1) return;
-        ctx.strokeStyle = idx === 0 ? "#0084ff" : "#ff4757";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        dots.forEach((d, i) => {
-            let x = d.offsetLeft + d.offsetWidth/2;
-            let y = d.offsetTop + d.offsetHeight/2;
-            i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-        });
-        ctx.stroke();
+    let dots = [...table.querySelectorAll(".circle")];
+    if(dots.length < 2) return;
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3; ctx.beginPath();
+    dots.forEach((d, i) => {
+        let x = d.offsetLeft + d.offsetWidth/2;
+        let y = d.offsetTop + d.offsetHeight/2;
+        if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     });
+    ctx.stroke();
 }
 
-function closePopup() { document.getElementById("modal").style.display = "none"; }
-function addRow() { data.push(Array(6).fill("**")); drawTable("mainTbl", "mainCvs", null, data); }
-function saveData() { localStorage.setItem(STORAGE, JSON.stringify(data)); alert("Data Saved!"); }
+function addRow() { data.push(Array(6).fill("**")); draw("mainTbl", "mainCvs", null, data); }
+function save() { localStorage.setItem("pro_v4", JSON.stringify(data)); alert("Saved!"); }
 
-csv.onchange = e => {
-    let r = new FileReader();
-    r.onload = () => {
-        data = r.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
-        drawTable("mainTbl", "mainCvs", null, data);
-    };
-    r.readAsText(e.target.files[0]);
-};
-
-drawTable("mainTbl", "mainCvs", null, data);
+draw("mainTbl", "mainCvs", null, data);
 </script>
 </body>
 </html>
