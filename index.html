@@ -3,56 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - CSV Fixed</title>
+    <title>Kalyan Pro AI - Strong Pattern Engine</title>
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --bg: #0f172a; --panel: #1e293b; --green: #00ff88; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
-        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; border-bottom: 2px solid var(--gold); sticky; top:0; z-index:100; flex-wrap: wrap; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; }
+        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; border-bottom: 3px solid var(--gold); sticky; top:0; z-index:100; }
         
-        .table-wrap { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; margin: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; }
+        .table-wrap { position: relative; background: #fff; border-radius: 4px; padding: 5px; display: inline-block; margin: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        table { border-collapse: collapse; color: #000; font-size: 14px; }
         td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        .circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); z-index: 10; }
+        /* Highlighting Logic */
+        .circle-1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); z-index: 10; }
+        .circle-2 { border: 3px solid #ff4757 !important; border-radius: 50%; background: rgba(255, 71, 87, 0.2); z-index: 10; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
 
         .card { background: var(--panel); padding: 15px; margin: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .check-btn { background: #0f172a; color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid var(--gold); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         
-        #popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
-        .pop-box { background:#fff; padding:20px; border-radius:15px; color:#000; position:relative; max-width: 95%; overflow: auto; }
-        .close { position:absolute; top:-10px; right:-10px; background:red; color:white; border-radius:50%; width:30px; height:30px; border:none; cursor:pointer; font-weight: bold; }
+        /* Strong Check Line Button */
+        .strong-line { 
+            background: #0f172a; color: #fff; padding: 15px; margin: 10px 0; 
+            border-radius: 8px; border-left: 6px solid var(--green); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: 600; transition: 0.3s;
+        }
+        .strong-line:hover { background: #1c2538; transform: translateX(5px); }
+
+        /* Popup */
+        #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; justify-content:center; align-items:center; }
+        .modal-box { background:#fff; padding:20px; border-radius:12px; color:#000; position:relative; }
+        .close { position:absolute; top:-45px; right:0; background:var(--gold); color:#000; padding:8px 15px; border:none; font-weight:bold; cursor:pointer; }
         button { padding: 10px 15px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
-    <button onclick="document.getElementById('csvFile').click()" style="background:#444; color:white;">📂 CSV अपलोड करें</button>
-    <button onclick="addRow()" style="background:#444; color:white;">➕ लाइन जोड़ें</button>
-    <button onclick="save()" style="background:var(--green); color:#000;">💾 डेटा सेव करें</button>
-    <button onclick="clearAll()" style="background:red; color:white;">🗑️ क्लियर</button>
+    <input type="file" id="csvFile" accept=".csv" hidden onchange="importCSV(this)">
+    <button onclick="document.getElementById('csvFile').click()" style="background:#444; color:white;">📂 LOAD CSV</button>
+    <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
+    <button onclick="save()" style="background:var(--green); color:#000;">💾 SAVE RECORD</button>
 </div>
 
 <center>
-    <div id="main-container" class="table-wrap">
+    <div class="table-wrap">
         <canvas id="mainCvs"></canvas>
         <table id="mainTbl"></table>
     </div>
 </center>
 
 <div class="card">
-    <h3 style="margin:0 0 10px 0;">✔ चेक लाइन्स (1, 2, 3)</h3>
-    <div id="checks">डेटा लोड करने के बाद किसी खाली सेल (**) पर क्लिक करें...</div>
+    <h3 style="margin-top:0; color:var(--green);">🎯 STRONG CHECK LINES (MATCHED GEOMETRY)</h3>
+    <div id="check-list">एक खाली सेल (**) चुनें जहाँ रिजल्ट आना है...</div>
 </div>
 
-<div id="popup">
-    <div class="pop-box">
-        <button class="close" onclick="closePop()">X</button>
-        <h4 style="margin:0 0 10px 0; text-align:center;">ओल्ड रिकॉर्ड पैटर्न (Snapshot)</h4>
-        <div id="pop-container" class="table-wrap" style="margin:0">
+<div id="modal">
+    <div class="modal-box">
+        <button class="close" onclick="document.getElementById('modal').style.display='none'">CLOSE [X]</button>
+        <div class="table-wrap" style="margin:0">
             <canvas id="popCvs"></canvas>
             <table id="popTbl"></table>
         </div>
@@ -62,138 +71,126 @@
 <script>
 const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem("pro_v5")) || Array(10).fill().map(()=>Array(6).fill("**"));
-let currentPat = null;
+let chart = JSON.parse(localStorage.getItem("strong_ai_v7")) || Array(12).fill().map(()=>Array(6).fill("**"));
+let lastScheme = null;
 
-function getFam(v) { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
-function norm(v) { if(!v || v.trim() === "" || v === "**") return "**"; return v.trim().padStart(2, '0').slice(-2); }
+const getF = v => { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; };
+const fix = v => { v=v.toString().trim(); return (v==""||v=="**")?"**":v.padStart(2,'0').slice(-2); };
 
-// --- CSV अपलोड फंक्शन (FIXED) ---
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
+function importCSV(input) {
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const text = e.target.result;
-        const lines = text.split(/\r?\n/);
-        const newData = [];
-
-        lines.forEach(line => {
-            if (line.trim() !== "") {
-                // कॉमा या टैब से अलग करें
-                const cols = line.split(/[,\t]/).map(c => norm(c));
-                if (cols.length >= 1) {
-                    // सुनिश्चित करें कि 6 कॉलम हों
-                    while(cols.length < 6) cols.push("**");
-                    newData.push(cols.slice(0, 6));
-                }
-            }
-        });
-
-        if (newData.length > 0) {
-            data = newData;
-            draw("mainTbl", "mainCvs", null, data);
-            alert("CSV सफलतापूर्व लोड हो गई!");
-        }
+    reader.onload = (e) => {
+        chart = e.target.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(c=>fix(c)).slice(0,6));
+        render("mainTbl", "mainCvs", null, chart);
     };
-    reader.readAsText(file);
+    reader.readAsText(input.files[0]);
 }
 
-function draw(tblId, cvsId, pat, viewData, offset=0) {
+function render(tid, cid, pat, data, offset=0) {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    viewData.forEach((row, ri) => {
-        let actualR = ri + offset;
+    data.forEach((row, ri) => {
+        let realR = ri + offset;
         h += "<tr>";
         row.forEach((cell, ci) => {
-            let cls = (pat && pat.points.some(p => p.r === actualR && p.c === ci)) ? "circle" : "";
-            h += `<td class="${cls}" onclick="handleCell(${actualR},${ci})">${cell}</td>`;
+            let cls = "";
+            if(pat) {
+                if(realR==pat.p1.r && ci==pat.p1.c) cls="circle-1";
+                if(realR==pat.p2.r && ci==pat.p2.c) cls="circle-2";
+            }
+            h += `<td class="${cls}" onclick="onCell(${realR},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
-    document.getElementById(tblId).innerHTML = h;
-    if(pat) setTimeout(() => renderLines(cvsId, tblId), 50);
+    document.getElementById(tid).innerHTML = h;
+    if(pat) setTimeout(() => drawLines(cid, tid), 50);
 }
 
-function handleCell(r, c) {
-    if(data[r][c] === "**") {
-        findPattern(r, c);
+function onCell(r, c) {
+    if(chart[r][c] === "**") {
+        findStrongPattern(r, c);
     } else {
-        let v = prompt("अंक बदलें (जैसे 12):", data[r][c]);
-        if(v !== null) { data[r][c] = norm(v); draw("mainTbl", "mainCvs", null, data); }
+        let v = prompt("अंक भरें:", chart[r][c]);
+        if(v!==null) { chart[r][c]=fix(v); render("mainTbl", "mainCvs", null, chart); }
     }
 }
 
-function findPattern(ri, ci) {
-    let points = [];
-    let keys = [];
-    // पिछले 10 हफ्तों का लॉजिक
+// --- STRONG LOGIC: यह दूरी और स्थान को लॉक करता है ---
+function findStrongPattern(ri, ci) {
+    let p1 = null, p2 = null;
+    
+    // 1. पिछले 10 हफ्तों में से सबसे मजबूत 2 पॉइंट ढूंढना
     for(let i=ri-1; i>=Math.max(0, ri-10); i--) {
         for(let j=0; j<6; j++) {
-            let f = getFam(data[i][j]);
-            if(f && keys.length < 2) { 
-                points.push({r:i, c:j, k:f}); 
-                if(!keys.includes(f)) keys.push(f);
+            let f = getF(chart[i][j]);
+            if(f) {
+                if(!p1) p1 = {r:i, c:j, k:f, rd: ri-i}; // rd = Result से दूरी
+                else if(!p2 && (i!=p1.r || j!=p1.c)) {
+                    p2 = {r:i, c:j, k:f, rd: ri-i};
+                    break;
+                }
             }
         }
+        if(p1 && p2) break;
     }
-    if(points.length < 1) return alert("पैटर्न के लिए डेटा कम है!");
-    currentPat = {points, keys};
-    draw("mainTbl", "mainCvs", currentPat, data);
-    search(currentPat, ri, ci);
+
+    if(!p1 || !p2) return alert("Strong pattern के लिए डेटा नाकाफी है।");
+
+    lastScheme = {p1, p2, targetC: ci};
+    render("mainTbl", "mainCvs", lastScheme, chart);
+    searchStrongHistory(lastScheme, ri);
 }
 
-function search(pat, ri, targetCol) {
+function searchStrongHistory(scheme, currentRi) {
     let matches = [];
-    // पुराने रिकॉर्ड में सर्च (1, 2, 3 पैटर्न)
-    for(let i=0; i < pat.points[0].r; i++) {
-        let score = 0;
-        pat.points.forEach(p => {
-            if(data[i] && getFam(data[i][p.c]) === p.k) score++;
-        });
-        if(score >= 1) matches.push(i);
+    // पुराने रिकॉर्ड में वही "Geometry" ढूंढना
+    for(let i=0; i < currentRi - 10; i++) {
+        let checkP1 = chart[i - scheme.p1.rd] ? getF(chart[i - scheme.p1.rd][scheme.p1.c]) : null;
+        let checkP2 = chart[i - scheme.p2.rd] ? getF(chart[i - scheme.p2.rd][scheme.p2.c]) : null;
+
+        if(checkP1 === scheme.p1.k && checkP2 === scheme.p2.k) {
+            matches.push(i); // i यहाँ रिजल्ट वाली रो है
+        }
     }
 
-    let div = document.getElementById("checks");
-    div.innerHTML = "";
-    matches.slice(0, 3).forEach((mIdx, i) => {
-        let b = document.createElement("div");
-        b.className = "check-btn";
-        b.innerHTML = `<span>Check Line ${i+1}</span> <span style="font-size:12px">Row: ${mIdx+1} ➔</span>`;
-        b.onclick = () => {
-            document.getElementById("popup").style.display = "flex";
-            let start = Math.max(0, mIdx - 2);
-            let snippet = data.slice(start, mIdx + 3);
-            draw("popTbl", "popCvs", pat, snippet, start);
+    let list = document.getElementById("check-list");
+    list.innerHTML = "";
+    if(matches.length === 0) list.innerHTML = "कोई 'Strong' मैच नहीं मिला। कृपया डेटा अपडेट करें।";
+
+    matches.slice(0,3).forEach((mIdx, i) => {
+        let div = document.createElement("div");
+        div.className = "strong-line";
+        div.innerHTML = `<span>CHECK LINE ${i+1} (History Match)</span> <span>Row: ${mIdx+1} ➔</span>`;
+        div.onclick = () => {
+            document.getElementById("modal").style.display = "flex";
+            let start = Math.max(0, mIdx - 10);
+            let snippet = chart.slice(start, mIdx + 1);
+            let popPat = {
+                p1: {r: mIdx - scheme.p1.rd, c: scheme.p1.c},
+                p2: {r: mIdx - scheme.p2.rd, c: scheme.p2.c}
+            };
+            render("popTbl", "popCvs", popPat, snippet, start);
         };
-        div.appendChild(b);
+        list.appendChild(div);
     });
 }
 
-function renderLines(cvsId, tblId) {
-    const cvs = document.getElementById(cvsId);
-    const table = document.getElementById(tblId);
-    const ctx = cvs.getContext("2d");
-    cvs.width = table.offsetWidth; cvs.height = table.offsetHeight;
+function drawLines(cid, tid) {
+    const cvs = document.getElementById(cid), tbl = document.getElementById(tid), ctx = cvs.getContext("2d");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    let dots = [...table.querySelectorAll(".circle")];
-    if(dots.length < 2) return;
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3; ctx.beginPath();
-    dots.forEach((d, i) => {
-        let x = d.offsetLeft + d.offsetWidth/2;
-        let y = d.offsetTop + d.offsetHeight/2;
-        if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
+    let d1 = tbl.querySelector(".circle-1"), d2 = tbl.querySelector(".circle-2");
+    if(!d1 || !d2) return;
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3; ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(d1.offsetLeft + 22, d1.offsetTop + 22);
+    ctx.lineTo(d2.offsetLeft + 22, d2.offsetTop + 22);
     ctx.stroke();
 }
 
-function closePop() { document.getElementById("popup").style.display = "none"; }
-function addRow() { data.push(["**","**","**","**","**","**"]); draw("mainTbl", "mainCvs", null, data); }
-function save() { localStorage.setItem("pro_v5", JSON.stringify(data)); alert("डेटा सुरक्षित कर दिया गया!"); }
-function clearAll() { if(confirm("सब मिटा दें?")) { localStorage.clear(); location.reload(); } }
+function addRow() { chart.push(Array(6).fill("**")); render("mainTbl", "mainCvs", null, chart); }
+function save() { localStorage.setItem("strong_ai_v7", JSON.stringify(chart)); alert("Saved!"); }
 
-// पहली बार लोड होने पर
-draw("mainTbl", "mainCvs", null, data);
+render("mainTbl", "mainCvs", null, chart);
 </script>
 </body>
 </html>
