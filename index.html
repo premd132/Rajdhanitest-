@@ -1,182 +1,307 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DPBOSS Style - PRO AI LOGIC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalyan Pro AI – Premium System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --bg: #0a0e17; --panel: #161c2e; --blue: #00d2ff; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; }
-        .nav { background: var(--panel); padding: 10px; border-bottom: 3px solid var(--gold); display: flex; gap: 10px; position: sticky; top: 0; z-index: 1000; }
+        :root { 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; /* Blue Circle */
+            --green-line: #00ff88; /* Green Connection Line */
+            --bg: #0f172a; 
+            --panel: #1e293b; 
+        }
+
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
+
+        /* --- Home Page Styling --- */
+        #home-screen {
+            height: 100vh; width: 100vw; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
+        .enter-btn {
+            background: var(--gold); color: #000; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .enter-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255,215,0,0.2); }
+
+        /* --- Dashboard Styling --- */
+        #main-app { display: none; padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         
-        .main-chart { background: #fff; display: inline-block; padding: 5px; border-radius: 4px; margin: 20px; position: relative; }
-        table { border-collapse: collapse; color: #000; font-weight: bold; }
-        td, th { border: 1px solid #ccc; width: 42px; height: 42px; text-align: center; cursor: pointer; position: relative; }
-        th { background: #161c2e; color: #fff; font-size: 10px; }
-
-        /* जादुई गोले और लाइनें */
-        .circle-match { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 210, 255, 0.2); z-index: 10; }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
-
-        .dashboard { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--panel); border-radius: 10px; padding: 15px; border-top: 4px solid var(--gold); }
+        /* Table Styling */
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* Check Line स्टाइल */
-        .check-line { background: #0a0e17; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid var(--gold); cursor: pointer; display: flex; justify-content: space-between; }
-        .check-line:hover { background: #232d45; }
+        /* --- NEW MARKING STYLE --- */
+        .circle { 
+            border: 3px solid var(--blue-circle) !important; 
+            border-radius: 50% !important; 
+            background: rgba(0, 132, 255, 0.15); 
+            z-index: 10;
+        }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-        #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; }
-        .pop-box { background:#fff; padding:20px; border-radius:10px; color:#000; position:relative; }
-        .close-btn { position:absolute; top:-40px; right:0; background:red; color:white; border:none; padding:10px; cursor:pointer; }
-        button { padding: 10px 15px; cursor:pointer; font-weight:bold; border-radius:5px; border:none; }
+        .Kalyan { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
+
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="nav">
-    <input type="file" id="csvInp" hidden onchange="loadCSV(this)">
-    <button onclick="document.getElementById('csvInp').click()" style="background:#444; color:#fff;">📂 CSV UPLOAD</button>
-    <button onclick="save()" style="background:var(--gold); color:#000;">💾 SAVE DATA</button>
-    <button onclick="addRow()" style="background:#444; color:#fff;">➕ ROW</button>
+<div id="home-screen">
+    <h1 class="hero-title">Kalyan PRO AI</h1>
+    <p class="hero-sub">ADVANCED PATTERN RECOGNITION</p>
+    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
-<center>
-    <div class="main-chart" id="chart-area">
-        <canvas id="mainCvs"></canvas>
-        <table id="mainTbl"></table>
+<div id="main-app">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h2 style="color:var(--gold); margin:0;">Kalyan</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
     </div>
-</center>
 
-<div class="dashboard">
-    <div class="card">
-        <h3 style="margin:0; color:var(--gold);">🎯 SMART CHECK LINES (1, 2, 3)</h3>
-        <div id="check-list" style="margin-top:10px;">किसी भी खाली सेल (**) पर क्लिक करें...</div>
+    <div class="toolbar">
+        <input type="file" id="csv" style="display:none">
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
-    <div class="card">
-        <h3 style="margin:0; color:#00ff88;">🔮 AI PREDICTION</h3>
-        <div id="ai-res" style="font-size: 30px; text-align: center; margin-top: 15px;">-- -- --</div>
-    </div>
-</div>
 
-<div id="modal">
-    <div class="pop-box">
-        <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">CLOSE X</button>
-        <div class="main-chart" style="margin:0">
-            <canvas id="popCvs"></canvas>
-            <div id="popContent"></div>
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>✔ Matches Found</h3>
+            <div id="checks"></div>
+        </div>
+        <div class="card">
+            <h3>🤖 AI Analysis</h3>
+            <div id="ai">Wait for input...</div>
+        </div>
+        <div class="card">
+            <h3>🔮 Future Prediction</h3>
+            <div id="future">Select a match...</div>
         </div>
     </div>
 </div>
 
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #ddd;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
+</div>
+
 <script>
-const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
-
-let chartData = JSON.parse(localStorage.getItem("db_smart_v1")) || Array(12).fill().map(()=>Array(6).fill("**"));
-let currentScheme = null;
-
-const getF = v => { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; };
-const fix = v => { v=v.toString().trim(); return (v==""||v=="**")?"**":v.padStart(2,'0').slice(-2); };
-
-function loadCSV(input) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        chartData = e.target.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(c=>fix(c)).slice(0,6));
-        render("mainTbl", "mainCvs", null, chartData);
-    };
-    reader.readAsText(input.files[0]);
-}
-
-function render(tid, cid, pat, data, offset=0) {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((row, ri) => {
-        let realR = ri + offset;
-        h += "<tr>";
-        row.forEach((cell, ci) => {
-            let isCircle = (pat && pat.points.some(p => p.r === realR && p.c === ci));
-            h += `<td class="${isCircle?'circle-match':''}" onclick="cellClick(${realR},${ci})">${cell}</td>`;
-        });
-        h += "</tr>";
-    });
-    document.getElementById(tid).innerHTML = h;
-    if(pat) setTimeout(() => drawLines(cid, tid), 50);
-}
-
-function cellClick(r, c) {
-    if(chartData[r][c] === "**") {
-        findSmartPattern(r, c);
-    } else {
-        let v = prompt("Value:", chartData[r][c]);
-        if(v!==null) { chartData[r][c]=fix(v); render("mainTbl", "mainCvs", null, chartData); }
-    }
-}
-
-function findSmartPattern(ri, ci) {
-    let points = [];
-    // पिछले 10 हफ्तों की "Geometry" पकड़ना
-    for(let i=ri-1; i>=Math.max(0, ri-10); i--) {
-        for(let j=0; j<6; j++) {
-            let f = getF(chartData[i][j]);
-            if(f && points.length < 2) {
-                points.push({r:i, c:j, k:f, distR: ri-i, distC: ci-j});
-            }
-        }
-    }
-    if(points.length < 2) return alert("कम से कम 2 जोड़ियाँ रिकॉर्ड में होनी चाहिए!");
+// --- CORE LOGIC (UNTOUCHED) ---
+const STORAGE_KEY="pdata_Kalyan_v2";
+let targetCol=null;
     
-    currentScheme = {points, targetPos: {r:ri, c:ci}};
-    render("mainTbl", "mainCvs", currentScheme, chartData);
-    searchHistory(currentScheme);
+// Aapka original FAMILY object
+const FAMILY = {
+ "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
+};
+    
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50"],["**","**","**","**","**"]];
+
+function startApp() {
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    draw();
 }
 
-function searchHistory(scheme) {
-    let matches = [];
-    // यह असली "स्मार्ट सर्च" है जो दूरी को भी मैच करता है
-    for(let i=0; i < scheme.targetPos.r - 5; i++) {
-        let ok = true;
-        scheme.points.forEach(p => {
-            let checkR = i - p.distR;
-            if(!chartData[checkR] || getF(chartData[checkR][p.c]) !== p.k) ok = false;
-        });
-        if(ok) matches.push(i);
-    }
+function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
 
-    let list = document.getElementById("check-list");
-    list.innerHTML = "";
-    matches.slice(0,3).forEach((mIdx, i) => {
-        let div = document.createElement("div");
-        div.className = "check-line";
-        div.innerHTML = `<span>Check Line ${i+1} (Strong Match)</span> <span>Row: ${mIdx+1} ➔</span>`;
-        div.onclick = () => {
-            document.getElementById("modal").style.display = "flex";
-            let start = Math.max(0, mIdx - 5);
-            let snippet = chartData.slice(start, mIdx + 1);
-            let popPat = { points: scheme.points.map(p => ({r: mIdx - p.distR, c: p.c})) };
-            render("popContent", "popCvs", popPat, snippet, start);
-        };
-        list.appendChild(div);
-    });
+let activeMark=null;
 
-    let preds = matches.map(m => chartData[m][scheme.targetPos.c]).filter(v => v!=="**");
-    document.getElementById("ai-res").innerText = preds.length ? [...new Set(preds)].join(" - ") : "No Match";
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-function drawLines(cid, tid) {
-    const cvs = document.getElementById(cid), tbl = document.getElementById(tid), ctx = cvs.getContext("2d");
-    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
+}
+
+// --- UPDATED VISUALS: GREEN LINES ---
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    let dots = [...tbl.querySelectorAll(".circle-match")];
-    if(dots.length < 2) return;
-    ctx.strokeStyle = "#00d2ff"; ctx.lineWidth = 3; ctx.beginPath();
-    dots.forEach((d, i) => {
-        let x = d.offsetLeft + 21, y = d.offsetTop + 21;
-        if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    const cells = tblEl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
+    
+    const tRect = tblEl.getBoundingClientRect();
+    ctx.strokeStyle = "#00ff88"; // GREEN LINE
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    
+    ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
     });
     ctx.stroke();
 }
 
-function addRow() { chartData.push(Array(6).fill("**")); render("mainTbl", "mainCvs", null, chartData); }
-function save() { localStorage.setItem("db_smart_v1", JSON.stringify(chartData)); alert("Data Saved!"); }
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved Successfully!"); }
+function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
 
-render("mainTbl", "mainCvs", null, chartData);
+function makePattern(r,c){
+<script>
+// ... (FAMILY और बाकी बेसिक फंक्शन्स वही रहेंगे) ...
+
+function makePattern(r, c) {
+    targetCol = c;
+    let foundPoints = [];
+    
+    // 2 अलग-अलग फैमिली ढूंढना (ऊपर की तरफ स्कैन करते हुए)
+    for (let i = r - 1; i >= 0 && foundPoints.length < 2; i--) {
+        for (let j = 0; j < 6; j++) {
+            let val = data[i][j];
+            if (val !== "**") {
+                let fKey = fam(val);
+                // अगर पहली बार मिली या पिछली वाली से अलग फैमिली है
+                if (foundPoints.length === 0 || fam(foundPoints[0].val) !== fKey) {
+                    foundPoints.push({ r: i, c: j, val: val, fKey: fKey, rowDist: r - i });
+                }
+            }
+        }
+    }
+
+    if (foundPoints.length < 2) return alert("कम से कम 2 अलग फैमिली वाली जोड़ियाँ चाहिए!");
+
+    // अब इन 2 पॉइंट्स के आधार पर पूरे रिकॉर्ड में सर्च करना
+    searchDualPattern(foundPoints, r);
+}
+
+function searchDualPattern(points, targetRow) {
+    let matches = [];
+    let p1 = points[0];
+    let p2 = points[1];
+
+    // पुराने रिकॉर्ड में वही 'Geometry' और 'Family' ढूंढना
+    for (let i = 0; i < targetRow - 5; i++) {
+        // चेक करना कि क्या उसी दूरी पर p1 और p2 की फैमिली मौजूद है?
+        let checkR1 = i - p1.rowDist;
+        let checkR2 = i - p2.rowDist;
+
+        if (chartExists(checkR1) && chartExists(checkR2)) {
+            if (fam(data[checkR1][p1.c]) === p1.fKey && fam(data[checkR2][p2.c]) === p2.fKey) {
+                matches.push({ index: i, p1: {r: checkR1, c: p1.c}, p2: {r: checkR2, c: p2.c} });
+            }
+        }
+    }
+    
+    showChecksDual(matches, points);
+}
+
+function chartExists(r) { return r >= 0 && r < data.length; }
+
+function showChecksDual(matches, originalPoints) {
+    const list = document.getElementById("checks");
+    list.innerHTML = "";
+    
+    if (matches.length === 0) {
+        list.innerHTML = "<div style='color:orange; font-size:12px;'>No Strong 2-Family Match Found</div>";
+        return;
+    }
+
+    matches.forEach((m, i) => {
+        let d = document.createElement("div");
+        d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid #00ff88;";
+        d.innerHTML = `<b>Strong Match ${i+1}</b> <br> <small>Row ${m.index + 1} (2-Family Logic)</small>`;
+        
+        d.onclick = () => {
+            // मेन टेबल पर मार्किंग
+            activeMark = { 
+                points: [ {r: m.p1.r, c: m.p1.c}, {r: m.p2.r, c: m.p2.c} ] 
+            };
+            draw(); 
+            // पॉपअप में दिखाना
+            showPopupDual(m);
+        };
+        list.appendChild(d);
+    });
+}
+
+function showPopupDual(match) {
+    let startRow = Math.min(match.p1.r, match.p2.r) - 1;
+    let endRow = match.index;
+    let html = "<table id='popTbl' style='color:#000'>";
+    
+    for (let i = startRow; i <= endRow; i++) {
+        if (!data[i]) continue;
+        html += "<tr>";
+        data[i].forEach((v, j) => {
+            let isCircle = (i === match.p1.r && j === match.p1.c) || (i === match.p2.r && j === match.p2.c);
+            html += `<td class="${isCircle ? 'circle' : ''}">${v}</td>`;
+        });
+        html += "</tr>";
+    }
+    
+    document.getElementById("popData").innerHTML = html + "</table>";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
+    setTimeout(() => drawLines("popCanvas", document.getElementById("popTbl")), 100);
+}
+
+// draw() फंक्शन में एक छोटा सुधार ताकि वो मल्टीपल पॉइंट्स को सर्कल कर सके:
+function isPartOfPattern(ri, ci) {
+    if (!activeMark || !activeMark.points) return false;
+    return activeMark.points.some(p => p.r === ri && p.c === ci);
+}
 </script>
 </body>
 </html>
+
