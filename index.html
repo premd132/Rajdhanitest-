@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan AI - Exact Mirror Pattern</title>
+    <title>Kalyan Pro AI - Visual Mirror</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --f1: #0084ff; --f2: #ff4757; --bg: #0f172a; --panel: #1e293b; }
@@ -13,19 +13,19 @@
         .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 8px; justify-content: center; }
         .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; box-shadow: 0 0 25px #000; }
         table { border-collapse: collapse; color: #000; font-size: 13px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #eee; width: 42px; height: 42px; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
+        td, th { border: 1px solid #eee; width: 42px; height: 42px; text-align: center; font-weight: bold; cursor: pointer; }
         th { background: #1e293b; color: white; font-size: 9px; }
         
-        /* Mirror Marks */
-        .f1-mark { border: 3px solid var(--f1) !important; border-radius: 50% !important; background: rgba(0,132,255,0.2); }
-        .f2-mark { border: 3px solid var(--f2) !important; border-radius: 50% !important; background: rgba(255,71,87,0.2); }
+        /* Mirror Effect Marks */
+        .f1-mark { border: 3px solid var(--f1) !important; border-radius: 50% !important; background: rgba(0,132,255,0.2); box-shadow: 0 0 8px var(--f1); }
+        .f2-mark { border: 3px solid var(--f2) !important; border-radius: 50% !important; background: rgba(255,71,87,0.2); box-shadow: 0 0 8px var(--f2); }
         
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; margin-top: 10px; border-top: 3px solid var(--gold); }
-        .check-btn { background: #2d3748; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; border-left: 5px solid #00ff88; font-size: 13px; }
+        .check-btn { background: #2d3748; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; border-left: 5px solid #00ff88; display: flex; justify-content: space-between; align-items: center; }
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 420px; border: 4px solid var(--gold); }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
-        .future-box { font-size: 22px; font-weight: 800; color: #00ff88; text-align: center; margin: 10px 0; }
+        .prediction { font-size: 24px; font-weight: 800; color: #00ff88; text-align: center; letter-spacing: 4px; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -46,27 +46,27 @@
     </center>
 
     <div class="card">
-        <h3>🔮 Future AI (Based on Match)</h3>
-        <div id="future-ai" class="future-box">-- -- --</div>
+        <h3 style="margin:0">🔮 Future AI Prediction</h3>
+        <div id="future-ai" class="prediction">-- -- --</div>
     </div>
 
     <div class="card">
-        <h3>✔ Exact Mirror Check Lines</h3>
-        <div id="check-list">Click a blank cell to find exact mirror patterns...</div>
+        <h3 style="margin:0">✔ Exact Visual Check Lines</h3>
+        <div id="check-list">Click on (**) cell to mirror pattern...</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:red; color:white; border:none; padding:5px 10px; cursor:pointer;">X</button>
-    <h3 style="margin:0">Exact Historical Mirror</h3>
+    <button onclick="closePopup()" style="float:right; background:red; color:white; border:none; padding:5px 10px; border-radius:5px;">X</button>
+    <h3 style="margin:0; font-size:14px;">Historical Mirror Found</h3>
     <center><div id="popContent" style="margin-top:10px;"></div></center>
 </div>
 
 <script>
-const families = {"00":["00","05","50","55"],"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["10","15","01","06","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["20","25","02","07","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["30","35","03","08","53","58","80","85"],"45":["40","45","04","09","54","59","90","95"]};
+const FAMILY = {"00":["00","05","50","55"],"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["10","15","01","06","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["20","25","02","07","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["30","35","03","08","53","58","80","85"],"45":["40","45","04","09","54","59","90","95"]};
 
-let data = JSON.parse(localStorage.getItem("kalyan_mirror_v1")) || [["00","00","00","00","00","00"],["**","**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem("kalyan_visual_v1")) || [["00","00","00","00","00","00"],["**","**","**","**","**","**"]];
 let activePattern = null;
 
 function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(String(v))) return k; return v; }
@@ -78,7 +78,7 @@ function draw(){
         h+="<tr>";
         r.forEach((c,ci)=>{
             let cls = "";
-            if(activePattern && ri >= activePattern.start && ri < activePattern.start + 2){
+            if(activePattern && ri >= activePattern.start && ri < activePattern.start + 6){
                 if(getFam(c) === activePattern.f1) cls = "f1-mark";
                 else if(getFam(c) === activePattern.f2) cls = "f2-mark";
             }
@@ -91,15 +91,15 @@ function draw(){
 }
 
 function handleCell(r,c){
-    if(data[r][c]=="**") findMirrorPattern(r,c);
+    if(data[r][c]=="**") startVisualAI(r,c);
     else { let v=prompt("Edit:", data[r][c]); if(v!==null){data[r][c]=norm(v); draw();}}
 }
 
-function findMirrorPattern(r, c) {
+function startVisualAI(r, c) {
     let startRow = Math.max(0, r - 6);
     let families = [];
     
-    // 1. Column Families (Identify)
+    // 1. Get column families from the last 6 rows
     for(let i=r-1; i>=startRow; i--){
         let f = getFam(data[i][c]);
         if(f!=="**" && !families.includes(f)) families.push(f);
@@ -107,59 +107,59 @@ function findMirrorPattern(r, c) {
     }
     if(families.length < 2) return;
 
-    // 2. Capture Exact Shape (Coordinates)
-    let mirrorMap = [];
-    for(let i=0; i<2; i++){
-        let curR = startRow + i;
-        if(curR >= r) break;
-        data[curR].forEach((val, dayIdx) => {
+    // 2. Map the visual shape (Day + Week Offset)
+    let shapeMap = [];
+    for(let i=0; i<3; i++){
+        let currentR = startRow + i;
+        if(currentR >= r) break;
+        data[currentR].forEach((val, dayIdx) => {
             let f = getFam(val);
-            if(f === families[0]) mirrorMap.push({ week: i, day: dayIdx, type: 1 });
-            if(f === families[1]) mirrorMap.push({ week: i, day: dayIdx, type: 2 });
+            if(f === families[0]) shapeMap.push({ w: i, d: dayIdx, type: 1 });
+            if(f === families[1]) shapeMap.push({ w: i, d: dayIdx, type: 2 });
         });
     }
 
-    // 3. Search for Mirror in History
+    // 3. Search History for Exact Shape Matches
     let matches = [];
-    for(let i=0; i < data.length - 6; i++){
+    for(let i=0; i < data.length - 12; i++){
         let hits = 0;
-        mirrorMap.forEach(m => {
-            let histF = getFam(data[i + m.week][m.day]);
-            if((m.type === 1 && histF === families[0]) || (m.type === 2 && histF === families[1])) hits++;
+        shapeMap.forEach(s => {
+            let histF = getFam(data[i + s.w][s.d]);
+            if((s.type === 1 && histF === families[0]) || (s.type === 2 && histF === families[1])) hits++;
         });
 
-        // Exact Shape Match: Check if this block has the same look
-        if(hits >= 2 && hits >= mirrorMap.length * 0.8){
+        // Mirror Match: At least 2 points must align exactly
+        if(hits >= 2 && hits >= shapeMap.length * 0.4){
             matches.push({ idx: i, score: hits });
         }
     }
 
-    // 4. Update Check Lines
+    // 4. Build Check Lines
     let list = document.getElementById("check-list");
     list.innerHTML = "";
-    matches.sort((a,b)=>b.score - a.score).slice(0,4).forEach((match, idx) => {
-        let btn = document.createElement("div");
-        btn.className = "check-btn";
-        btn.innerHTML = `Mirror Line ${idx+1} (Match: ${match.score} points)`;
-        btn.onclick = () => {
-            activePattern = { start: match.idx, f1: families[0], f2: families[1] };
+    matches.sort((a,b)=>b.score - a.score).slice(0,5).forEach((m, idx) => {
+        let div = document.createElement("div");
+        div.className = "check-btn";
+        div.innerHTML = `<span>Check Line ${idx+1} (Mirror Score: ${m.score})</span> ➔`;
+        div.onclick = () => {
+            activePattern = { start: m.idx, f1: families[0], f2: families[1] };
             draw();
-            showPopup(match.idx, families);
+            showPopup(m.idx, families);
             
-            // Future AI Prediction (Next week same day)
-            let predRow = match.idx + 6;
-            if(data[predRow]){
-                let resFam = getFam(data[predRow][c]);
-                document.getElementById("future-ai").innerText = FAMILY[resFam] ? FAMILY[resFam].slice(0,3).join("  ") : "-- -- --";
+            // Future AI Logic: Best result from next week same day
+            let nextWeekVal = data[m.idx + 6] ? data[m.idx + 6][c] : null;
+            if(nextWeekVal) {
+                let fKey = getFam(nextWeekVal);
+                document.getElementById("future-ai").innerText = FAMILY[fKey].slice(0,3).join("  ");
             }
         };
-        list.appendChild(btn);
+        list.appendChild(div);
     });
 }
 
 function showPopup(start, fams){
     let h = "<table id='popTbl'>";
-    for(let i=start; i<start+6; i++){
+    for(let i=start; i<start+3; i++){
         h += "<tr>";
         data[i].forEach(v => {
             let cls = (getFam(v)===fams[0]) ? "f1-mark" : (getFam(v)===fams[1] ? "f2-mark" : "");
@@ -199,7 +199,7 @@ document.getElementById("csv").onchange = e => {
     fr.readAsText(e.target.files[0]);
 };
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("kalyan_mirror_v1", JSON.stringify(data)); alert("Saved!"); }
+function saveData(){ localStorage.setItem("kalyan_visual_v1", JSON.stringify(data)); alert("Saved!"); }
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 draw();
 </script>
