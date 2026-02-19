@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan Exact Pattern Engine</title>
+<title>Kalyan Exact Pattern – CSV Save</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -16,16 +16,26 @@ td,th{
 th{background:#1e293b;color:#fff;font-size:11px}
 .f1{border:3px solid #0084ff;border-radius:50%}
 .f2{border:3px solid #ff4757;border-radius:50%}
-.box{background:#1e293b;margin:10px;padding:10px;border-radius:10px}
+
+.box{
+ background:#1e293b;margin:10px;padding:10px;border-radius:10px
+}
 .btn{
- background:#00ff88;color:#000;padding:10px;
- margin:6px 0;border-radius:8px;
- cursor:pointer;font-weight:bold
+ background:#00ff88;color:#000;padding:10px 14px;
+ margin:5px;border-radius:8px;
+ cursor:pointer;font-weight:bold;display:inline-block
 }
 </style>
 </head>
 
 <body>
+
+<div class="box" style="text-align:center">
+<span class="btn" onclick="addRow()">➕ ADD ROW</span>
+<span class="btn" onclick="saveData()">💾 SAVE</span>
+<span class="btn" onclick="csvInput.click()">📂 CSV LOAD</span>
+<input type="file" id="csvInput" hidden>
+</div>
 
 <div class="box">
 <table id="tbl"></table>
@@ -64,13 +74,13 @@ const norm=v=>v=="**"?"**":v.padStart(2,"0");
 
 /* ================= DATA ================= */
 
-let data=[
-["12","34","56","78","90","11"],
-["17","39","51","83","94","66"],
-["21","43","65","38","49","16"],
-["26","48","60","88","99","61"],
-["62","84","01","33","44","**"],
-["**","**","**","**","**","**"]
+let data = JSON.parse(localStorage.getItem("kalyan_exact_data")) || [
+ ["12","34","56","78","90","11"],
+ ["17","39","51","83","94","66"],
+ ["21","43","65","38","49","16"],
+ ["26","48","60","88","99","61"],
+ ["62","84","01","33","44","00"],
+ ["**","**","**","**","**","**"]
 ];
 
 /* ================= DRAW ================= */
@@ -80,7 +90,7 @@ function draw(){
  data.forEach((r,i)=>{
   h+="<tr>";
   r.forEach((c,j)=>{
-   h+=`<td onclick="clickCell(${i},${j})">${c}</td>`;
+   h+=`<td onclick="cellClick(${i},${j})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -88,23 +98,48 @@ function draw(){
 }
 draw();
 
-/* ================= CORE STEP 1: BLUEPRINT ================= */
+/* ================= ADD ROW ================= */
+
+function addRow(){
+ data.push(["**","**","**","**","**","**"]);
+ draw();
+}
+
+/* ================= SAVE ================= */
+
+function saveData(){
+ localStorage.setItem("kalyan_exact_data",JSON.stringify(data));
+ alert("✅ Data Saved Successfully");
+}
+
+/* ================= CSV LOAD ================= */
+
+csvInput.onchange=e=>{
+ let fr=new FileReader();
+ fr.onload=()=>{
+  data = fr.result
+   .split("\n")
+   .filter(r=>r.trim())
+   .map(r=>r.split(",").map(v=>norm(v.trim())));
+  draw();
+ };
+ fr.readAsText(e.target.files[0]);
+};
+
+/* ================= CORE STEP 1: BUILD BLUEPRINT ================= */
 
 function buildBlueprint(row,col){
  let bp=[];
  for(let i=row-1;i>=0 && bp.length<6;i--){
   let v=data[i][col];
   if(v!=="**"){
-   bp.push({
-    offset:bp.length,
-    fam:getFamily(v)
-   });
+   bp.push({offset:bp.length,fam:getFamily(v)});
   }
  }
  return bp;
 }
 
-/* ================= CORE STEP 2: EXACT MATCH ================= */
+/* ================= CORE STEP 2: FIND EXACT MATCH ================= */
 
 function findExactMatches(bp,col){
  let matches=[];
@@ -115,26 +150,23 @@ function findExactMatches(bp,col){
    let fam=getFamily(data[r][col]);
    if(fam===p.fam) hit++;
   });
-  if(hit===bp.length){
-   matches.push(start);
-  }
+  if(hit===bp.length) matches.push(start);
  }
  return matches;
 }
 
-/* ================= CLICK HANDLER ================= */
+/* ================= CELL CLICK ================= */
 
-function clickCell(r,c){
+function cellClick(r,c){
  if(data[r][c]!=="**"){
   let v=prompt("Enter Jodi",data[r][c]);
   if(v!=null){data[r][c]=norm(v);draw();}
   return;
  }
 
- // ** cell logic
  let bp=buildBlueprint(r,c);
  if(bp.length<4){
-  alert("Kam se kam 4 pattern chahiye");
+  alert("⚠ Minimum 4 pattern required");
   return;
  }
 
@@ -145,10 +177,10 @@ function clickCell(r,c){
 /* ================= SHOW CHECK LINES ================= */
 
 function showChecks(list,col){
- let d=document.getElementById("checks");
- d.innerHTML="";
+ let box=document.getElementById("checks");
+ box.innerHTML="";
  if(!list.length){
-  d.innerHTML="❌ Same pattern history me nahi mila";
+  box.innerHTML="❌ Same pattern history me nahi mila";
   return;
  }
  list.forEach((s,i)=>{
@@ -156,7 +188,7 @@ function showChecks(list,col){
   b.className="btn";
   b.innerHTML=`Check Line ${i+1} → Row ${s+1}`;
   b.onclick=()=>highlight(s,col);
-  d.appendChild(b);
+  box.appendChild(b);
  });
 }
 
@@ -165,12 +197,10 @@ function showChecks(list,col){
 function highlight(start,col){
  document.querySelectorAll("td").forEach(td=>td.className="");
  for(let i=0;i<6;i++){
-  let fam=getFamily(data[start+i][col]);
   let td=tbl.rows[start+i+1].cells[col];
-  if(fam) td.className=i%2?"f1":"f2";
+  td.className=i%2?"f1":"f2";
  }
 }
-
 </script>
 </body>
 </html>
