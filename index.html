@@ -192,10 +192,10 @@ function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.c
 
 function makePattern(r,c){
  targetCol=c; let base="**";
- for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
+ for(let i=ri;ci>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
  if(base=="**") return;
  let shape=[];
- for(let i=Math.max(0,r-4);i<=r;i++){
+ for(let i=Math.max(0,ri-4);ci<=r;i++){
   let row=[];
   for(let j=0;j<3;j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j],base)?1:0); }
   shape.push(row);
