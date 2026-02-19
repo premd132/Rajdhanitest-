@@ -2,240 +2,170 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dual Pattern Shape AI</title>
+<title>Jodi Family CSV System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;background:#0f172a;color:#fff;font-family:Arial}
-table{border-collapse:collapse;margin:auto;position:relative;z-index:2}
+body{
+  font-family:Arial;
+  background:#f4f4f4;
+  margin:10px;
+}
+h2{text-align:center}
+button,input{padding:6px;margin:5px}
+
+#wrap{
+  background:#fff;
+  padding:10px;
+  overflow:auto;
+}
+
+table{
+  border-collapse:collapse;
+  font-size:14px;
+}
 td,th{
- border:1px solid #aaa;width:42px;height:42px;
- text-align:center;font-weight:bold;cursor:pointer;
- background:#fff;color:#000
+  border:1px solid #999;
+  padding:6px;
+  text-align:center;
+  min-width:55px;
 }
-th{background:#1e293b;color:#fff;font-size:11px}
-
-.box{background:#1e293b;margin:10px;padding:10px;border-radius:12px}
-.btn{
- background:#00ff88;color:#000;
- padding:10px 14px;border-radius:8px;
- cursor:pointer;font-weight:bold;display:inline-block;
- margin:4px
+td[contenteditable]{
+  background:#fffbe6;
 }
 
-.f1{border:3px solid #ff4757;border-radius:50%;background:rgba(255,71,87,.25)}
-.f2{border:3px solid #0084ff;border-radius:50%;background:rgba(0,132,255,.25)}
-
-canvas{
- position:absolute;top:0;left:0;
- pointer-events:none;z-index:1
+/* family highlight */
+.family{
+  background:#e6f0ff;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box" style="text-align:center">
-<span class="btn" onclick="addRow()">➕ ADD ROW</span>
-<span class="btn" onclick="saveData()">💾 SAVE</span>
-<span class="btn" onclick="csvInput.click()">📂 CSV</span>
-<input type="file" id="csvInput" hidden>
-</div>
+<h2>Jodi Family CSV System</h2>
 
-<div class="box" style="position:relative">
-<canvas id="cnv"></canvas>
-<table id="tbl"></table>
-</div>
+<input type="file" id="csvFile" accept=".csv">
+<button onclick="addRow()">➕ Add Row</button>
+<button onclick="applyFamily()">🔁 Apply Family</button>
+<button onclick="clearAll()">🗑 Clear</button>
 
-<div class="box">
-<h3>✔ Check Lines</h3>
-<div id="checks">Bottom ** cell click karo</div>
+<div id="wrap">
+  <table id="chart"></table>
 </div>
 
 <script>
-/* ================= FAMILY ================= */
-
-const FAMILY={
-"00":["00","05","50","55"],"11":["11","16","61","66"],
-"22":["22","27","72","77"],"33":["33","38","83","88"],
-"44":["44","49","94","99"],
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"]
+// ================= FAMILY DATA =================
+const FAMILY = {
+ "22":["22","27","72","77"],
+ "11":["11","61","66","16"],
+ "33":["33","83","88","38"],
+ "99":["99","44","49","94"],
+ "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"],  
+ "13":["13","18","31","36","63","68","81","86"],  
+ "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"],  
+ "23":["23","28","32","37","73","78","82","87"],  
+ "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"],  
+ "34":["34","39","43","48","84","89","93","98"],  
+ "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
 };
 
-const getFam=v=>{
- for(let k in FAMILY) if(FAMILY[k].includes(v)) return k;
- return null;
-};
-const norm=v=>v=="**"?"**":v.padStart(2,"0");
+const table=document.getElementById("chart");
 
-/* ================= DATA ================= */
+// ================= LOAD LOCAL =================
+const saved=localStorage.getItem("jodiData");
+if(saved) buildTable(JSON.parse(saved));
 
-let data = JSON.parse(localStorage.getItem("dual_shape_data")) || [
-["12","34","56","78","90","11"],
-["17","39","51","83","94","66"],
-["21","43","65","38","49","16"],
-["26","48","60","88","99","61"],
-["62","84","01","33","44","00"],
-["**","**","**","**","**","**"]
-];
-
-let activePattern=null;
-
-/* ================= DRAW TABLE ================= */
-
-function draw(){
- let h="<tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>";
- data.forEach((r,i)=>{
-  h+="<tr>";
-  r.forEach((c,j)=>{
-   h+=`<td onclick="cellClick(${i},${j})">${c}</td>`;
+// ================= SAVE =================
+function save(){
+  const data=[];
+  [...table.rows].forEach(r=>{
+    let row=[];
+    [...r.cells].forEach(c=>row.push(c.innerText.trim()));
+    data.push(row);
   });
-  h+="</tr>";
- });
- tbl.innerHTML=h;
- drawLines();
-}
-draw();
-
-/* ================= ADD / SAVE / CSV ================= */
-
-function addRow(){
- data.push(["**","**","**","**","**","**"]);
- draw();
-}
-function saveData(){
- localStorage.setItem("dual_shape_data",JSON.stringify(data));
- alert("Saved");
-}
-csvInput.onchange=e=>{
- let fr=new FileReader();
- fr.onload=()=>{
-  data=fr.result.split("\n").filter(r=>r.trim())
-   .map(r=>r.split(",").map(v=>norm(v.trim())));
-  draw();
- };
- fr.readAsText(e.target.files[0]);
-};
-
-/* ================= BUILD SHAPE BLUEPRINT ================= */
-
-function buildBlueprint(br,bc,depth=6){
- let pts=[];
- for(let d=1;d<=depth;d++){
-  let r=br-d;if(r<0)break;
-  for(let dc=-2;dc<=2;dc++){
-   let c=bc+dc;
-   if(c<0||c>=data[0].length)continue;
-   let v=data[r][c];
-   if(v!=="**"){
-    pts.push({fam:getFam(v),dr:d,dc});
-   }
-  }
- }
- return pts;
+  localStorage.setItem("jodiData",JSON.stringify(data));
 }
 
-/* ================= MATCH ENGINE ================= */
-
-function findMatches(bp){
- let res=[];
- for(let r=0;r<data.length;r++){
-  for(let c=0;c<data[0].length;c++){
-   let hit=0;
-   bp.forEach(p=>{
-    let rr=r-p.dr,cc=c+p.dc;
-    if(rr>=0&&cc>=0&&cc<data[0].length){
-     if(getFam(data[rr][cc])===p.fam) hit++;
-    }
-   });
-   if(hit>=Math.max(4,Math.floor(bp.length*0.8))){
-    res.push({r,c,score:hit});
-   }
-  }
- }
- return res;
+// ================= BUILD TABLE =================
+function buildTable(data){
+  table.innerHTML="";
+  data.forEach(row=>{
+    const tr=document.createElement("tr");
+    row.forEach(val=>{
+      const td=document.createElement("td");
+      td.innerText=val;
+      td.contentEditable=true;
+      td.oninput=save;
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
 }
 
-/* ================= CELL CLICK ================= */
+// ================= CSV UPLOAD =================
+document.getElementById("csvFile").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file) return;
 
-function cellClick(r,c){
- if(data[r][c]!=="**"){
-  let v=prompt("Enter Jodi",data[r][c]);
-  if(v!=null){data[r][c]=norm(v);draw();}
-  return;
- }
-
- let bp=buildBlueprint(r,c);
- if(bp.length<4){alert("Pattern weak");return;}
-
- let matches=findMatches(bp);
- showChecks(matches,bp);
-}
-
-/* ================= CHECK LINES ================= */
-
-function showChecks(list,bp){
- let d=document.getElementById("checks");
- d.innerHTML="";
- if(!list.length){
-  d.innerHTML="❌ No same shape found";
-  return;
- }
- list.slice(0,5).forEach((m,i)=>{
-  let b=document.createElement("div");
-  b.className="btn";
-  b.innerHTML=`Check ${i+1} → Row ${m.r+1}`;
-  b.onclick=()=>{
-   activePattern={m,bp};
-   highlight(m,bp);
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const rows=reader.result
+      .trim()
+      .split(/\r?\n/)
+      .map(l=>l.split(",").map(v=>v.trim()));
+    buildTable(rows);
+    save();
   };
-  d.appendChild(b);
- });
+  reader.readAsText(file);
+});
+
+// ================= ADD ROW =================
+function addRow(){
+  const tr=document.createElement("tr");
+  for(let i=0;i<6;i++){
+    const td=document.createElement("td");
+    td.contentEditable=true;
+    td.oninput=save;
+    tr.appendChild(td);
+  }
+  table.appendChild(tr);
+  save();
 }
 
-/* ================= HIGHLIGHT + DRAW ================= */
+// ================= FAMILY APPLY =================
+function applyFamily(){
+  // clear old
+  [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("family"));
 
-function highlight(m,bp){
- document.querySelectorAll("td").forEach(td=>td.className="");
- bp.forEach((p,i)=>{
-  let r=m.r-p.dr,c=m.c+p.dc;
-  let td=tbl.rows[r+1]?.cells[c];
-  if(td) td.className=i%2?"f1":"f2";
- });
- drawLines();
+  [...table.rows].forEach(row=>{
+    [...row.cells].forEach(cell=>{
+      const v=cell.innerText.trim();
+      if(!v) return;
+
+      for(const key in FAMILY){
+        if(FAMILY[key].includes(v)){
+          cell.classList.add("family");
+          break;
+        }
+      }
+    });
+  });
 }
 
-/* ================= CANVAS LINES ================= */
-
-function drawLines(){
- let cvs=cnv,ctx=cvs.getContext("2d");
- cvs.width=tbl.offsetWidth;
- cvs.height=tbl.offsetHeight;
- ctx.clearRect(0,0,cvs.width,cvs.height);
-
- let pts=[...document.querySelectorAll(".f1,.f2")];
- if(pts.length<2)return;
- ctx.strokeStyle="#00e0ff";
- ctx.lineWidth=3;
- ctx.beginPath();
- pts.forEach((d,i)=>{
-  let r=d.getBoundingClientRect();
-  let t=tbl.getBoundingClientRect();
-  let x=r.left-t.left+r.width/2;
-  let y=r.top-t.top+r.height/2;
-  i?ctx.lineTo(x,y):ctx.moveTo(x,y);
- });
- ctx.stroke();
+// ================= CLEAR =================
+function clearAll(){
+  if(confirm("Delete all data?")){
+    table.innerHTML="";
+    localStorage.removeItem("jodiData");
+  }
 }
 </script>
+
 </body>
 </html>
