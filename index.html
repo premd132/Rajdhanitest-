@@ -144,7 +144,7 @@ function searchFixedPattern(r, c) {
             showPopup(res.idx, families);
             
             // Prediction: Us pattern ke baad kya aaya tha?
-            let nextWeekVal = data[res.idx + 6] ? data[res.idx + 6][c] : null;
+            let nextWeekVal = data[res.idx + 3] ? data[res.idx + 3][c] : null;
             if(nextWeekVal) {
                 let fKey = getFam(nextWeekVal);
                 document.getElementById("future-display").innerText = FAMILY[fKey].slice(0,3).join("  ");
@@ -156,7 +156,7 @@ function searchFixedPattern(r, c) {
 
 function showPopup(start, fams){
     let h = "<table id='popTbl'>";
-    for(let i=start; i<start+6; i++){
+    for(let i=start; i<start+3px; i++){
         h += "<tr>";
         data[i].forEach(v => {
             let cls = (getFam(v)===fams[0]) ? "f1-mark" : (getFam(v)===fams[1] ? "f2-mark" : "");
