@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Fixed Edition</title>
+    <title>Kalyan Pro AI – Fixed System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
@@ -14,23 +14,23 @@
         table { border-collapse: collapse; color: #000; }
         td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
         th { background: #1e293b; color: white; font-size: 10px; }
-        .circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.1); }
+        .circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.15); z-index: 10; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
         .dashboard { padding: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .match-item { background: #0f172a; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; border-left: 4px solid var(--blue); display: flex; justify-content: space-between; }
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 1000; padding: 20px; color: #000; width: 95%; max-width: 450px; }
+        .check-btn { background: #0f172a; color: #fff; padding: 12px; margin: 5px 0; border-radius: 8px; cursor: pointer; border-left: 4px solid var(--blue); display: flex; justify-content: space-between; }
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 12px; display: none; z-index: 1000; padding: 20px; color: #000; width: 95%; max-width: 450px; text-align: center; }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; z-index: 900; }
-        button { padding: 8px 15px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; }
+        button { padding: 10px 20px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="toolbar">
     <input type="file" id="csv" hidden>
-    <button onclick="csv.click()">📂 CSV</button>
-    <button onclick="addRow()">➕ ROW</button>
-    <button onclick="saveData()" style="background:var(--green); color:#000;">💾 SAVE</button>
+    <button onclick="csv.click()" style="background:#444; color:white;">📂 CSV</button>
+    <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+    <button onclick="saveData()" style="background:var(--green); color:#000;">💾 SAVE DATA</button>
 </div>
 
 <center>
@@ -42,35 +42,35 @@
 
 <div class="dashboard">
     <div class="card">
-        <h3>✔ Matches</h3>
-        <div id="checks">Click ** to analyze...</div>
+        <h3>✔ Matches Found</h3>
+        <div id="checks">Click any blank cell (**)</div>
     </div>
     <div class="card">
-        <h3>🔮 Future Prediction</h3>
-        <div id="future" style="font-size: 20px; color: var(--green); font-weight: 800;">---</div>
+        <h3>🔮 AI Future Prediction</h3>
+        <div id="future" style="font-size: 24px; color: var(--green); font-weight: 800;">-- --</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <h3 style="margin-top:0">Sequence Found</h3>
+    <h3 style="margin-top:0">Historical Snippet</h3>
     <div class="table-container" style="border: 1px solid #ddd;">
         <canvas id="popCanvas"></canvas>
         <div id="popData"></div>
     </div>
-    <br>
+    <p style="font-size: 11px; color: #666; margin-top:10px;">Showing Pattern + 1 Result Row</p>
     <button onclick="closePopup()" style="background:#000; color:#fff; width:100%;">CLOSE</button>
 </div>
 
 <script>
-const STORAGE_KEY = "kpro_v2_final";
+const STORAGE_KEY = "kalyan_pro_fixed_v3";
 const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(6).fill("**"));
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(12).fill().map(()=>Array(6).fill("**"));
 let activeMark = null;
 let targetCol = 0;
 
-function norm(v){ v=v.toString().trim(); return (v==""||v=="**")?"**":v.padStart(2,'0').slice(-2); }
+const norm = v => (!v || v=="**") ? "**" : v.toString().padStart(2,"0").slice(-2);
 function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
 
 function draw() {
@@ -78,8 +78,8 @@ function draw() {
     data.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = (activeMark && ri >= activeMark.start && ri < activeMark.start + activeMark.shape.length && activeMark.shape[ri-activeMark.start][ci]) ? "circle" : "";
-            h += `<td class="${cls}" onclick="handleCell(${ri},${ci})">${c}</td>`;
+            let isCircle = (activeMark && ri >= activeMark.start && ri < activeMark.start + activeMark.shape.length && activeMark.shape[ri-activeMark.start][ci]);
+            h += `<td class="${isCircle?'circle':''}" onclick="handleCell(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
@@ -90,72 +90,71 @@ function draw() {
 function handleCell(ri, ci) {
     if(data[ri][ci] === "**") {
         targetCol = ci;
-        makePattern(ri, ci);
+        analyze(ri, ci);
     } else {
-        let val = prompt("Enter Value:", data[ri][ci]);
-        if(val !== null) { data[ri][ci] = norm(val); activeMark = null; draw(); }
+        let v = prompt("Edit Value:", data[ri][ci]);
+        if(v !== null) { data[ri][ci] = norm(v); activeMark = null; draw(); }
     }
 }
 
-function makePattern(ri, ci) {
-    let limit = Math.max(0, ri-5);
-    let shape = [];
-    let baseFams = [];
-
-    // Identify families in the last 5 rows to create a pattern
-    for(let i = limit; i < ri; i++) {
-        let rowShape = [0,0,0,0,0,0];
+function analyze(ri, ci) {
+    let limit = Math.max(0, ri-10);
+    let foundFams = [];
+    // Find 2 families with 2 points each in the last 10 weeks
+    for(let i=ri-1; i>=limit; i--) {
         for(let j=0; j<6; j++) {
             let f = getFam(data[i][j]);
-            if(f) {
-                if(!baseFams.includes(f)) baseFams.push(f);
-                rowShape[j] = 1;
-            }
+            if(!f) continue;
+            let ex = foundFams.find(x => x.key === f);
+            if(ex) { if(ex.pts.length < 2 && !ex.pts.some(p=>p.r===i)) ex.pts.push({r:i, c:j}); }
+            else if(foundFams.length < 2) foundFams.push({key: f, pts: [{r:i, c:j}]});
         }
-        shape.push(rowShape);
+        if(foundFams.length==2 && foundFams[0].pts.length==2 && foundFams[1].pts.length==2) break;
     }
-    
-    if(baseFams.length === 0) return;
-    searchPattern(shape, baseFams);
+
+    if(foundFams.length < 2) return alert("Need more data for pattern!");
+
+    let shape = Array(ri-limit).fill().map(()=>Array(6).fill(0));
+    foundFams[0].pts.forEach(p => shape[p.r-limit][p.c] = 1);
+    foundFams[1].pts.forEach(p => shape[p.r-limit][p.c] = 1);
+
+    activeMark = {start: limit, shape: shape, keys: [foundFams[0].key, foundFams[1].key]};
+    draw();
+    searchMatches(activeMark);
 }
 
-function searchPattern(shape, baseFams) {
+function searchMatches(pat) {
     let matches = [];
-    for(let i=0; i <= data.length - shape.length - 1; i++) {
+    for(let i=0; i < pat.start; i++) {
         let score = 0;
-        for(let r=0; r < shape.length; r++) {
+        for(let r=0; r < pat.shape.length; r++) {
             for(let c=0; c<6; c++) {
-                if(shape[r][c] === 1) {
+                if(pat.shape[r][c] === 1) {
                     let f = getFam(data[i+r][c]);
-                    if(baseFams.includes(f)) score++;
+                    if(pat.keys.includes(f)) score++;
                 }
             }
         }
-        if(score >= 2) matches.push(i);
+        if(score >= 3) matches.push(i);
     }
-    
-    let checks = document.getElementById("checks");
-    checks.innerHTML = "";
-    matches.forEach((mIdx, i) => {
-        let div = document.createElement("div");
-        div.className = "match-item";
-        div.innerHTML = `<span>Pattern Match ${i+1}</span><small>Row ${mIdx+1}</small>`;
-        div.onclick = () => {
-            activeMark = {start: mIdx, shape: shape};
-            draw();
-            showPopup(shape, mIdx);
-        };
-        checks.appendChild(div);
+
+    let checksDiv = document.getElementById("checks");
+    checksDiv.innerHTML = "";
+    matches.forEach((mIdx, idx) => {
+        let btn = document.createElement("div");
+        btn.className = "check-btn";
+        btn.innerHTML = `<span>📋 Line ${idx+1}</span> <small>Row ${mIdx+1}</small>`;
+        btn.onclick = () => showSnippet(mIdx, pat.shape);
+        checksDiv.appendChild(btn);
     });
 
-    // Future Prediction
-    let pool = matches.map(m => data[m + shape.length][targetCol]).filter(v => v !== "**");
-    document.getElementById("future").innerText = pool.length ? [...new Set(pool)].join(" - ") : "??";
+    let preds = matches.map(m => data[m + pat.shape.length] ? data[m + pat.shape.length][targetCol] : null).filter(v => v && v!=="**");
+    document.getElementById("future").innerText = preds.length ? [...new Set(preds)].join(" - ") : "Analyzing...";
 }
 
-function showPopup(shape, idx) {
+function showSnippet(mIdx, shape) {
+    let snippet = data.slice(mIdx, mIdx + shape.length + 1);
     let html = "<table>";
-    let snippet = data.slice(idx, idx + shape.length + 1);
     snippet.forEach((r, ri) => {
         html += "<tr>";
         r.forEach((c, ci) => {
@@ -172,14 +171,13 @@ function showPopup(shape, idx) {
 
 function drawLines(cvsId, containerId) {
     const cvs = document.getElementById(cvsId);
-    const table = document.querySelector(`#${containerId} table`);
+    const container = document.getElementById(containerId);
+    const table = container.querySelector("table");
     const ctx = cvs.getContext("2d");
     cvs.width = table.offsetWidth; cvs.height = table.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    
     const dots = table.querySelectorAll(".circle");
     if(dots.length < 2) return;
-    
     ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3; ctx.beginPath();
     dots.forEach((d, i) => {
         let x = d.offsetLeft + d.offsetWidth/2;
@@ -189,17 +187,17 @@ function drawLines(cvsId, containerId) {
     ctx.stroke();
 }
 
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
+function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+function addRow() { data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Data Saved!"); }
 
 csv.onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+    let r = new FileReader();
+    r.onload = () => {
+        data = r.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
         draw();
     };
-    fr.readAsText(e.target.files[0]);
+    r.readAsText(e.target.files[0]);
 };
 
 draw();
