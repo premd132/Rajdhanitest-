@@ -3,62 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - Step-by-Step</title>
+    <title>Kalyan Pro AI - CSV Fixed</title>
     <style>
-        :root { --gold: #ffd700; --blue: #0084ff; --bg: #0f172a; --panel: #1e293b; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; }
-        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; border-bottom: 2px solid var(--gold); position: sticky; top:0; z-index:100; }
+        :root { --gold: #ffd700; --blue: #0084ff; --bg: #0f172a; --panel: #1e293b; --green: #00ff88; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; border-bottom: 2px solid var(--gold); sticky; top:0; z-index:100; flex-wrap: wrap; }
         
-        .table-wrap { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; margin: 20px; }
+        .table-wrap { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; margin: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         table { border-collapse: collapse; color: #000; }
         td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        /* पैटर्न वाले गोले */
-        .circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); }
+        .circle { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); z-index: 10; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
 
         .card { background: var(--panel); padding: 15px; margin: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .check-btn { background: #0f172a; color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid var(--gold); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         
-        /* चेक लाइन बटन */
-        .check-btn { 
-            background: #0f172a; color: #fff; padding: 15px; margin: 10px 0; 
-            border-radius: 8px; border-left: 5px solid var(--gold); cursor: pointer;
-            display: flex; justify-content: space-between; font-weight: bold;
-        }
-
-        /* छोटा पॉपअप विंडो */
         #popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
-        .pop-box { background:#fff; padding:20px; border-radius:15px; color:#000; position:relative; }
-        .close { position:absolute; top:-10px; right:-10px; background:red; color:white; border-radius:50%; width:30px; height:30px; border:none; cursor:pointer; }
+        .pop-box { background:#fff; padding:20px; border-radius:15px; color:#000; position:relative; max-width: 95%; overflow: auto; }
+        .close { position:absolute; top:-10px; right:-10px; background:red; color:white; border-radius:50%; width:30px; height:30px; border:none; cursor:pointer; font-weight: bold; }
+        button { padding: 10px 15px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <input type="file" id="csv" hidden>
-    <button onclick="csv.click()">📂 CSV लोड करें</button>
-    <button onclick="addRow()">➕ लाइन जोड़ें</button>
-    <button onclick="save()" style="background:var(--gold)">💾 सेव करें</button>
+    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
+    <button onclick="document.getElementById('csvFile').click()" style="background:#444; color:white;">📂 CSV अपलोड करें</button>
+    <button onclick="addRow()" style="background:#444; color:white;">➕ लाइन जोड़ें</button>
+    <button onclick="save()" style="background:var(--green); color:#000;">💾 डेटा सेव करें</button>
+    <button onclick="clearAll()" style="background:red; color:white;">🗑️ क्लियर</button>
 </div>
 
 <center>
-    <div class="table-wrap">
+    <div id="main-container" class="table-wrap">
         <canvas id="mainCvs"></canvas>
         <table id="mainTbl"></table>
     </div>
 </center>
 
 <div class="card">
-    <h3>✔ चेक लाइन्स (1.2.3)</h3>
-    <div id="checks">किसी खाली सेल (**) पर क्लिक करें...</div>
+    <h3 style="margin:0 0 10px 0;">✔ चेक लाइन्स (1, 2, 3)</h3>
+    <div id="checks">डेटा लोड करने के बाद किसी खाली सेल (**) पर क्लिक करें...</div>
 </div>
 
-<div id="popup" onclick="this.style.display='none'">
-    <div class="pop-box" onclick="event.stopPropagation()">
-        <button class="close" onclick="document.getElementById('popup').style.display='none'">X</button>
-        <h4 style="margin:0 0 10px 0">पुराना रिकॉर्ड (Snapshot)</h4>
-        <div id="popData" class="table-wrap" style="margin:0">
+<div id="popup">
+    <div class="pop-box">
+        <button class="close" onclick="closePop()">X</button>
+        <h4 style="margin:0 0 10px 0; text-align:center;">ओल्ड रिकॉर्ड पैटर्न (Snapshot)</h4>
+        <div id="pop-container" class="table-wrap" style="margin:0">
             <canvas id="popCvs"></canvas>
             <table id="popTbl"></table>
         </div>
@@ -68,10 +62,43 @@
 <script>
 const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"HR":["05","16","27","38","49","50","61","72","83","94"],"FR":["00","11","22","33","44","55","66","77","88","99"]};
 
-let data = JSON.parse(localStorage.getItem("pro_v4")) || Array(10).fill().map(()=>Array(6).fill("**"));
+let data = JSON.parse(localStorage.getItem("pro_v5")) || Array(10).fill().map(()=>Array(6).fill("**"));
 let currentPat = null;
 
 function getFam(v) { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
+function norm(v) { if(!v || v.trim() === "" || v === "**") return "**"; return v.trim().padStart(2, '0').slice(-2); }
+
+// --- CSV अपलोड फंक्शन (FIXED) ---
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/);
+        const newData = [];
+
+        lines.forEach(line => {
+            if (line.trim() !== "") {
+                // कॉमा या टैब से अलग करें
+                const cols = line.split(/[,\t]/).map(c => norm(c));
+                if (cols.length >= 1) {
+                    // सुनिश्चित करें कि 6 कॉलम हों
+                    while(cols.length < 6) cols.push("**");
+                    newData.push(cols.slice(0, 6));
+                }
+            }
+        });
+
+        if (newData.length > 0) {
+            data = newData;
+            draw("mainTbl", "mainCvs", null, data);
+            alert("CSV सफलतापूर्व लोड हो गई!");
+        }
+    };
+    reader.readAsText(file);
+}
 
 function draw(tblId, cvsId, pat, viewData, offset=0) {
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
@@ -80,7 +107,7 @@ function draw(tblId, cvsId, pat, viewData, offset=0) {
         h += "<tr>";
         row.forEach((cell, ci) => {
             let cls = (pat && pat.points.some(p => p.r === actualR && p.c === ci)) ? "circle" : "";
-            h += `<td class="${cls}" onclick="handle(${actualR},${ci})">${cell}</td>`;
+            h += `<td class="${cls}" onclick="handleCell(${actualR},${ci})">${cell}</td>`;
         });
         h += "</tr>";
     });
@@ -88,19 +115,19 @@ function draw(tblId, cvsId, pat, viewData, offset=0) {
     if(pat) setTimeout(() => renderLines(cvsId, tblId), 50);
 }
 
-function handle(r, c) {
+function handleCell(r, c) {
     if(data[r][c] === "**") {
         findPattern(r, c);
     } else {
-        let v = prompt("अंक भरें:", data[r][c]);
-        if(v) { data[r][c] = v.padStart(2,'0').slice(-2); draw("mainTbl", "mainCvs", null, data); }
+        let v = prompt("अंक बदलें (जैसे 12):", data[r][c]);
+        if(v !== null) { data[r][c] = norm(v); draw("mainTbl", "mainCvs", null, data); }
     }
 }
 
 function findPattern(ri, ci) {
     let points = [];
     let keys = [];
-    // पिछले 10 हफ्तों में से 2 फैमिली उठाना
+    // पिछले 10 हफ्तों का लॉजिक
     for(let i=ri-1; i>=Math.max(0, ri-10); i--) {
         for(let j=0; j<6; j++) {
             let f = getFam(data[i][j]);
@@ -110,6 +137,7 @@ function findPattern(ri, ci) {
             }
         }
     }
+    if(points.length < 1) return alert("पैटर्न के लिए डेटा कम है!");
     currentPat = {points, keys};
     draw("mainTbl", "mainCvs", currentPat, data);
     search(currentPat, ri, ci);
@@ -117,11 +145,10 @@ function findPattern(ri, ci) {
 
 function search(pat, ri, targetCol) {
     let matches = [];
-    for(let i=0; i<pat.points[0].r; i++) {
+    // पुराने रिकॉर्ड में सर्च (1, 2, 3 पैटर्न)
+    for(let i=0; i < pat.points[0].r; i++) {
         let score = 0;
         pat.points.forEach(p => {
-            let rowDiff = ri - p.r;
-            let checkRow = i + (ri - p.r); // logic to find same distance
             if(data[i] && getFam(data[i][p.c]) === p.k) score++;
         });
         if(score >= 1) matches.push(i);
@@ -129,16 +156,17 @@ function search(pat, ri, targetCol) {
 
     let div = document.getElementById("checks");
     div.innerHTML = "";
-    matches.slice(0,3).forEach((mIdx, i) => {
-        let btn = document.createElement("div");
-        btn.className = "check-btn";
-        btn.innerHTML = `<span>Check Line ${i+1}</span> <span>रो नंबर: ${mIdx+1} ➔</span>`;
-        btn.onclick = () => {
+    matches.slice(0, 3).forEach((mIdx, i) => {
+        let b = document.createElement("div");
+        b.className = "check-btn";
+        b.innerHTML = `<span>Check Line ${i+1}</span> <span style="font-size:12px">Row: ${mIdx+1} ➔</span>`;
+        b.onclick = () => {
             document.getElementById("popup").style.display = "flex";
-            let snippet = data.slice(Math.max(0, mIdx-2), mIdx+2);
-            draw("popTbl", "popCvs", pat, snippet, Math.max(0, mIdx-2));
+            let start = Math.max(0, mIdx - 2);
+            let snippet = data.slice(start, mIdx + 3);
+            draw("popTbl", "popCvs", pat, snippet, start);
         };
-        div.appendChild(btn);
+        div.appendChild(b);
     });
 }
 
@@ -159,9 +187,12 @@ function renderLines(cvsId, tblId) {
     ctx.stroke();
 }
 
-function addRow() { data.push(Array(6).fill("**")); draw("mainTbl", "mainCvs", null, data); }
-function save() { localStorage.setItem("pro_v4", JSON.stringify(data)); alert("Saved!"); }
+function closePop() { document.getElementById("popup").style.display = "none"; }
+function addRow() { data.push(["**","**","**","**","**","**"]); draw("mainTbl", "mainCvs", null, data); }
+function save() { localStorage.setItem("pro_v5", JSON.stringify(data)); alert("डेटा सुरक्षित कर दिया गया!"); }
+function clearAll() { if(confirm("सब मिटा दें?")) { localStorage.clear(); location.reload(); } }
 
+// पहली बार लोड होने पर
 draw("mainTbl", "mainCvs", null, data);
 </script>
 </body>
