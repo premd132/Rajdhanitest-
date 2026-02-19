@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro - 6 Row Pattern</title>
+    <title>Kalyan Pro AI - Pattern Search</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --f1: #0084ff; --f2: #ff4757; --bg: #0f172a; --panel: #1e293b; }
@@ -19,7 +19,7 @@
         .f2-mark { border: 3px solid var(--f2) !important; border-radius: 50%; background: rgba(255,71,87,0.1); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; margin-top: 10px; border-top: 3px solid var(--gold); }
-        .check-btn { background: #2d3748; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; border-left: 5px solid #00ff88; }
+        .check-btn { background: #2d3748; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; border-left: 5px solid #00ff88; display: flex; justify-content: space-between; }
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 420px; border: 4px solid var(--gold); }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
         button { cursor: pointer; border: none; border-radius: 5px; font-weight: bold; padding: 8px 15px; }
@@ -29,7 +29,7 @@
 
 <div id="app">
     <div class="toolbar">
-        <button onclick="addRow()" style="background:#444; color:#fff;">➕ ADD</button>
+        <button onclick="addRow()" style="background:#444; color:#fff;">➕ ADD ROW</button>
         <button onclick="saveData()" style="background:#00ff88; color:#000;">💾 SAVE</button>
         <button onclick="document.getElementById('csv').click()" style="background:var(--gold); color:#000;">📂 CSV</button>
         <input type="file" id="csv" style="display:none">
@@ -43,22 +43,22 @@
     </center>
 
     <div class="card">
-        <h3>✔ Check Lines (6-Row Scan)</h3>
-        <div id="check-list">Click on (**) to scan 6 rows...</div>
+        <h3>✔ Pattern Search Results (Check Lines)</h3>
+        <div id="check-list">Click any blank (**) cell to find its pattern in history...</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:red; color:white;">X</button>
-    <h3 style="margin:0">Family Pattern (6-Row)</h3>
+    <h3 style="margin:0">History Match (6-Row Pattern)</h3>
     <center><div id="popContent" style="margin-top:10px;"></div></center>
 </div>
 
 <script>
 const FAMILY = {"00":["00","05","50","55"],"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["10","15","01","06","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["20","25","02","07","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["30","35","03","08","53","58","80","85"],"45":["40","45","04","09","54","59","90","95"]};
 
-let data = JSON.parse(localStorage.getItem("kalyan_6row_v1")) || [["88","40","03","12","45","33"],["**","**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem("kalyan_v_pattern")) || [["88","40","03","12","45","33"],["**","**","**","**","**","**"]];
 let activePattern = null;
 
 function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(String(v))) return k; return v; }
@@ -70,13 +70,9 @@ function draw(){
         h+="<tr>";
         r.forEach((c,ci)=>{
             let cls = "";
-            if(activePattern){
-                let fKey = getFam(c);
-                // Check if current row is within the active 6-row window
-                if(ri >= activePattern.start && ri < activePattern.start + 6){
-                    if(fKey === activePattern.f1) cls = "f1-mark";
-                    else if(fKey === activePattern.f2) cls = "f2-mark";
-                }
+            if(activePattern && ri >= activePattern.start && ri < activePattern.start + 6){
+                if(getFam(c) === activePattern.f1) cls = "f1-mark";
+                else if(getFam(c) === activePattern.f2) cls = "f2-mark";
             }
             h+=`<td class="${cls}" onclick="handleCell(${ri},${ci})">${c}</td>`;
         });
@@ -87,46 +83,62 @@ function draw(){
 }
 
 function handleCell(r,c){
-    if(data[r][c]=="**") run6RowAI(r,c);
+    if(data[r][c]=="**") searchHistoryPattern(r,c);
     else { let v=prompt("Edit:", data[r][c]); if(v!==null){data[r][c]=norm(v); draw();}}
 }
 
-function run6RowAI(r, c) {
-    let families = [];
-    // Current column se pichli 2 families nikalna
-    for(let i=r-1; i>=0; i--){
+function searchHistoryPattern(r, c) {
+    // 1. Identify 2 families from the 6 rows above the clicked blank
+    let localFamilies = [];
+    let startRow = Math.max(0, r - 6);
+    
+    for(let i = r-1; i >= startRow; i--){
         let val = data[i][c];
         if(val !== "**"){
             let f = getFam(val);
-            if(!families.includes(f)) families.push(f);
-            if(families.length >= 2) break;
+            if(!localFamilies.includes(f)) localFamilies.push(f);
         }
+        if(localFamilies.length >= 2) break;
     }
-    if(families.length < 2) return;
 
-    // Poore data mein "6 rows" ke blocks scan karna
+    if(localFamilies.length < 2) { alert("Need at least 2 families in last 6 rows of this column."); return; }
+
+    // 2. Create the pattern template from these 6 rows
+    let template = [];
+    for(let i = startRow; i < r; i++){
+        let rowPattern = [];
+        data[i].forEach(val => {
+            if(getFam(val) === localFamilies[0]) rowPattern.push(1);
+            else if(getFam(val) === localFamilies[1]) rowPattern.push(2);
+            else rowPattern.push(0);
+        });
+        template.push(rowPattern);
+    }
+
+    // 3. Search this template in all old records
     let matches = [];
-    for(let i=0; i<data.length-6; i++){
+    for(let i = 0; i < data.length - 12; i++){ // Search up to current area
         let score = 0;
-        // 6 row ke block mein check karna kitni baar ye families aayi hain
-        for(let blockR=i; blockR<i+6; blockR++){
-            data[blockR].forEach(val => {
-                if(getFam(val) === families[0] || getFam(val) === families[1]) score++;
-            });
+        for(let tr = 0; tr < 6; tr++){
+            for(let tc = 0; tc < 6; tc++){
+                if(template[tr][tc] === 1 && getFam(data[i+tr][tc]) === localFamilies[0]) score++;
+                if(template[tr][tc] === 2 && getFam(data[i+tr][tc]) === localFamilies[1]) score++;
+            }
         }
-        if(score >= 2) matches.push({idx: i, score: score});
+        if(score >= 3) matches.push({idx: i, score: score});
     }
 
+    // 4. Update Check Lines
     let list = document.getElementById("check-list");
     list.innerHTML = "";
     matches.sort((a,b)=>b.score - a.score).slice(0,3).forEach((m, i) => {
         let div = document.createElement("div");
         div.className = "check-btn";
-        div.innerHTML = `Pattern ${i+1} (Found in 6-Row Block ${m.idx+1})`;
+        div.innerHTML = `<span>Check Line ${i+1} (Match Strength: ${m.score})</span> ➔`;
         div.onclick = () => {
-            activePattern = { f1: families[0], f2: families[1], start: m.idx };
+            activePattern = { f1: localFamilies[0], f2: localFamilies[1], start: m.idx };
             draw();
-            showPopup(m.idx, families);
+            showPopup(m.idx, localFamilies);
         };
         list.appendChild(div);
     });
@@ -134,7 +146,7 @@ function run6RowAI(r, c) {
 
 function showPopup(start, families){
     let h = "<table>";
-    for(let i=start; i<start+6; i++){ // Only show 6 rows
+    for(let i=start; i<start+6; i++){
         h += "<tr>";
         data[i].forEach(v => {
             let cls = (getFam(v)===families[0]) ? "f1-mark" : (getFam(v)===families[1] ? "f2-mark" : "");
@@ -174,7 +186,7 @@ document.getElementById("csv").onchange = e => {
     fr.readAsText(e.target.files[0]);
 };
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("kalyan_6row_v1", JSON.stringify(data)); alert("Saved!"); }
+function saveData(){ localStorage.setItem("kalyan_v_pattern", JSON.stringify(data)); alert("Saved!"); }
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 draw();
 </script>
