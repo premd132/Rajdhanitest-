@@ -2,28 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan Exact Pattern – CSV Save</title>
+<title>Dual Pattern Shape AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{margin:0;background:#0f172a;color:#fff;font-family:Arial}
-table{border-collapse:collapse;margin:auto}
+table{border-collapse:collapse;margin:auto;position:relative;z-index:2}
 td,th{
- border:1px solid #555;width:45px;height:45px;
+ border:1px solid #aaa;width:42px;height:42px;
  text-align:center;font-weight:bold;cursor:pointer;
  background:#fff;color:#000
 }
 th{background:#1e293b;color:#fff;font-size:11px}
-.f1{border:3px solid #0084ff;border-radius:50%}
-.f2{border:3px solid #ff4757;border-radius:50%}
 
-.box{
- background:#1e293b;margin:10px;padding:10px;border-radius:10px
-}
+.box{background:#1e293b;margin:10px;padding:10px;border-radius:12px}
 .btn{
- background:#00ff88;color:#000;padding:10px 14px;
- margin:5px;border-radius:8px;
- cursor:pointer;font-weight:bold;display:inline-block
+ background:#00ff88;color:#000;
+ padding:10px 14px;border-radius:8px;
+ cursor:pointer;font-weight:bold;display:inline-block;
+ margin:4px
+}
+
+.f1{border:3px solid #ff4757;border-radius:50%;background:rgba(255,71,87,.25)}
+.f2{border:3px solid #0084ff;border-radius:50%;background:rgba(0,132,255,.25)}
+
+canvas{
+ position:absolute;top:0;left:0;
+ pointer-events:none;z-index:1
 }
 </style>
 </head>
@@ -33,16 +38,17 @@ th{background:#1e293b;color:#fff;font-size:11px}
 <div class="box" style="text-align:center">
 <span class="btn" onclick="addRow()">➕ ADD ROW</span>
 <span class="btn" onclick="saveData()">💾 SAVE</span>
-<span class="btn" onclick="csvInput.click()">📂 CSV LOAD</span>
+<span class="btn" onclick="csvInput.click()">📂 CSV</span>
 <input type="file" id="csvInput" hidden>
 </div>
 
-<div class="box">
+<div class="box" style="position:relative">
+<canvas id="cnv"></canvas>
 <table id="tbl"></table>
 </div>
 
 <div class="box">
-<h3>✔ Check Lines (Exact Same Pattern)</h3>
+<h3>✔ Check Lines</h3>
 <div id="checks">Bottom ** cell click karo</div>
 </div>
 
@@ -65,25 +71,26 @@ const FAMILY={
 "45":["04","09","40","45","54","59","90","95"]
 };
 
-const getFamily=v=>{
+const getFam=v=>{
  for(let k in FAMILY) if(FAMILY[k].includes(v)) return k;
  return null;
 };
-
 const norm=v=>v=="**"?"**":v.padStart(2,"0");
 
 /* ================= DATA ================= */
 
-let data = JSON.parse(localStorage.getItem("kalyan_exact_data")) || [
- ["12","34","56","78","90","11"],
- ["17","39","51","83","94","66"],
- ["21","43","65","38","49","16"],
- ["26","48","60","88","99","61"],
- ["62","84","01","33","44","00"],
- ["**","**","**","**","**","**"]
+let data = JSON.parse(localStorage.getItem("dual_shape_data")) || [
+["12","34","56","78","90","11"],
+["17","39","51","83","94","66"],
+["21","43","65","38","49","16"],
+["26","48","60","88","99","61"],
+["62","84","01","33","44","00"],
+["**","**","**","**","**","**"]
 ];
 
-/* ================= DRAW ================= */
+let activePattern=null;
+
+/* ================= DRAW TABLE ================= */
 
 function draw(){
  let h="<tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>";
@@ -95,64 +102,67 @@ function draw(){
   h+="</tr>";
  });
  tbl.innerHTML=h;
+ drawLines();
 }
 draw();
 
-/* ================= ADD ROW ================= */
+/* ================= ADD / SAVE / CSV ================= */
 
 function addRow(){
  data.push(["**","**","**","**","**","**"]);
  draw();
 }
-
-/* ================= SAVE ================= */
-
 function saveData(){
- localStorage.setItem("kalyan_exact_data",JSON.stringify(data));
- alert("✅ Data Saved Successfully");
+ localStorage.setItem("dual_shape_data",JSON.stringify(data));
+ alert("Saved");
 }
-
-/* ================= CSV LOAD ================= */
-
 csvInput.onchange=e=>{
  let fr=new FileReader();
  fr.onload=()=>{
-  data = fr.result
-   .split("\n")
-   .filter(r=>r.trim())
+  data=fr.result.split("\n").filter(r=>r.trim())
    .map(r=>r.split(",").map(v=>norm(v.trim())));
   draw();
  };
  fr.readAsText(e.target.files[0]);
 };
 
-/* ================= CORE STEP 1: BUILD BLUEPRINT ================= */
+/* ================= BUILD SHAPE BLUEPRINT ================= */
 
-function buildBlueprint(row,col){
- let bp=[];
- for(let i=row-1;i>=0 && bp.length<6;i--){
-  let v=data[i][col];
-  if(v!=="**"){
-   bp.push({offset:bp.length,fam:getFamily(v)});
+function buildBlueprint(br,bc,depth=6){
+ let pts=[];
+ for(let d=1;d<=depth;d++){
+  let r=br-d;if(r<0)break;
+  for(let dc=-2;dc<=2;dc++){
+   let c=bc+dc;
+   if(c<0||c>=data[0].length)continue;
+   let v=data[r][c];
+   if(v!=="**"){
+    pts.push({fam:getFam(v),dr:d,dc});
+   }
   }
  }
- return bp;
+ return pts;
 }
 
-/* ================= CORE STEP 2: FIND EXACT MATCH ================= */
+/* ================= MATCH ENGINE ================= */
 
-function findExactMatches(bp,col){
- let matches=[];
- for(let start=0;start<=data.length-6;start++){
-  let hit=0;
-  bp.forEach(p=>{
-   let r=start+(5-p.offset);
-   let fam=getFamily(data[r][col]);
-   if(fam===p.fam) hit++;
-  });
-  if(hit===bp.length) matches.push(start);
+function findMatches(bp){
+ let res=[];
+ for(let r=0;r<data.length;r++){
+  for(let c=0;c<data[0].length;c++){
+   let hit=0;
+   bp.forEach(p=>{
+    let rr=r-p.dr,cc=c+p.dc;
+    if(rr>=0&&cc>=0&&cc<data[0].length){
+     if(getFam(data[rr][cc])===p.fam) hit++;
+    }
+   });
+   if(hit>=Math.max(4,Math.floor(bp.length*0.8))){
+    res.push({r,c,score:hit});
+   }
+  }
  }
- return matches;
+ return res;
 }
 
 /* ================= CELL CLICK ================= */
@@ -165,41 +175,66 @@ function cellClick(r,c){
  }
 
  let bp=buildBlueprint(r,c);
- if(bp.length<4){
-  alert("⚠ Minimum 4 pattern required");
-  return;
- }
+ if(bp.length<4){alert("Pattern weak");return;}
 
- let res=findExactMatches(bp,c);
- showChecks(res,c);
+ let matches=findMatches(bp);
+ showChecks(matches,bp);
 }
 
-/* ================= SHOW CHECK LINES ================= */
+/* ================= CHECK LINES ================= */
 
-function showChecks(list,col){
- let box=document.getElementById("checks");
- box.innerHTML="";
+function showChecks(list,bp){
+ let d=document.getElementById("checks");
+ d.innerHTML="";
  if(!list.length){
-  box.innerHTML="❌ Same pattern history me nahi mila";
+  d.innerHTML="❌ No same shape found";
   return;
  }
- list.forEach((s,i)=>{
+ list.slice(0,5).forEach((m,i)=>{
   let b=document.createElement("div");
   b.className="btn";
-  b.innerHTML=`Check Line ${i+1} → Row ${s+1}`;
-  b.onclick=()=>highlight(s,col);
-  box.appendChild(b);
+  b.innerHTML=`Check ${i+1} → Row ${m.r+1}`;
+  b.onclick=()=>{
+   activePattern={m,bp};
+   highlight(m,bp);
+  };
+  d.appendChild(b);
  });
 }
 
-/* ================= HIGHLIGHT ================= */
+/* ================= HIGHLIGHT + DRAW ================= */
 
-function highlight(start,col){
+function highlight(m,bp){
  document.querySelectorAll("td").forEach(td=>td.className="");
- for(let i=0;i<6;i++){
-  let td=tbl.rows[start+i+1].cells[col];
-  td.className=i%2?"f1":"f2";
- }
+ bp.forEach((p,i)=>{
+  let r=m.r-p.dr,c=m.c+p.dc;
+  let td=tbl.rows[r+1]?.cells[c];
+  if(td) td.className=i%2?"f1":"f2";
+ });
+ drawLines();
+}
+
+/* ================= CANVAS LINES ================= */
+
+function drawLines(){
+ let cvs=cnv,ctx=cvs.getContext("2d");
+ cvs.width=tbl.offsetWidth;
+ cvs.height=tbl.offsetHeight;
+ ctx.clearRect(0,0,cvs.width,cvs.height);
+
+ let pts=[...document.querySelectorAll(".f1,.f2")];
+ if(pts.length<2)return;
+ ctx.strokeStyle="#00e0ff";
+ ctx.lineWidth=3;
+ ctx.beginPath();
+ pts.forEach((d,i)=>{
+  let r=d.getBoundingClientRect();
+  let t=tbl.getBoundingClientRect();
+  let x=r.left-t.left+r.width/2;
+  let y=r.top-t.top+r.height/2;
+  i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+ });
+ ctx.stroke();
 }
 </script>
 </body>
