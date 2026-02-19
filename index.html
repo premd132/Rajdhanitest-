@@ -2,169 +2,252 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Jodi Family CSV System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPBoss Style Jodi Pattern System</title>
 
 <style>
 body{
   font-family:Arial;
-  background:#f4f4f4;
-  margin:10px;
-}
-h2{text-align:center}
-button,input{padding:6px;margin:5px}
-
-#wrap{
-  background:#fff;
+  background:#f5f1d0;
   padding:10px;
-  overflow:auto;
 }
-
+.controls{
+  margin-bottom:8px;
+}
 table{
   border-collapse:collapse;
-  font-size:14px;
 }
-td,th{
+th,td{
   border:1px solid #999;
-  padding:6px;
+  width:56px;
+  height:34px;
   text-align:center;
-  min-width:55px;
+  font-weight:700;
+  background:#fbf6db;
+  position:relative;
 }
-td[contenteditable]{
-  background:#fffbe6;
-}
+th{background:#eee}
+td[contenteditable]{outline:none}
 
-/* family highlight */
-.family{
-  background:#e6f0ff;
-  font-weight:bold;
+.square{outline:3px solid #000}
+.circle{border:3px solid #1e5bff;border-radius:50%}
+
+svg{
+  position:absolute;
+  top:0;left:0;
+  pointer-events:none;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Jodi Family CSV System</h2>
+<div class="controls">
+Day:
+<select id="day">
+<option value="0">Mon</option>
+<option value="1">Tue</option>
+<option value="2">Wed</option>
+<option value="3">Thu</option>
+<option value="4">Fri</option>
+<option value="5">Sat</option>
+</select>
 
-<input type="file" id="csvFile" accept=".csv">
-<button onclick="addRow()">➕ Add Row</button>
-<button onclick="applyFamily()">🔁 Apply Family</button>
-<button onclick="clearAll()">🗑 Clear</button>
+Base Jodi:
+<input id="base" value="20" size="3">
 
-<div id="wrap">
-  <table id="chart"></table>
+Rows:
+<select id="rows">
+<option>5</option><option>6</option><option>7</option>
+<option>8</option><option>9</option><option>10</option>
+</select>
+
+<button onclick="search()">SEARCH</button>
+<button onclick="clearMarks()">Clear</button>
+</div>
+
+<div class="controls">
+CSV:
+<input type="file" id="csv">
+<button onclick="upload()">Upload</button>
+<button onclick="addRow()">Add Row</button>
+</div>
+
+<div style="position:relative">
+<svg id="lines"></svg>
+<table>
+<thead>
+<tr>
+<th>Mon</th><th>Tue</th><th>Wed</th>
+<th>Thu</th><th>Fri</th><th>Sat</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
 </div>
 
 <script>
-// ================= FAMILY DATA =================
-const FAMILY = {
- "22":["22","27","72","77"],
- "11":["11","61","66","16"],
- "33":["33","83","88","38"],
- "99":["99","44","49","94"],
- "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"],  
- "13":["13","18","31","36","63","68","81","86"],  
- "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"],  
- "23":["23","28","32","37","73","78","82","87"],  
- "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"],  
- "34":["34","39","43","48","84","89","93","98"],  
- "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
+// ================= FAMILY SET =================
+const FAMILIES={
+"12":["12","17","21","26","62","67","71","76"],
+"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],
+"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],
+"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],
+"45":["04","09","40","45","54","59","90","95"],
+"full":["00","11","22","33","44","55","66","77","88","99"]
 };
 
-const table=document.getElementById("chart");
+// ================= UTIL =================
+const pad=v=>{
+ if(v==="**") return "**";
+ v=String(v).replace(/\D/g,"");
+ if(v==="") return "**";
+ return v.length===1?"0"+v:v.slice(-2);
+};
+const palti=v=>v==="**"?"**":v[1]+v[0];
+const fam=v=>{
+ for(let k in FAMILIES)
+  if(FAMILIES[k].includes(v)) return k;
+ return null;
+};
+const isTouch=(base,v)=>{
+ if(v==="**") return false;
+ if(v===base) return true;
+ if(palti(v)===base) return true;
+ let f=fam(base);
+ return f && FAMILIES[f].includes(v);
+};
 
-// ================= LOAD LOCAL =================
-const saved=localStorage.getItem("jodiData");
-if(saved) buildTable(JSON.parse(saved));
+// ================= DATA =================
+const KEY="dpboss_jodi_data";
+let data=[];
+const tbody=document.getElementById("tbody");
+const svg=document.getElementById("lines");
 
-// ================= SAVE =================
+// ================= STORAGE =================
 function save(){
-  const data=[];
-  [...table.rows].forEach(r=>{
-    let row=[];
-    [...r.cells].forEach(c=>row.push(c.innerText.trim()));
-    data.push(row);
-  });
-  localStorage.setItem("jodiData",JSON.stringify(data));
+ localStorage.setItem(KEY,JSON.stringify(data));
 }
-
-// ================= BUILD TABLE =================
-function buildTable(data){
-  table.innerHTML="";
-  data.forEach(row=>{
-    const tr=document.createElement("tr");
-    row.forEach(val=>{
-      const td=document.createElement("td");
-      td.innerText=val;
-      td.contentEditable=true;
-      td.oninput=save;
-      tr.appendChild(td);
-    });
-    table.appendChild(tr);
-  });
+function load(){
+ let s=localStorage.getItem(KEY);
+ if(s){data=JSON.parse(s);render();}
 }
+load();
 
 // ================= CSV UPLOAD =================
-document.getElementById("csvFile").addEventListener("change",e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const rows=reader.result
-      .trim()
-      .split(/\r?\n/)
-      .map(l=>l.split(",").map(v=>v.trim()));
-    buildTable(rows);
-    save();
-  };
-  reader.readAsText(file);
-});
-
-// ================= ADD ROW =================
-function addRow(){
-  const tr=document.createElement("tr");
-  for(let i=0;i<6;i++){
-    const td=document.createElement("td");
-    td.contentEditable=true;
-    td.oninput=save;
-    tr.appendChild(td);
-  }
-  table.appendChild(tr);
-  save();
+function upload(){
+ let f=csv.files[0];
+ if(!f){alert("CSV select karo");return;}
+ let r=new FileReader();
+ r.onload=()=>{
+  let lines=r.result.replace(/\r/g,"").trim().split("\n");
+  if(lines[0].toLowerCase().includes("mon")) lines.shift();
+  data=lines.map(l=>{
+    let a=l.split(",").map(x=>pad(x.trim()));
+    while(a.length<6) a.push("**");
+    return a.slice(0,6);
+  });
+  save(); render();
+ };
+ r.readAsText(f);
 }
 
-// ================= FAMILY APPLY =================
-function applyFamily(){
-  // clear old
-  [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("family"));
-
-  [...table.rows].forEach(row=>{
-    [...row.cells].forEach(cell=>{
-      const v=cell.innerText.trim();
-      if(!v) return;
-
-      for(const key in FAMILY){
-        if(FAMILY[key].includes(v)){
-          cell.classList.add("family");
-          break;
-        }
-      }
-    });
+// ================= TABLE =================
+function render(){
+ tbody.innerHTML="";
+ data.forEach((row,ri)=>{
+  let tr=document.createElement("tr");
+  row.forEach((v,ci)=>{
+    let td=document.createElement("td");
+    td.textContent=v;
+    td.dataset.r=ri;
+    td.dataset.c=ci;
+    td.contentEditable=true;
+    td.oninput=()=>{
+      data[ri][ci]=pad(td.textContent);
+      save();
+    };
+    tr.appendChild(td);
   });
+  tbody.appendChild(tr);
+ });
+ resizeSVG();
+}
+function addRow(){
+ data.push(["**","**","**","**","**","**"]);
+ save(); render();
+}
+
+// ================= SEARCH (DPBoss STYLE) =================
+function cell(r,c){
+ return document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+}
+function markSq(r,c){cell(r,c).classList.add("square")}
+function markCi(r,c){cell(r,c).classList.add("circle")}
+
+function search(){
+ clearMarks();
+ let basev=pad(base.value);
+ let col=parseInt(day.value);
+ let R=parseInt(rows.value);
+
+ for(let r=data.length-1;r>=0;r--){
+  if(data[r][col]===basev){
+    markSq(r,col);
+
+    let hits=[];
+    for(let k=1;k<=R;k++){
+      let rr=r-k;
+      if(rr<0) break;
+      if(isTouch(basev,data[rr][col])){
+        hits.push(rr);
+        markCi(rr,col);
+      }
+    }
+    if(hits.length>=2){
+      drawLine(r,col,hits);
+    }
+  }
+ }
+}
+
+// ================= DRAW =================
+function drawLine(br,bc,rows){
+ let prev={r:br,c:bc};
+ rows.forEach(rr=>{
+  let a=cell(prev.r,prev.c).getBoundingClientRect();
+  let b=cell(rr,bc).getBoundingClientRect();
+  let box=svg.getBoundingClientRect();
+
+  let l=document.createElementNS("http://www.w3.org/2000/svg","line");
+  l.setAttribute("x1",a.left+a.width/2-box.left);
+  l.setAttribute("y1",a.top+a.height/2-box.top);
+  l.setAttribute("x2",b.left+b.width/2-box.left);
+  l.setAttribute("y2",b.top+b.height/2-box.top);
+  l.setAttribute("stroke","#1e5bff");
+  l.setAttribute("stroke-width","2");
+  svg.appendChild(l);
+
+  prev={r:rr,c:bc};
+ });
 }
 
 // ================= CLEAR =================
-function clearAll(){
-  if(confirm("Delete all data?")){
-    table.innerHTML="";
-    localStorage.removeItem("jodiData");
-  }
+function clearMarks(){
+ document.querySelectorAll(".square,.circle")
+ .forEach(e=>e.classList.remove("square","circle"));
+ svg.innerHTML="";
 }
+function resizeSVG(){
+ let t=document.querySelector("table").getBoundingClientRect();
+ svg.setAttribute("width",t.width);
+ svg.setAttribute("height",t.height);
+}
+window.onresize=resizeSVG;
 </script>
 
 </body>
