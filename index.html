@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - Pure Family Pattern</title>
+    <title>Kalyan Pro AI - Dual Family Flow</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --blue: #0084ff; --red: #ff4757; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
+        :root { --gold: #ffd700; --f1-color: #0084ff; --f2-color: #ff4757; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; }
         #app { padding: 10px; }
         .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 8px; justify-content: center; }
-        
         .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; box-shadow: 0 0 20px #000; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; }
         th { background: #1e293b; color: white; font-size: 11px; }
         
-        .circle-f1 { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); }
-        .circle-f2 { border: 3px solid var(--red) !important; border-radius: 50%; background: rgba(255, 71, 87, 0.2); }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; margin-top: 10px; border-top: 3px solid var(--gold); }
-        .check-btn { background: #2d3748; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; border-left: 5px solid var(--green); }
+        /* Family Circles */
+        .f1-circle { border: 3px solid var(--f1-color) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); }
+        .f2-circle { border: 3px solid var(--f2-color) !important; border-radius: 50%; background: rgba(255, 71, 87, 0.2); }
         
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 420px; box-shadow: 0 0 40px #000; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; margin-top: 10px; border-top: 3px solid var(--gold); }
+        .check-btn { background: #2d3748; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; border-left: 5px solid var(--green); display: flex; justify-content: space-between; }
+        
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 420px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
         button { cursor: pointer; border: none; border-radius: 5px; font-weight: bold; padding: 8px 15px; }
     </style>
@@ -47,27 +47,27 @@
     </center>
 
     <div class="card">
-        <h3>✔ Check Lines (Family Pattern)</h3>
-        <div id="check-list">Click on a blank (**) cell...</div>
+        <h3>✔ Check Lines (Dual Family Pattern)</h3>
+        <div id="check-list">Click a blank cell (**) to analyze...</div>
     </div>
 
     <div class="card">
-        <h3 style="color:var(--green)">🔮 Future AI Prediction</h3>
-        <div id="future-ai" style="font-size: 20px; font-weight: 800; text-align: center;">-- -- --</div>
+        <h3 style="color:var(--green)">🔮 Future AI (3-Pair)</h3>
+        <div id="future-ai" style="font-size: 22px; font-weight: 800; text-align: center; letter-spacing: 3px;">-- -- --</div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:red; color:white;">X</button>
-    <h3 style="margin-top:0">Check Line Pattern</h3>
+    <h3 style="margin:0">Family Pattern View</h3>
     <center><div id="popContent"></div></center>
 </div>
 
 <script>
 const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("kalyan_v_final")) || [["12","23","34","45","56","67"],["**","**","**","**","**","**"]];
-let activeMark = null;
+let data = JSON.parse(localStorage.getItem("kalyan_v_final_v2")) || [["12","57","21","70","26","75"],["**","**","**","**","**","**"]];
+let activePattern = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
 function norm(v){v=String(v).trim(); return v=="**"?"**":(v.length==1?"0"+v:v);}
@@ -79,41 +79,44 @@ function draw(){
         h+="<tr>";
         r.forEach((c,ci)=>{
             let cls = "";
-            if(activeMark && isPartOf(ri,ci)===1) cls="circle-f1";
-            if(activeMark && isPartOf(ri,ci)===2) cls="circle-f2";
+            if(activePattern && isPartOf(ri,ci)===1) cls="f1-circle";
+            if(activePattern && isPartOf(ri,ci)===2) cls="f2-circle";
             h+=`<td class="${cls}" onclick="handleCell(${ri},${ci})">${c}</td>`;
         });
         h+="</tr>";
     });
     document.getElementById("tbl").innerHTML=h;
-    if(activeMark) setTimeout(()=>renderLines("mainCanvas", "tbl"), 50);
+    if(activePattern) setTimeout(()=>renderLines("mainCanvas", "tbl"), 50);
 }
 
 function handleCell(r,c){
-    if(data[r][c]=="**") runFamilyAI(r,c);
+    if(data[r][c]=="**") runAnalysis(r,c);
     else { let v=prompt("Edit Value:", data[r][c]); if(v!==null){data[r][c]=norm(v); draw();}}
 }
 
 function isPartOf(ri,ci){
-    if(!activeMark) return 0;
-    let off = ri - activeMark.start;
-    if(off>=0 && off<activeMark.shape.length) return activeMark.shape[off][ci];
+    if(!activePattern) return 0;
+    let off = ri - activePattern.start;
+    if(off>=0 && off<activePattern.shape.length) return activePattern.shape[off][ci];
     return 0;
 }
 
-function runFamilyAI(r, c) {
+function runAnalysis(r, c) {
+    // Har blank ke liye uski apni 2 alag families dhoondhna
     let bases = [];
-    // Har column ke liye alag 2 families pichle records se uthana
+    // Column ke upar se search karega taaki har blank alag base pakde
     for(let i=r-1; i>=0; i--){
         if(data[i][c]!="**" && !bases.some(b => fam(b)===fam(data[i][c]))) {
             bases.push(data[i][c]);
             if(bases.length >= 2) break;
         }
     }
-    if(bases.length < 2) return;
+    if(bases.length < 2) { alert("Pichle records mein 2 families nahi mili!"); return; }
 
+    // Pattern Shape (2 Family logic)
     let shape = [];
-    for(let i=Math.max(0, r-6); i<r; i++){
+    let scanDepth = 8;
+    for(let i=Math.max(0, r-scanDepth); i<r; i++){
         let row = [];
         for(let j=0; j<6; j++){
             if(isFamMatch(data[i][j], bases[0])) row.push(1);
@@ -138,25 +141,20 @@ function runFamilyAI(r, c) {
     let list = document.getElementById("check-list");
     list.innerHTML = "";
     matches.sort((a,b)=>b.score-a.score).slice(0,3).forEach((m,idx)=>{
-        let btn = document.createElement("div");
-        btn.className = "check-btn";
-        btn.innerHTML = `Check Line ${idx+1} (Family Match Score: ${m.score})`;
-        btn.onclick = () => {
-            activeMark = {start: m.index, shape: shape};
+        let div = document.createElement("div");
+        div.className = "check-btn";
+        div.innerHTML = `<span>Check Line ${idx+1} (Match: ${m.score})</span> ➔`;
+        div.onclick = () => {
+            activePattern = {start: m.index, shape: shape};
             draw();
             showPopup(m.index, shape);
-            updateFutureAI(m.index, shape.length, c);
+            // Future AI Prediction
+            let pred = (m.index+shape.length < data.length) ? data[m.index+shape.length][c] : "??";
+            let fKey = fam(pred);
+            document.getElementById("future-ai").innerText = (FAMILY[fKey] ? FAMILY[fKey].slice(0,3).join("  ") : pred + " -- --");
         };
-        list.appendChild(btn);
+        list.appendChild(div);
     });
-}
-
-function updateFutureAI(idx, offset, col) {
-    let res1 = (idx+offset < data.length) ? data[idx+offset][col] : "XX";
-    // Dummy related family pairs for 3-pair prediction
-    let fKey = fam(res1);
-    let pairs = FAMILY[fKey] ? FAMILY[fKey].slice(0,3).join(" - ") : res1 + " - XX - XX";
-    document.getElementById("future-ai").innerText = pairs;
 }
 
 function showPopup(start, shape){
@@ -164,7 +162,7 @@ function showPopup(start, shape){
     for(let i=0; i<shape.length; i++){
         h += "<tr>";
         data[start+i].forEach((v,j)=>{
-            let cls = shape[i][j]===1 ? "circle-f1" : (shape[i][j]===2 ? "circle-f2" : "");
+            let cls = shape[i][j]===1 ? "f1-circle" : (shape[i][j]===2 ? "f2-circle" : "");
             h += `<td class="${cls}">${v}</td>`;
         });
         h += "</tr>";
@@ -181,7 +179,8 @@ function renderLines(cvsId, containerId) {
     const ctx = cvs.getContext("2d");
     cvs.width = cont.offsetWidth; cvs.height = cont.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    const drawL = (cls, col) => {
+    
+    const drawFLine = (cls, col) => {
         let dots = cont.querySelectorAll("."+cls);
         if(dots.length<2) return;
         ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath();
@@ -192,7 +191,8 @@ function renderLines(cvsId, containerId) {
         });
         ctx.stroke();
     };
-    drawL("circle-f1", "#0084ff"); drawL("circle-f2", "#ff4757");
+    drawFLine("f1-circle", "#0084ff"); 
+    drawFLine("f2-circle", "#ff4757");
 }
 
 document.getElementById("csv").onchange = e => {
@@ -201,7 +201,7 @@ document.getElementById("csv").onchange = e => {
     fr.readAsText(e.target.files[0]);
 };
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("kalyan_v_final", JSON.stringify(data)); alert("Saved!"); }
+function saveData(){ localStorage.setItem("kalyan_v_final_v2", JSON.stringify(data)); alert("Saved!"); }
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 draw();
 </script>
