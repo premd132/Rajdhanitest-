@@ -1,213 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan AI - Pradeep Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --gold: #ffd700; --f1: #0084ff; --f2: #ff4757; --bg: #0f172a; --panel: #1e293b; }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
-        #app { padding: 10px; padding-bottom: 100px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; position: sticky; top: 0; z-index: 20; }
-        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; box-shadow: 0 0 30px #000; margin-bottom: 20px; }
-        table { border-collapse: collapse; color: #000; font-size: 13px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; position: relative; }
-        th { background: #1e293b; color: white; font-size: 10px; }
-        
-        /* Marking Colors */
-        .f1-mark { border: 3px solid var(--f1) !important; border-radius: 50%; background: rgba(0,132,255,0.25); box-shadow: 0 0 8px var(--f1); }
-        .f2-mark { border: 3px solid var(--f2) !important; border-radius: 50%; background: rgba(255,71,87,0.25); box-shadow: 0 0 8px var(--f2); }
-        
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-        .card { background: var(--panel); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .check-btn { background: #2d3748; padding: 14px; margin: 10px 0; border-radius: 10px; cursor: pointer; border-left: 6px solid #00ff88; font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; }
-        
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 20px; display: none; z-index: 100; padding: 20px; color: #000; width: 95%; max-width: 400px; border: 5px solid var(--gold); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 90; }
-        .prediction-box { font-size: 28px; font-weight: 800; color: #00ff88; text-align: center; margin: 10px 0; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalyan AI – Pradeep Pro FIX</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+ --gold:#ffd700; --f1:#0084ff; --f2:#ff4757;
+ --bg:#0f172a; --panel:#1e293b;
+}
+*{box-sizing:border-box;font-family:Poppins}
+body{margin:0;background:var(--bg);color:#fff}
+
+#app{padding:10px;padding-bottom:120px}
+
+.toolbar{
+ background:var(--panel);padding:10px;border-radius:12px;
+ display:flex;gap:10px;justify-content:center;
+ position:sticky;top:0;z-index:30;
+}
+
+.table-container{
+ position:relative;background:#fff;border-radius:8px;
+ padding:5px;display:inline-block;
+}
+
+table{border-collapse:collapse;color:#000;font-size:13px;z-index:5;position:relative}
+td,th{
+ border:1px solid #ddd;width:45px;height:45px;
+ text-align:center;font-weight:bold;cursor:pointer;
+}
+th{background:#1e293b;color:#fff;font-size:10px}
+
+.f1-mark{border:3px solid var(--f1)!important;border-radius:50%;background:rgba(0,132,255,.25)}
+.f2-mark{border:3px solid var(--f2)!important;border-radius:50%;background:rgba(255,71,87,.25)}
+
+canvas{
+ position:absolute;top:0;left:0;z-index:2;
+ pointer-events:none;
+}
+
+.card{
+ background:var(--panel);padding:15px;border-radius:15px;
+ margin-top:15px;border:1px solid rgba(255,255,255,.1)
+}
+
+.check-btn{
+ background:#2d3748;padding:14px;margin:8px 0;
+ border-radius:10px;cursor:pointer;
+ border-left:6px solid #00ff88;
+ font-weight:600;display:flex;justify-content:space-between
+}
+
+.prediction-box{
+ font-size:28px;font-weight:800;color:#00ff88;
+ text-align:center;margin-top:10px
+}
+
+#popup{
+ position:fixed;left:50%;top:50%;
+ transform:translate(-50%,-50%);
+ background:#fff;color:#000;
+ border-radius:18px;display:none;
+ z-index:100;padding:15px;
+ border:5px solid var(--gold)
+}
+.overlay{
+ position:fixed;top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,.85);
+ display:none;z-index:90
+}
+</style>
 </head>
+
 <body>
-
 <div id="app">
-    <div class="toolbar">
-        <button onclick="addRow()" style="background:#334155; color:white; border:none; padding:8px 15px; border-radius:5px;">➕ ROW</button>
-        <button onclick="saveData()" style="background:#00ff88; color:#000; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">💾 SAVE</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--gold); border:none; padding:8px 15px; border-radius:5px;">📂 LOAD CSV</button>
-        <input type="file" id="csv" style="display:none">
-    </div>
 
-    <center>
-        <div class="table-container">
-            <canvas id="mainCanvas"></canvas>
-            <table id="tbl"></table>
-        </div>
-    </center>
-
-    <div class="card">
-        <h3 style="margin:0; color:var(--gold);">🔮 Future AI 3-Pair Result</h3>
-        <div id="future-display" class="prediction-box">-- -- --</div>
-    </div>
-
-    <div class="card">
-        <h3 style="margin:0">✔ Check Lines (Historical Patterns)</h3>
-        <div id="check-list" style="margin-top:10px; color:#94a3b8;">Click the blank cell (**) at the very bottom...</div>
-    </div>
+<div class="toolbar">
+<button onclick="addRow()">➕ ROW</button>
+<button onclick="saveData()">💾 SAVE</button>
+<button onclick="csv.click()">📂 CSV</button>
+<input type="file" id="csv" hidden>
 </div>
 
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<center>
+<div class="table-container">
+<canvas id="mainCanvas"></canvas>
+<table id="tbl"></table>
+</div>
+</center>
+
+<div class="card">
+<h3 style="color:var(--gold)">🔮 Future 3 Pair</h3>
+<div id="future" class="prediction-box">-- -- --</div>
+</div>
+
+<div class="card">
+<h3>✔ Check Lines</h3>
+<div id="check-list">Click bottom ** cell</div>
+</div>
+
+</div>
+
+<div class="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#ff4757; color:white; border:none; padding:5px 12px; border-radius:5px;">CLOSE</button>
-    <h3 style="margin:0">Pattern Real Record</h3>
-    <hr>
-    <center><div id="popContent" style="margin-top:15px; position:relative;"></div></center>
+<button onclick="closePopup()" style="float:right">CLOSE</button>
+<div id="popContent"></div>
 </div>
 
 <script>
-const FAMILY = {"00":["00","05","50","55"],"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["10","15","01","06","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["20","25","02","07","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["30","35","03","08","53","58","80","85"],"45":["40","45","04","09","54","59","90","95"]};
+const FAMILY={
+"00":["00","05","50","55"],"11":["11","16","61","66"],
+"22":["22","27","72","77"],"33":["33","38","83","88"],
+"44":["44","49","94","99"],
+"12":["12","17","21","26","62","67","71","76"],
+"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],
+"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],
+"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],
+"45":["04","09","40","45","54","59","90","95"]
+};
 
-let data = JSON.parse(localStorage.getItem("kalyan_v3_final")) || [["00","00","00","00","00","00"],["**","**","**","**","**","**"]];
-let activeMatch = null;
+let data=JSON.parse(localStorage.getItem("kalyan_fix"))||
+[["00","00","00","00","00","00"],["**","**","**","**","**","**"]];
 
-function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(String(v))) return k; return v; }
-function norm(v){ v=String(v).trim(); return v=="**"?"**":(v.length==1?"0"+v:v); }
+let active=null;
+
+const getFam=v=>{
+ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k;
+ return v;
+};
+
+const norm=v=>v=="**"?"**":v.padStart(2,"0");
 
 function draw(){
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((r,ri)=>{
-        h+="<tr>";
-        r.forEach((c,ci)=>{
-            let cls = "";
-            if(activeMatch && ri >= activeMatch.start && ri < activeMatch.start + 6){
-                if(getFam(c) === activeMatch.f1) cls = "f1-mark";
-                else if(getFam(c) === activeMatch.f2) cls = "f2-mark";
-            }
-            h+=`<td class="${cls}" onclick="handleCell(${ri},${ci})">${c}</td>`;
-        });
-        h+="</tr>";
-    });
-    document.getElementById("tbl").innerHTML=h;
-    if(activeMatch) setTimeout(()=>renderLines("mainCanvas", "tbl"), 50);
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,i)=>{
+  h+="<tr>";
+  r.forEach((c,j)=>{
+   let cls="";
+   if(active && i>=active.s && i<active.s+6){
+    if(getFam(c)==active.f1)cls="f1-mark";
+    if(getFam(c)==active.f2)cls="f2-mark";
+   }
+   h+=`<td class="${cls}" onclick="cell(${i},${j})">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ tbl.innerHTML=h;
+ setTimeout(()=>lines("mainCanvas","tbl"),30);
 }
 
-function handleCell(r,c){
-    if(data[r][c]=="**") triggerMirrorAI(r,c);
-    else { let v=prompt("Enter Jodi:", data[r][c]); if(v!==null){data[r][c]=norm(v); draw();}}
+function cell(r,c){
+ if(data[r][c]=="**") scan(r,c);
+ else{
+  let v=prompt("Jodi",data[r][c]);
+  if(v!=null){data[r][c]=norm(v);draw();}
+ }
 }
 
-function triggerMirrorAI(r, c) {
-    let startRow = Math.max(0, r - 6);
-    let families = [];
-    
-    // Scan up to identify the pattern pairs
-    for(let i=r-1; i>=Math.max(0, r-10); i--){
-        let f = getFam(data[i][c]);
-        if(f!=="**" && !families.includes(f)) families.push(f);
-        if(families.length >= 2) break;
-    }
-    
-    if(families.length < 2) {
-        alert("Pattern ke liye upar kam se kam 2 different family jodi honi chahiye!");
-        return;
-    }
+function scan(r,c){
+ let fams=[];
+ for(let i=r-1;i>=Math.max(0,r-6);i--){
+  let f=getFam(data[i][c]);
+  if(!fams.includes(f)&&f!="**")fams.push(f);
+ }
+ if(fams.length<2)return alert("2 family required");
 
-    // Capture the Visual Blueprint
-    let blueprint = [];
-    for(let i=0; i<6; i++){
-        let curR = startRow + i;
-        if(curR >= r) break;
-        data[curR].forEach((val, dIdx) => {
-            let f = getFam(val);
-            if(f === families[0]) blueprint.push({ w: i, d: dIdx, type: 1 });
-            if(f === families[1]) blueprint.push({ w: i, d: dIdx, type: 2 });
-        });
-    }
+ let blueprint=[];
+ for(let i=0;i<6;i++){
+  let rr=r-1-i;if(rr<0)break;
+  blueprint.push({i,f:getFam(data[rr][c])});
+ }
 
-    // Search History
-    let matches = [];
-    for(let i=0; i < data.length - 12; i++){
-        let score = 0;
-        blueprint.forEach(p => {
-            if(getFam(data[i + p.w][p.d]) === (p.type === 1 ? families[0] : families[1])) score++;
-        });
-        if(score >= 2) matches.push({ idx: i, score: score });
-    }
+ let matches=[];
+ for(let i=0;i<=data.length-7;i++){
+  let score=0;
+  blueprint.forEach((p,idx)=>{
+   if(getFam(data[i+5-idx][c])==p.f)score++;
+  });
+  if(score>=3)matches.push({i,score});
+ }
 
-    // Generate Check Lines
-    let list = document.getElementById("check-list");
-    list.innerHTML = "";
-    matches.sort((a,b)=>b.score - a.score).slice(0,5).forEach((m, idx) => {
-        let div = document.createElement("div");
-        div.className = "check-btn";
-        div.innerHTML = `<span>Check Line ${idx+1} (Match: ${m.score})</span> ➔`;
-        div.onclick = () => {
-            activeMatch = { start: m.idx, f1: families[0], f2: families[1] };
-            draw();
-            showPopup(m.idx, families);
-            
-            // Future Prediction Logic
-            let targetRow = m.idx + 6;
-            if(data[targetRow]){
-                let resFam = getFam(data[targetRow][c]);
-                document.getElementById("future-display").innerText = (FAMILY[resFam] || []).slice(0,3).join("  ");
-            }
-        };
-        list.appendChild(div);
-    });
+ checkList(matches,fams,c);
 }
 
-function showPopup(start, fams){
-    let h = "<canvas id='popCanvas' style='position:absolute; top:0; left:0; pointer-events:none; z-index:4;'></canvas>";
-    h += "<table id='popTbl' style='position:relative; z-index:5;'>";
-    for(let i=start; i<start+6; i++){
-        h += "<tr>";
-        if(data[i]) {
-            data[i].forEach(v => {
-                let cls = (getFam(v)===fams[0]) ? "f1-mark" : (getFam(v)===fams[1] ? "f2-mark" : "");
-                h += `<td class="${cls}">${v}</td>`;
-            });
-        }
-        h += "</tr>";
-    }
-    document.getElementById("popContent").innerHTML = h+"</table>";
-    document.getElementById("popup").style.display="block";
-    document.getElementById("overlay").style.display="block";
-    setTimeout(()=>renderLines("popCanvas", "popContent"), 100);
+function checkList(arr,fams,col){
+ let cl=document.getElementById("check-list");
+ cl.innerHTML="";
+ arr.sort((a,b)=>b.score-a.score).slice(0,5).forEach((m,i)=>{
+  let d=document.createElement("div");
+  d.className="check-btn";
+  d.innerHTML=`Check ${i+1} ( ${m.score} ) ➜`;
+  d.onclick=()=>{
+   active={s:m.i,f1:fams[0],f2:fams[1]};
+   draw();popup(m.i,fams);
+   let nx=data[m.i+6]?.[col];
+   let fam=getFam(nx||"");
+   future.innerText=(FAMILY[fam]||[]).slice(0,3).join(" ");
+  };
+  cl.appendChild(d);
+ });
 }
 
-function renderLines(cvsId, containerId) {
-    const cvs = document.getElementById(cvsId);
-    const cont = (containerId==="tbl") ? document.getElementById(containerId) : document.querySelector("#popContent table");
-    if(!cvs || !cont) return;
-    const ctx = cvs.getContext("2d");
-    cvs.width = cont.offsetWidth; cvs.height = cont.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    
-    const drawF = (cls, col) => {
-        let dots = cont.querySelectorAll("."+cls);
-        if(dots.length < 2) return;
-        ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath();
-        dots.forEach((d,i)=>{
-            let r=d.getBoundingClientRect(), p=cont.getBoundingClientRect();
-            let x=r.left-p.left+r.width/2, y=r.top-p.top+r.height/2;
-            if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-        });
-        ctx.stroke();
-    };
-    drawF("f1-mark", "#0084ff"); drawF("f2-mark", "#ff4757");
+function popup(s,f){
+ let h="<table>";
+ for(let i=s;i<s+6;i++){
+  h+="<tr>";
+  data[i].forEach(v=>{
+   let c=getFam(v)==f[0]?"f1-mark":getFam(v)==f[1]?"f2-mark":"";
+   h+=`<td class="${c}">${v}</td>`;
+  });
+  h+="</tr>";
+ }
+ popContent.innerHTML=h+"</table>";
+ popup.style.display=overlay.style.display="block";
 }
 
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("kalyan_v3_final", JSON.stringify(data)); alert("Saved Successfully!"); }
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+function lines(cvs,tblId){
+ let cvsEl=document.getElementById(cvs);
+ let tbl=document.getElementById(tblId);
+ if(!tbl)return;
+ cvsEl.width=tbl.offsetWidth;
+ cvsEl.height=tbl.offsetHeight;
+ let ctx=cvsEl.getContext("2d");
+ ctx.clearRect(0,0,cvsEl.width,cvsEl.height);
+ ["f1-mark","#0084ff","f2-mark","#ff4757"].forEach((v,i,a)=>{
+  if(i%2)return;
+  let d=tbl.querySelectorAll("."+v);
+  if(d.length<2)return;
+  ctx.strokeStyle=a[i+1];ctx.lineWidth=3;ctx.beginPath();
+  d.forEach((x,j)=>{
+   let r=x.getBoundingClientRect(),p=tbl.getBoundingClientRect();
+   let X=r.left-p.left+r.width/2;
+   let Y=r.top-p.top+r.height/2;
+   j?ctx.lineTo(X,Y):ctx.moveTo(X,Y);
+  });
+  ctx.stroke();
+ });
+}
 
-document.getElementById("csv").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => { data = fr.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>norm(v))); draw(); };
-    fr.readAsText(e.target.files[0]);
+function addRow(){data.push(["**","**","**","**","**","**"]);draw();}
+function saveData(){localStorage.setItem("kalyan_fix",JSON.stringify(data));alert("Saved")}
+function closePopup(){popup.style.display=overlay.style.display="none"}
+
+csv.onchange=e=>{
+ let fr=new FileReader();
+ fr.onload=()=>{data=fr.result.split("\n").map(r=>r.split(",").map(norm));draw();}
+ fr.readAsText(e.target.files[0]);
 };
+
 draw();
 </script>
 </body>
