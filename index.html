@@ -82,7 +82,7 @@
     </center>
 
     <div class="dashboard">
-        <div class="card"><h3>✔ Matches Found</h3><div id="checks"></div></div>
+        <div class="card"><h3>✔ Matches Found (Check Line)</h3><div id="checks">No Pattern Selected</div></div>
         <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">Ready...</div></div>
         <div class="card"><h3>🔮 Future Prediction</h3><div id="future">...</div></div>
     </div>
@@ -91,7 +91,7 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">Dual-Pattern View</h3>
+    <h3 style="margin: 0 0 15px 0;">History Pattern View</h3>
     <center><div class="table-container" style="border: 1px solid #ddd;"><canvas id="popCanvas"></canvas><div id="popData"></div></div></center>
 </div>
 
@@ -110,7 +110,6 @@ const FAMILY = {
 let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(5).fill("**"));
 
 function startApp() { document.getElementById('home-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; draw(); }
-
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
 function smartMatch(a,b){ if(a=="**"||b=="**") return false; return fam(a)===fam(b); }
 function norm(v){if(!v||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
@@ -169,6 +168,7 @@ function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
 function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
+// --- FIXED PATTERN LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
     let b1 = "**", b2 = "**";
@@ -176,23 +176,28 @@ function makePattern(r, c) {
     let startScan = Math.max(0, r - lookback);
     let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
 
-    // Dual Family Detection Logic
+    // Ab har column ke liye base ussi column se dhundhega
     for (let i = r - 1; i >= startScan; i--) {
-        for (let j = 0; j < 5; j++) {
-            let val = data[i][j];
-            if (val !== "**") {
-                if (b1 === "**") { b1 = val; shape[i-startScan][j] = 1; }
-                else if (smartMatch(val, b1)) { shape[i-startScan][j] = 1; }
-                else if (b2 === "**" && fam(val) !== fam(b1)) { b2 = val; shape[i-startScan][j] = 2; }
-                else if (b2 !== "**" && smartMatch(val, b2)) { shape[i-startScan][j] = 2; }
-            }
+        let val = data[i][c]; // CLICKED COLUMN SCAN
+        if (val !== "**") {
+            if (b1 === "**") { b1 = val; shape[i-startScan][c] = 1; }
+            else if (smartMatch(val, b1)) { shape[i-startScan][c] = 1; }
+            else if (b2 === "**" && fam(val) !== fam(b1)) { b2 = val; shape[i-startScan][c] = 2; }
+            else if (b2 !== "**" && smartMatch(val, b2)) { shape[i-startScan][c] = 2; }
         }
     }
+
+    if(b1 === "**") {
+        alert("Pichle records mein koi jodi nahi mili!");
+        return;
+    }
+
     searchMultiPattern(shape, b1, b2);
 }
 
 function searchMultiPattern(shape, b1, b2) {
     let matches = [];
+    // Poore data mein dhoondho
     for (let i = 0; i <= data.length - shape.length; i++) {
         let ok = true;
         for (let k = 0; k < shape.length; k++) {
@@ -203,19 +208,31 @@ function searchMultiPattern(shape, b1, b2) {
             }
             if (!ok) break;
         }
+        // Current position skip karke baki matches lo
         if (ok) matches.push({ index: i });
     }
-    showChecks(shape, matches);
+    showChecks(shape, matches, b1, b2);
 }
 
-function showChecks(shape, matches){
-    document.getElementById("checks").innerHTML="";
-    matches.forEach((m)=>{
+function showChecks(shape, matches, b1, b2){
+    let container = document.getElementById("checks");
+    container.innerHTML = "";
+    
+    if(matches.length === 0) {
+        container.innerHTML = "No historical matches found.";
+        return;
+    }
+
+    matches.forEach((m) => {
         let d = document.createElement("div");
-        d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
-        d.innerText = `Record Match Found at Row ${m.index + 1}`;
-        d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
-        document.getElementById("checks").appendChild(d);
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid var(--gold); color:white;";
+        d.innerHTML = `<b>Match at Row ${m.index + 1}</b><br><small>Click to view connection</small>`;
+        d.onclick = () => { 
+            activeMark = {start: m.index, shape: shape}; 
+            draw(); 
+            showOne(shape, m.index); 
+        };
+        container.appendChild(d);
     });
     updateAdvancedAI(shape, matches);
 }
@@ -242,10 +259,14 @@ function updateAdvancedAI(shape, matches) {
         let nextR = m.index + shape.length;
         if(nextR < data.length && data[nextR][targetCol] !== "**") pool.push(data[nextR][targetCol]);
     });
-    document.getElementById("ai").innerHTML = pool.length ? `<p style='color:var(--green-line)'>Dual Pattern Active</p>` : "Seeking data...";
+    
+    document.getElementById("ai").innerHTML = pool.length ? `<p style='color:var(--green-line)'>Analysis Found ${pool.length} Times</p>` : "Scanning history...";
+    
     if (pool.length > 0) {
         let unique = [...new Set(pool)].slice(0, 3);
-        document.getElementById("future").innerHTML = `<div style='font-size:1.4rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div>`;
+        document.getElementById("future").innerHTML = `<div style='font-size:1.6rem; color:var(--gold); font-weight:800; letter-spacing:2px;'>${unique.join(" - ")}</div><small>AI Recommended Pairs</small>`;
+    } else {
+        document.getElementById("future").innerHTML = "No clear prediction.";
     }
 }
 
