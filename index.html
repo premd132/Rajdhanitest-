@@ -165,87 +165,74 @@ function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
 function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
-// --- AAPKA PROVIDED 2+2 LOGIC YAHAN HAI ---
+// --- STRICT 2+2 LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
     let lookback = 10;
     let startScan = Math.max(0, r - lookback);
+    let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
     
-    let baseFamily1 = null;
-    let baseFamily2 = null;
-    let f1Jodis = [];
-    let f2Jodis = [];
-    let positions = [];
-
-    // Pehle clicked column se families aur positions dhoondho
+    let b1 = null, b2 = null;
+    // Base families from the clicked column
     for (let i = r - 1; i >= startScan; i--) {
         let val = data[i][c];
-        if (val === "**") continue;
-        let f = fam(val);
-
-        if (!baseFamily1) {
-            baseFamily1 = f;
-            f1Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 1});
-        } else if (f === baseFamily1 && f1Jodis.length < 2) {
-            f1Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 1});
-        } else if (!baseFamily2 && f !== baseFamily1) {
-            baseFamily2 = f;
-            f2Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 2});
-        } else if (f === baseFamily2 && f2Jodis.length < 2) {
-            f2Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 2});
+        if (val !== "**") {
+            let f = fam(val);
+            if (!b1) b1 = f;
+            else if (!b2 && f !== b1) b2 = f;
         }
-
-        if (f1Jodis.length === 2 && f2Jodis.length === 2) break;
     }
 
-    if (f1Jodis.length === 2 && f2Jodis.length === 2) {
-        // Shape create karo clicked pattern ke liye
-        let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
-        positions.forEach(p => {
-            shape[p.ri - startScan][p.ci] = p.type;
-        });
-        // Ab poore record ko scan karo
-        searchMultiPattern(shape, baseFamily1, baseFamily2);
+    if (!b1 || !b2) {
+        alert("Pattern ke liye 2 alag families ki zaroorat hai!");
+        return;
+    }
+
+    let f1_count = 0, f2_count = 0;
+    // Scan pure 5 columns, but pick ONLY LAST 2 of each family
+    for (let i = r - 1; i >= startScan; i--) {
+        for (let j = 0; j < 5; j++) {
+            let currentF = fam(data[i][j]);
+            if (currentF === b1 && f1_count < 2) {
+                shape[i-startScan][j] = 1; f1_count++;
+            } else if (currentF === b2 && f2_count < 2) {
+                shape[i-startScan][j] = 2; f2_count++;
+            }
+        }
+    }
+
+    if (f1_count === 2 && f2_count === 2) {
+        searchMultiPattern(shape, b1, b2);
     } else {
-        alert("2+2 jodi (2 Red, 2 Blue) nahi mili!");
+        alert("2+2 jodi nahi mili. Records kam hain.");
     }
 }
 
 function searchMultiPattern(shape, bf1, bf2) {
     let matches = [];
-    // Pure record (data) ko scan karna
     for (let i = 0; i <= data.length - shape.length; i++) {
         let ok = true;
         for (let k = 0; k < shape.length; k++) {
             for (let j = 0; j < 5; j++) {
                 let type = shape[k][j];
-                if (type === 0) continue; // Khali cell skip karo
-                
                 let f = fam(data[i+k][j]);
                 if (type === 1 && f !== bf1) { ok = false; break; }
                 if (type === 2 && f !== bf2) { ok = false; break; }
             }
             if (!ok) break;
         }
-        // Current pattern ko match list mein na dikhane ke liye logic
-        if (ok && (i + shape.length < data.length)) {
-            matches.push({ index: i });
-        }
+        if (ok) matches.push({ index: i });
     }
     showChecks(shape, matches);
 }
 
 function showChecks(shape, matches){
     let container = document.getElementById("checks");
-    container.innerHTML = matches.length ? "" : "No history matches found in full record.";
+    container.innerHTML = matches.length ? "" : "No exact matches.";
     matches.forEach((m) => {
         let d = document.createElement("div");
         d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid var(--gold); color:white;";
-        d.innerHTML = `<b>History Match at Row ${m.index + 1}</b> (Click to View)`;
+        d.innerHTML = `<b>Match at Row ${m.index + 1}</b> (Click to View)`;
         d.onclick = () => { 
             activeMark = {start: m.index, shape: shape}; 
             draw(); 
@@ -280,7 +267,7 @@ function updateAdvancedAI(shape, matches) {
         if(nextR < data.length && data[nextR][targetCol] !== "**") pool.push(data[nextR][targetCol]);
     });
     let unique = [...new Set(pool)].slice(0, 3);
-    document.getElementById("future").innerHTML = unique.length ? `<div style='font-size:1.6rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div>` : "Wait for more data.";
+    document.getElementById("future").innerHTML = unique.length ? `<div style='font-size:1.6rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div>` : "No direct history.";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
@@ -296,3 +283,7 @@ document.getElementById("csv").onchange = e => {
 </script>
 </body>
 </html>
+
+Ye code ab tak ka best code hai ...
+
+Bs jesa pattern ban raha hai wesa hi bane or check line mile pure record ko scan karke 
