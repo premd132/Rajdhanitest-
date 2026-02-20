@@ -3,50 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI – Dual Pattern System</title>
+    <title>Rajdhani Pro AI – Cross Pattern System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
             --gold: #ffd700; 
             --red-circle: #ff4757; 
             --blue-circle: #2e86de; 
-            --green-line: #00ff88; 
             --bg: #0f172a; 
             --panel: #1e293b; 
         }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
-
-        #home-screen {
-            height: 100vh; width: 100vw; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
+        #home-screen { height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
         .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
-        .enter-btn {
-            background: var(--gold); color: #000; padding: 15px 40px;
-            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-
+        .enter-btn { background: var(--gold); color: #000; padding: 15px 40px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         #main-app { display: none; padding: 15px; }
         .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; transition: 0.2s; }
         th { background: #1e293b; color: white; font-size: 11px; }
-        
         .circle-red { border: 3px solid var(--red-circle) !important; border-radius: 50% !important; background: rgba(255, 71, 87, 0.2); }
         .circle-blue { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(46, 134, 222, 0.2); }
-        
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
         .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
-
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
         button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
@@ -56,7 +39,7 @@
 
 <div id="home-screen">
     <h1 class="hero-title">Rajdhani PRO AI</h1>
-    <p class="hero-sub">DUAL PATTERN DETECTION SYSTEM</p>
+    <p style="opacity:0.7">CROSS FAMILY PATTERN SYSTEM</p>
     <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
@@ -82,17 +65,16 @@
     </center>
 
     <div class="dashboard">
-        <div class="card"><h3>✔ Matches Found (Check Line)</h3><div id="checks">No Pattern Selected</div></div>
-        <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">Ready...</div></div>
-        <div class="card"><h3>🔮 Future Prediction</h3><div id="future">...</div></div>
+        <div class="card"><h3>✔ Check Line</h3><div id="checks">Click any blank cell</div></div>
+        <div class="card"><h3>🔮 Predictions</h3><div id="future">...</div></div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">History Pattern View</h3>
-    <center><div class="table-container" style="border: 1px solid #ddd;"><canvas id="popCanvas"></canvas><div id="popData"></div></div></center>
+    <h3>Pattern History</h3>
+    <center><div class="table-container" style="border:1px solid #ddd;"><canvas id="popCanvas"></canvas><div id="popData"></div></div></center>
 </div>
 
 <script>
@@ -121,9 +103,9 @@ function draw(){
   r.forEach((c,ci)=>{
    let cls = "";
    if(activeMark) {
-       let val = getPatternType(ri, ci);
-       if(val === 1) cls = "circle-red";
-       if(val === 2) cls = "circle-blue";
+       let type = getPatternType(ri, ci);
+       if(type === 1) cls = "circle-red";
+       if(type === 2) cls = "circle-blue";
    }
    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
   });
@@ -168,7 +150,7 @@ function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
 function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
-// --- FIXED PATTERN LOGIC ---
+// --- CROSS FAMILY PATTERN LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
     let b1 = "**", b2 = "**";
@@ -176,28 +158,27 @@ function makePattern(r, c) {
     let startScan = Math.max(0, r - lookback);
     let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
 
-    // Ab har column ke liye base ussi column se dhundhega
+    // Pura 5 column scan karega Cross-Pattern ke liye
     for (let i = r - 1; i >= startScan; i--) {
-        let val = data[i][c]; // CLICKED COLUMN SCAN
-        if (val !== "**") {
-            if (b1 === "**") { b1 = val; shape[i-startScan][c] = 1; }
-            else if (smartMatch(val, b1)) { shape[i-startScan][c] = 1; }
-            else if (b2 === "**" && fam(val) !== fam(b1)) { b2 = val; shape[i-startScan][c] = 2; }
-            else if (b2 !== "**" && smartMatch(val, b2)) { shape[i-startScan][c] = 2; }
+        for (let j = 0; j < 5; j++) {
+            let val = data[i][j];
+            if (val !== "**") {
+                // Pehli family dhoondho (Red)
+                if (b1 === "**") { b1 = val; shape[i-startScan][j] = 1; }
+                else if (smartMatch(val, b1)) { shape[i-startScan][j] = 1; }
+                // Doosri family dhoondho (Blue) - Cross connection
+                else if (b2 === "**" && fam(val) !== fam(b1)) { b2 = val; shape[i-startScan][j] = 2; }
+                else if (b2 !== "**" && smartMatch(val, b2)) { shape[i-startScan][j] = 2; }
+            }
         }
     }
-
-    if(b1 === "**") {
-        alert("Pichle records mein koi jodi nahi mili!");
-        return;
-    }
-
+    
+    if(b1 === "**") return alert("Data mismatch!");
     searchMultiPattern(shape, b1, b2);
 }
 
 function searchMultiPattern(shape, b1, b2) {
     let matches = [];
-    // Poore data mein dhoondho
     for (let i = 0; i <= data.length - shape.length; i++) {
         let ok = true;
         for (let k = 0; k < shape.length; k++) {
@@ -208,33 +189,22 @@ function searchMultiPattern(shape, b1, b2) {
             }
             if (!ok) break;
         }
-        // Current position skip karke baki matches lo
         if (ok) matches.push({ index: i });
     }
-    showChecks(shape, matches, b1, b2);
+    showChecks(shape, matches);
 }
 
-function showChecks(shape, matches, b1, b2){
+function showChecks(shape, matches){
     let container = document.getElementById("checks");
-    container.innerHTML = "";
-    
-    if(matches.length === 0) {
-        container.innerHTML = "No historical matches found.";
-        return;
-    }
-
+    container.innerHTML = matches.length ? "" : "No history match.";
     matches.forEach((m) => {
         let d = document.createElement("div");
-        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid var(--gold); color:white;";
-        d.innerHTML = `<b>Match at Row ${m.index + 1}</b><br><small>Click to view connection</small>`;
-        d.onclick = () => { 
-            activeMark = {start: m.index, shape: shape}; 
-            draw(); 
-            showOne(shape, m.index); 
-        };
+        d.style = "background:#334155; margin:5px 0; padding:10px; cursor:pointer; border-radius:8px; border-left:4px solid var(--gold);";
+        d.innerHTML = `<b>Record Match: Row ${m.index + 1}</b>`;
+        d.onclick = () => { activeMark = {start: m.index, shape: shape}; draw(); showOne(shape, m.index); };
         container.appendChild(d);
     });
-    updateAdvancedAI(shape, matches);
+    updateAI(shape, matches);
 }
 
 function showOne(shape, idx){
@@ -242,7 +212,8 @@ function showOne(shape, idx){
     for(let i=0; i<shape.length; i++){
         html+="<tr>";
         data[idx+i].forEach((v,j)=>{
-            let cls = shape[i][j] === 1 ? "circle-red" : (shape[i][j] === 2 ? "circle-blue" : "");
+            let type = shape[i][j];
+            let cls = type === 1 ? "circle-red" : (type === 2 ? "circle-blue" : "");
             html+=`<td class="${cls}">${v}</td>`;
         });
         html+="</tr>";
@@ -253,21 +224,15 @@ function showOne(shape, idx){
     setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
 }
 
-function updateAdvancedAI(shape, matches) {
+function updateAI(shape, matches) {
     let pool = [];
     matches.forEach(m => {
         let nextR = m.index + shape.length;
         if(nextR < data.length && data[nextR][targetCol] !== "**") pool.push(data[nextR][targetCol]);
     });
-    
-    document.getElementById("ai").innerHTML = pool.length ? `<p style='color:var(--green-line)'>Analysis Found ${pool.length} Times</p>` : "Scanning history...";
-    
-    if (pool.length > 0) {
-        let unique = [...new Set(pool)].slice(0, 3);
-        document.getElementById("future").innerHTML = `<div style='font-size:1.6rem; color:var(--gold); font-weight:800; letter-spacing:2px;'>${unique.join(" - ")}</div><small>AI Recommended Pairs</small>`;
-    } else {
-        document.getElementById("future").innerHTML = "No clear prediction.";
-    }
+    let unique = [...new Set(pool)].slice(0, 3);
+    document.getElementById("future").innerHTML = unique.length ? 
+        `<div style='font-size:1.5rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div>` : "No direct history.";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
