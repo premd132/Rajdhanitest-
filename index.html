@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI – Dual Pattern System</title>
+    <title>Rajdhani Pro AI – Strict 2+2 System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
             --gold: #ffd700; 
             --red-circle: #ff4757; 
             --blue-circle: #2e86de; 
-            --green-line: #00ff88; 
             --bg: #0f172a; 
             --panel: #1e293b; 
         }
@@ -23,7 +22,6 @@
             background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
         .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
         .enter-btn {
             background: var(--gold); color: #000; padding: 15px 40px;
             font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
@@ -56,7 +54,7 @@
 
 <div id="home-screen">
     <h1 class="hero-title">Rajdhani PRO AI</h1>
-    <p class="hero-sub">CROSS FAMILY DETECTION SYSTEM</p>
+    <p style="opacity:0.7">STRICT 2+2 PATTERN SYSTEM</p>
     <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
@@ -82,16 +80,15 @@
     </center>
 
     <div class="dashboard">
-        <div class="card"><h3>✔ Matches Found (Check Line)</h3><div id="checks">Click any blank cell</div></div>
-        <div class="card"><h3>🤖 AI Analysis</h3><div id="ai">Ready...</div></div>
-        <div class="card"><h3>🔮 Future Prediction</h3><div id="future">...</div></div>
+        <div class="card"><h3>✔ Matches (Check Line)</h3><div id="checks">Click blank cell</div></div>
+        <div class="card"><h3>🔮 Prediction</h3><div id="future">...</div></div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">History Pattern View</h3>
+    <h3>Pattern History View</h3>
     <center><div class="table-container" style="border: 1px solid #ddd;"><canvas id="popCanvas"></canvas><div id="popData"></div></div></center>
 </div>
 
@@ -168,38 +165,47 @@ function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
 function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
-// --- NEW CROSS FAMILY LOGIC ---
+// --- STRICT 2+2 LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
     let lookback = 10;
     let startScan = Math.max(0, r - lookback);
     let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
     
-    let baseFamily1 = null;
-    let baseFamily2 = null;
-
-    // STEP 1: Pehle is column ke pichle records se 2 families uthao
+    let b1 = null, b2 = null;
+    // Base families from the clicked column
     for (let i = r - 1; i >= startScan; i--) {
         let val = data[i][c];
         if (val !== "**") {
             let f = fam(val);
-            if (!baseFamily1) baseFamily1 = f;
-            else if (!baseFamily2 && f !== baseFamily1) baseFamily2 = f;
+            if (!b1) b1 = f;
+            else if (!b2 && f !== b1) b2 = f;
         }
     }
 
-    if(!baseFamily1) { alert("Pichle records mein koi data nahi mila!"); return; }
+    if (!b1 || !b2) {
+        alert("Pattern ke liye 2 alag families ki zaroorat hai!");
+        return;
+    }
 
-    // STEP 2: Ab PURE ROWS mein scan karo (Cross Family logic)
+    let f1_count = 0, f2_count = 0;
+    // Scan pure 5 columns, but pick ONLY LAST 2 of each family
     for (let i = r - 1; i >= startScan; i--) {
         for (let j = 0; j < 5; j++) {
-            let currentFam = fam(data[i][j]);
-            if (currentFam === baseFamily1) shape[i-startScan][j] = 1;
-            else if (baseFamily2 && currentFam === baseFamily2) shape[i-startScan][j] = 2;
+            let currentF = fam(data[i][j]);
+            if (currentF === b1 && f1_count < 2) {
+                shape[i-startScan][j] = 1; f1_count++;
+            } else if (currentF === b2 && f2_count < 2) {
+                shape[i-startScan][j] = 2; f2_count++;
+            }
         }
     }
 
-    searchMultiPattern(shape, baseFamily1, baseFamily2);
+    if (f1_count === 2 && f2_count === 2) {
+        searchMultiPattern(shape, b1, b2);
+    } else {
+        alert("2+2 jodi nahi mili. Records kam hain.");
+    }
 }
 
 function searchMultiPattern(shape, bf1, bf2) {
@@ -209,26 +215,24 @@ function searchMultiPattern(shape, bf1, bf2) {
         for (let k = 0; k < shape.length; k++) {
             for (let j = 0; j < 5; j++) {
                 let type = shape[k][j];
-                let currentFam = fam(data[i+k][j]);
-                if (type === 1 && currentFam !== bf1) { ok = false; break; }
-                if (type === 2 && currentFam !== bf2) { ok = false; break; }
+                let f = fam(data[i+k][j]);
+                if (type === 1 && f !== bf1) { ok = false; break; }
+                if (type === 2 && f !== bf2) { ok = false; break; }
             }
             if (!ok) break;
         }
         if (ok) matches.push({ index: i });
     }
-    showChecks(shape, matches, bf1, bf2);
+    showChecks(shape, matches);
 }
 
-function showChecks(shape, matches, bf1, bf2){
+function showChecks(shape, matches){
     let container = document.getElementById("checks");
-    container.innerHTML = "";
-    if(matches.length === 0) { container.innerHTML = "No historical matches found."; return; }
-
+    container.innerHTML = matches.length ? "" : "No exact matches.";
     matches.forEach((m) => {
         let d = document.createElement("div");
         d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid var(--gold); color:white;";
-        d.innerHTML = `<b>Match at Row ${m.index + 1}</b> (Click to view)`;
+        d.innerHTML = `<b>Match at Row ${m.index + 1}</b> (Click to View)`;
         d.onclick = () => { 
             activeMark = {start: m.index, shape: shape}; 
             draw(); 
@@ -262,15 +266,8 @@ function updateAdvancedAI(shape, matches) {
         let nextR = m.index + shape.length;
         if(nextR < data.length && data[nextR][targetCol] !== "**") pool.push(data[nextR][targetCol]);
     });
-    
-    if (pool.length > 0) {
-        let unique = [...new Set(pool)].slice(0, 3);
-        document.getElementById("future").innerHTML = `<div style='font-size:1.6rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div>`;
-        document.getElementById("ai").innerHTML = `<p style='color:var(--green-line)'>Analysis Found ${pool.length} Times</p>`;
-    } else {
-        document.getElementById("future").innerHTML = "No clear prediction.";
-        document.getElementById("ai").innerHTML = "Scanning history...";
-    }
+    let unique = [...new Set(pool)].slice(0, 3);
+    document.getElementById("future").innerHTML = unique.length ? `<div style='font-size:1.6rem; color:var(--gold); font-weight:800;'>${unique.join(" - ")}</div>` : "No direct history.";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
