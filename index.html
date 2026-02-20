@@ -166,91 +166,73 @@ function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); ale
 function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
 // --- STRICT 2+2 LOGIC ---
-// --- UPDATED STRICT 2+2 FULL RECORD SCAN LOGIC ---
 function makePattern(r, c) {
     targetCol = c;
     let lookback = 10;
     let startScan = Math.max(0, r - lookback);
+    let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
     
-    // Step 1: Clicked column se 2-2 jodi dhoondhna (Aapka logic)
-    let baseFamily1 = null, baseFamily2 = null;
-    let f1Jodis = [], f2Jodis = [];
-    let positions = [];
-
+    let b1 = null, b2 = null;
+    // Base families from the clicked column
     for (let i = r - 1; i >= startScan; i--) {
         let val = data[i][c];
-        if (val === "**") continue;
-        let f = fam(val);
-
-        if (!baseFamily1) {
-            baseFamily1 = f; f1Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 1});
-        } else if (f === baseFamily1 && f1Jodis.length < 2) {
-            f1Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 1});
-        } else if (!baseFamily2 && f !== baseFamily1) {
-            baseFamily2 = f; f2Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 2});
-        } else if (f === baseFamily2 && f2Jodis.length < 2) {
-            f2Jodis.push(val);
-            positions.push({ri: i, ci: c, type: 2});
+        if (val !== "**") {
+            let f = fam(val);
+            if (!b1) b1 = f;
+            else if (!b2 && f !== b1) b2 = f;
         }
-        if (f1Jodis.length === 2 && f2Jodis.length === 2) break;
     }
 
-    if (f1Jodis.length === 2 && f2Jodis.length === 2) {
-        // Step 2: Shape Create Karna
-        let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
-        positions.forEach(p => {
-            shape[p.ri - startScan][p.ci] = p.type;
-        });
-        
-        // Step 3: Pure Record Ko Scan Karna (Full Scan)
-        searchMultiPattern(shape, baseFamily1, baseFamily2);
+    if (!b1 || !b2) {
+        alert("Pattern ke liye 2 alag families ki zaroorat hai!");
+        return;
+    }
+
+    let f1_count = 0, f2_count = 0;
+    // Scan pure 5 columns, but pick ONLY LAST 2 of each family
+    for (let i = r - 1; i >= startScan; i--) {
+        for (let j = 0; j < 5; j++) {
+            let currentF = fam(data[i][j]);
+            if (currentF === b1 && f1_count < 2) {
+                shape[i-startScan][j] = 1; f1_count++;
+            } else if (currentF === b2 && f2_count < 2) {
+                shape[i-startScan][j] = 2; f2_count++;
+            }
+        }
+    }
+
+    if (f1_count === 2 && f2_count === 2) {
+        searchMultiPattern(shape, b1, b2);
     } else {
-        alert("Clicked column mein 2 Red aur 2 Blue families nahi mili. Data check karein.");
+        alert("2+2 jodi nahi mili. Records kam hain.");
     }
 }
 
 function searchMultiPattern(shape, bf1, bf2) {
     let matches = [];
-    // Poore data ka loop (Top to Bottom)
     for (let i = 0; i <= data.length - shape.length; i++) {
         let ok = true;
-        let matchFound = false;
-
         for (let k = 0; k < shape.length; k++) {
             for (let j = 0; j < 5; j++) {
                 let type = shape[k][j];
-                if (type === 0) continue; // Pattern jahan nahi hai wo skip
-                
-                matchFound = true;
-                let currentFam = fam(data[i+k][j]);
-                if (type === 1 && currentFam !== bf1) { ok = false; break; }
-                if (type === 2 && currentFam !== bf2) { ok = false; break; }
+                let f = fam(data[i+k][j]);
+                if (type === 1 && f !== bf1) { ok = false; break; }
+                if (type === 2 && f !== bf2) { ok = false; break; }
             }
             if (!ok) break;
         }
-
-        // Agar match mil gaya aur ye wahi row nahi hai jahan click kiya hai
-        if (ok && matchFound && (i + shape.length <= data.length - 1)) {
-            matches.push({ index: i });
-        }
+        if (ok) matches.push({ index: i });
     }
     showChecks(shape, matches);
 }
 
-// Check lines ko dikhane ka function
-function showChecks(shape, matches) {
+function showChecks(shape, matches){
     let container = document.getElementById("checks");
-    container.innerHTML = matches.length ? "" : "Full record mein koi match nahi mila.";
-    
+    container.innerHTML = matches.length ? "" : "No exact matches.";
     matches.forEach((m) => {
         let d = document.createElement("div");
-        d.className = "check-item"; 
-        d.style = "background:#2a2a2a; margin:5px 0; padding:12px; cursor:pointer; border-radius:8px; font-size:13px; border-left:5px solid var(--gold); color:#fff; transition:0.2s;";
-        d.innerHTML = `<strong>MATCH FOUND:</strong> Row ${m.index + 1} to ${m.index + shape.length}`;
-        
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid var(--gold); color:white;";
+        d.innerHTML = `<b>Match at Row ${m.index + 1}</b> (Click to View)`;
         d.onclick = () => { 
             activeMark = {start: m.index, shape: shape}; 
             draw(); 
