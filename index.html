@@ -218,19 +218,19 @@ function searchMultiPattern(shape, b1, b2) {
         }
         if (ok) matches.push({ index: i });
     }
-    showChecks(shape, lastMatches);
+    showChecks(shape, matches); // Pehle yahan lastMatches likha tha, ab sahi hai
 }
 
 function showChecks(shape, matches){
- document.getElementById("checks").innerHTML="";
- matches.forEach((m,i)=>{
-  let d = document.createElement("div");
-  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
-  d.innerText = `Pattern Match Found at Row ${m.index + 1}`;
-  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
-  document.getElementById("checks").appendChild(d);
- });
- updateAI(shape, matches);
+    document.getElementById("checks").innerHTML="";
+    matches.forEach((m,i)=>{
+        let d = document.createElement("div");
+        d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
+        d.innerText = `Pattern Match Found at Row ${m.index + 1}`;
+        d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
+        document.getElementById("checks").appendChild(d);
+    });
+    updateAdvancedAI(shape, matches); // Sahi function call
 }
 
 function showOne(shape, idx){
