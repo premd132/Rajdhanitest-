@@ -175,50 +175,61 @@ function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.
 
 function makePattern(r, c) {
     targetCol = c;
-    let b1 = "**", b2 = "**";
-    let b1Count = 0, b2Count = 0;
+    let base = "**";
+    
+    // 1. Jis column par click kiya, uske theek upar wali jodi ko base maano
+    // Isse har blank cell (Mon, Tue, Wed...) ka alag pattern banega
+    for (let i = r - 1; i >= 0; i--) { 
+        if (data[i][c] !== "**") { 
+            base = data[i][c]; 
+            break; 
+        } 
+    }
+    
+    if (base == "**") {
+        alert("Is column ke upar koi jodi nahi mili!");
+        return;
+    }
 
-    // 1. Scan 10 rows for 2 different families (Limit each family to 2 Jodis)
-    let patternShape = Array(11).fill().map(() => Array(5).fill(0));
-    let startR = Math.max(0, r - 10);
-
-    for (let i = r; i >= startR; i--) {
+    // 2. Sirf pichle 10 hafte ka 'shape' taiyar karo (Flexible scan)
+    let lookback = 10;
+    let startScan = Math.max(0, r - lookback);
+    let shape = Array(r - startScan).fill().map(() => Array(5).fill(0));
+    
+    for (let i = startScan; i < r; i++) {
         for (let j = 0; j < 5; j++) {
-            let val = data[i][j];
-            if (val !== "**") {
-                if (b1 === "**") { b1 = val; b1Count = 1; patternShape[i - startR][j] = 1; }
-                else if (smartMatch(val, b1) && b1Count < 2) { b1Count++; patternShape[i - startR][j] = 1; }
-                else if (b2 === "**" && fam(val) !== fam(b1)) { b2 = val; b2Count = 1; patternShape[i - startR][j] = 2; }
-                else if (b2 !== "**" && smartMatch(val, b2) && b2Count < 2) { b2Count++; patternShape[i - startR][j] = 2; }
+            // Agar jodi base ki family se hai, toh use shape mein mark karo
+            if (data[i][j] !== "**" && smartMatch(data[i][j], base)) {
+                shape[i - startScan][j] = 1;
             }
         }
     }
 
-    if (b1Count < 2 || b2Count < 2) {
-        alert("Pattern not found! Need at least 2 jodis of 2 different families in last 10 rows.");
-        return;
-    }
-
-    // Trim empty rows from shape
-    let finalShape = patternShape.slice(0, r - startR + 1);
-    searchMultiPattern(finalShape, b1, b2);
+    // Ab search call karo
+    searchPattern(shape, base);
 }
 
-function searchMultiPattern(shape, b1, b2) {
+function searchPattern(shape, base) {
     let matches = [];
+    // Poore data mein dhoondo ki ye family pattern aur kahan kahan bana hai
     for (let i = 0; i <= data.length - shape.length; i++) {
+        // Current position ko search mein mat lo
+        if (i === (activeMark ? activeMark.start : -1)) continue;
+
         let ok = true;
         for (let k = 0; k < shape.length; k++) {
             for (let j = 0; j < 5; j++) {
-                let type = shape[k][j];
-                if (type === 1 && !smartMatch(data[i + k][j], b1)) { ok = false; break; }
-                if (type === 2 && !smartMatch(data[i + k][j], b2)) { ok = false; break; }
+                if (shape[k][j] === 1 && !smartMatch(data[i + k][j], base)) { 
+                    ok = false; break; 
+                }
             }
             if (!ok) break;
         }
         if (ok) matches.push({ index: i });
     }
-    showChecks(shape, matches); // Pehle yahan lastMatches likha tha, ab sahi hai
+    
+    // Check line (Matches Found) box update hoga
+    showChecks(shape, matches);
 }
 
 function showChecks(shape, matches){
