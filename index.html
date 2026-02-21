@@ -127,7 +127,12 @@ function draw(){
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
- if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+ if (activeMark) {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            drawLines("mainCanvas", document.getElementById("tbl"));
+        });
+    });
 }
 
 function getPatternType(ri, ci){
@@ -151,7 +156,12 @@ function drawGroup(tblEl, selector, color, ctx, tRect) {
     const cells = tblEl.querySelectorAll(selector);
     if(cells.length < 2) return;
     ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
-    cells.forEach((c, idx) => {
+    const ordered = Array.from(cells).sort(
+  (a,b)=> a.parentNode.rowIndex - b.parentNode.rowIndex
+);
+
+ordered.forEach((c, idx) => {
+    
         const r = c.getBoundingClientRect();
         const x = r.left - tRect.left + r.width/2;
         const y = r.top - tRect.top + r.height/2;
