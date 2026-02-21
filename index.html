@@ -92,13 +92,14 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
  </div>
 </div>
 
-<script>
 /* ===== DOM ===== */
 const home = document.getElementById("home");
 const app = document.getElementById("app");
 const tbl = document.getElementById("tbl");
 const mainCanvas = document.getElementById("mainCanvas");
 const csvFile = document.getElementById("csvFile");
+const checks = document.getElementById("checks");
+const future = document.getElementById("future");
 
 /* ===== FAMILY ===== */
 const FAMILY={
@@ -153,69 +154,123 @@ function draw(){
   h+="</tr>";
  });
  tbl.innerHTML=h;
- drawLines();
+ // Delay for DOM rendering before drawing lines
+ setTimeout(drawLines, 50);
 }
 
-/* ===== 2+2 AI ===== */
+/* ===== 2+2 AI & CHECK LINE LOGIC ===== */
 function makePattern(r,c){
  if(data[r][c] !== "**") return;
 
- let b1=null,b2=null;
- let order1=[],order2=[];
- let map=Array(data.length).fill().map(()=>Array(5).fill(0));
+ let b1=null, b2=null;
+ let lookback = 10;
+ let startRow = Math.max(0, r - lookback);
 
- for(let i=r-1;i>=0;i--){
+ // Search for 2 unique families in clicked column
+ for(let i=r-1; i>=startRow; i--){
   let v=data[i][c];
   if(v!="**"){
    let f=fam(v);
    if(!b1) b1=f;
-   else if(!b2 && f!=b1){b2=f;break;}
+   else if(!b2 && f!=b1){ b2=f; break; }
   }
  }
- if(!b1||!b2){alert("2 alag family nahi mili");return;}
+ if(!b1||!b2){ alert("2 alag families nahi mili!"); return; }
 
- let c1=0,c2=0;
- for(let i=r-1;i>=0;i--){
-  for(let j=0;j<5;j++){
+ // Create current relative shape
+ let relativeCoords = [];
+ let c1=0, c2=0;
+ for(let i=r-1; i>=0; i--){
+  for(let j=0; j<5; j++){
    let f=fam(data[i][j]);
-   if(f==b1 && c1<2){
-    map[i][j]=1; order1.push({r:i,c:j}); c1++;
-   }
-   else if(f==b2 && c2<2){
-    map[i][j]=2; order2.push({r:i,c:j}); c2++;
-   }
+   if(f==b1 && c1<2){ relativeCoords.push({dr: i-r, dc: j, type: 1}); c1++; }
+   else if(f==b2 && c2<2){ relativeCoords.push({dr: i-r, dc: j, type: 2}); c2++; }
   }
   if(c1==2 && c2==2) break;
  }
 
- if(c1!=2||c2!=2){alert("Exact 2+2 nahi bana");return;}
- activeMark={map,order1,order2};
- draw();
+ if(c1+c2 < 4) { alert("Sufficient pairs nahi mile!"); return; }
+
+ // SCAN FULL RECORD (Check Line Generation)
+ let matches = [];
+ for(let i=0; i < data.length; i++){
+  let ok = true;
+  relativeCoords.forEach(p => {
+    let checkR = i + p.dr;
+    if(checkR < 0 || checkR >= data.length || fam(data[checkR][p.dc]) !== (p.type==1?b1:b2)) ok = false;
+  });
+  // Avoid matching the currently clicked empty row as a result
+  if(ok && i !== r) matches.push({row: i, b1, b2, coords: relativeCoords});
+ }
+
+ displayMatches(matches, r, c);
 }
 
-/* ===== CANVAS ===== */
+function displayMatches(matches, targetR, targetC) {
+ checks.innerHTML = "";
+ if(matches.length === 0) { checks.innerHTML = "No matches found."; return; }
+
+ let predPool = [];
+
+ matches.forEach(m => {
+  let d = document.createElement("div");
+  d.style = "background:#2d3748; padding:8px; margin:5px 0; border-radius:5px; cursor:pointer; font-size:13px; border-left:4px solid var(--gold)";
+  d.innerHTML = `Match at Row ${m.row + 1} (View Pattern)`;
+  
+  d.onclick = () => {
+    // Apply this match's pattern to the table
+    let map = Array(data.length).fill().map(()=>Array(5).fill(0));
+    let order1 = [], order2 = [];
+    
+    m.coords.forEach(p => {
+        let row = m.row + p.dr;
+        map[row][p.dc] = p.type;
+        if(p.type === 1) order1.push({r: row, c: p.dc});
+        else order2.push({r: row, c: p.dc});
+    });
+    
+    activeMark = {map, order1, order2};
+    draw();
+  };
+  checks.appendChild(d);
+  
+  // Collect data for prediction
+  if(data[m.row] && data[m.row][targetC] !== "**") predPool.push(data[m.row][targetC]);
+ });
+
+ // Update Prediction
+ let uniquePred = [...new Set(predPool)].slice(0, 3);
+ future.innerText = uniquePred.length ? uniquePred.join(" - ") : "No History";
+}
+
+/* ===== CANVAS CONNECTION LINES ===== */
 function drawLines(){
  const ctx=mainCanvas.getContext("2d");
  mainCanvas.width=tbl.offsetWidth;
  mainCanvas.height=tbl.offsetHeight;
  ctx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
- if(!activeMark)return;
+ 
+ if(!activeMark) return;
  const rect=tbl.getBoundingClientRect();
 
- function draw(arr,col){
-  if(arr.length<2)return;
-  ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
-  arr.forEach((p,i)=>{
+ function drawPath(points, col){
+  if(points.length < 2) return;
+  // Sort points by row to ensure line flows top to bottom
+  points.sort((a,b) => a.r - b.r);
+  
+  ctx.strokeStyle=col; ctx.lineWidth=3; ctx.lineJoin = "round"; ctx.beginPath();
+  points.forEach((p,i)=>{
    let cell=tbl.rows[p.r].cells[p.c];
    let r=cell.getBoundingClientRect();
    let x=r.left-rect.left+r.width/2;
    let y=r.top-rect.top+r.height/2;
-   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+   i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
   });
   ctx.stroke();
  }
- draw(activeMark.order1,"#ff4757");
- draw(activeMark.order2,"#2e86de");
+ 
+ drawPath(activeMark.order1, "#ff4757");
+ drawPath(activeMark.order2, "#2e86de");
 }
 
 /* ===== CSV ===== */
@@ -225,7 +280,7 @@ csvFile.onchange=e=>{
  r.onload=()=>{
   data=r.result.split("\n").filter(x=>x.trim())
    .map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim())));
-  activeMark=null; draw();
+  activeMark=null; checks.innerHTML=""; future.innerText="—"; draw();
  };
  r.readAsText(f);
 }
@@ -240,7 +295,7 @@ function downloadCSV(){
 function addRow(){
  data.push(["**","**","**","**","**"]);
  draw();
-}
+   }
 </script>
 </body>
 </html>
