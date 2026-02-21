@@ -3,35 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Advanced 2+2</title>
+<title>Rajdhani Pro AI – Final 2+2</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
 *{box-sizing:border-box;font-family:Poppins}
 body{margin:0;background:var(--bg);color:#fff;overflow-x:hidden}
-
-#home{ height:100vh;display:flex;flex-direction:column; justify-content:center;align-items:center;text-align:center }
+#home{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
 #home h1{color:var(--gold);font-size:3rem;margin:0}
-#home button{ background:var(--gold);border:none;padding:14px 40px; border-radius:40px;font-weight:800;font-size:1.1rem;cursor:pointer; margin-top:20px;box-shadow: 0 0 20px rgba(255,215,0,0.3) }
-
+#home button{background:var(--gold);border:none;padding:14px 40px;border-radius:40px;font-weight:800;font-size:1.1rem;cursor:pointer;margin-top:20px;box-shadow: 0 0 20px rgba(255,215,0,0.3)}
 #app{display:none;padding:15px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;justify-content:center}
-.toolbar button{ background:#334155;color:#fff;border:none; padding:10px 16px;border-radius:6px;font-weight:600;cursor:pointer }
-
-.table-box{ position:relative;background:#fff;border-radius:10px;padding:5px; display:inline-block;box-shadow: 0 10px 30px rgba(0,0,0,0.5) }
+.toolbar button{background:#334155;color:#fff;border:none;padding:10px 16px;border-radius:6px;font-weight:600;cursor:pointer}
+.table-box{position:relative;background:#fff;border-radius:10px;padding:5px;display:inline-block;box-shadow: 0 10px 30px rgba(0,0,0,0.5)}
 table{border-collapse:collapse;color:#000}
-td,th{ border:1px solid #ddd; width:46px;height:46px; text-align:center;font-weight:700;font-size:15px }
+td,th{border:1px solid #ddd;width:46px;height:46px;text-align:center;font-weight:700;font-size:15px;cursor:pointer}
 th{background:#1e293b;color:#fff;font-size:11px}
-
-.circle-red{ border:3px solid var(--red)!important; border-radius:50%;background:rgba(255,71,87,.2) }
-.circle-blue{ border:3px solid var(--blue)!important; border-radius:50%;background:rgba(46,134,222,.2) }
+.circle-red{border:3px solid var(--red)!important;border-radius:50%;background:rgba(255,71,87,.25)}
+.circle-blue{border:3px solid var(--blue)!important;border-radius:50%;background:rgba(46,134,222,.25)}
 canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:10}
-
 .dashboard{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
-.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:4px solid var(--gold);box-shadow: 0 4px 15px rgba(0,0,0,0.2) }
+.card{background:var(--panel);padding:15px;border-radius:12px;border-top:4px solid var(--gold);box-shadow: 0 4px 15px rgba(0,0,0,0.2)}
 .card b{display:block;margin-bottom:10px;color:var(--gold);text-transform:uppercase}
-.match-item { background:#2d3748; padding:10px; margin:5px 0; border-radius:6px; border-left:4px solid var(--gold); font-size:13px; cursor:pointer; color: #fff;}
-.match-item:hover { background: #3d4a5d; }
+.match-item{background:#2d3748;padding:12px;margin:5px 0;border-radius:8px;border-left:5px solid var(--gold);font-size:13px;cursor:pointer;transition:0.3s}
+.match-item:hover{background:#3d4a5d}
 </style>
 </head>
 <body>
@@ -46,40 +41,25 @@ canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:10}
  <div class="toolbar">
   <input type="file" id="csvFile" accept=".csv" style="display:none">
   <button onclick="csvFile.click()">📂 IMPORT CSV</button>
-  <button onclick="downloadCSV()">💾 SAVE CSV</button>
   <button onclick="addRow()">➕ ADD ROW</button>
+  <button onclick="saveToLocal()" style="background:#28a745">💾 LOCAL SAVE</button>
   <button onclick="location.reload()" style="background:#ef4444">🔄 RESET</button>
  </div>
-
- <center>
- <div class="table-box">
-  <canvas id="mainCanvas"></canvas>
-  <table id="tbl"></table>
- </div>
- </center>
-
+ <center><div class="table-box"><canvas id="mainCanvas"></canvas><table id="tbl"></table></div></center>
  <div class="dashboard">
-  <div class="card">
-    <b>✔ Check Lines (History)</b>
-    <div id="checks" style="max-height: 200px; overflow-y: auto;">Click blank cell to find matches...</div>
-  </div>
-  <div class="card">
-    <b>🔮 AI Prediction</b>
-    <div id="future" style="font-size: 1.8rem; font-weight: 800; text-align: center; color: var(--gold)">—</div>
-  </div>
+  <div class="card"><b>✔ Check Lines (Matches)</b><div id="checks">Click blank cell...</div></div>
+  <div class="card"><b>🔮 Prediction</b><div id="future" style="font-size:1.8rem;font-weight:800;text-align:center;color:var(--gold)">—</div></div>
  </div>
 </div>
 
 <script>
 const FAMILY={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"11":["11","66","16","61"],"22":["22","77","27","72"],"33":["33","88","38","83"],"44":["44","99","49","94"],"55":["55","00","05","50"]};
-
-let data = Array(15).fill().map(()=>Array(5).fill("**"));
+let data = JSON.parse(localStorage.getItem("pData")) || Array(15).fill().map(()=>Array(5).fill("**"));
 let activeMark=null;
 
-function fam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA"; }
-function norm(v){ if(!v||v=="**")return"**"; v=String(v); return v.length==1?"0"+v:v; }
-
-function start(){ document.getElementById("home").style.display="none"; document.getElementById("app").style.display="block"; draw(); }
+function fam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k; return "NA";}
+function norm(v){if(!v||v=="**")return"**"; v=String(v); return v.length==1?"0"+v:v;}
+function start(){document.getElementById("home").style.display="none";document.getElementById("app").style.display="block";draw();}
 
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
@@ -87,111 +67,92 @@ function draw(){
   h+="<tr>";
   r.forEach((c,j)=>{
    let cls="";
-   if(activeMark){
-    let t = activeMark.map[i] ? activeMark.map[i][j] : 0;
-    if(t==1)cls="circle-red";
-    if(t==2)cls="circle-blue";
-   }
-   h+=`<td class="${cls}" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)" onclick="${c=='**'?'makePattern('+i+','+j+')':''}">${c}</td>`;
+   if(activeMark && activeMark.map[i] && activeMark.map[i][j]) cls = activeMark.map[i][j]===1 ? "circle-red" : "circle-blue";
+   h+=`<td class="${cls}" contenteditable onblur="data[${i}][${j}]=norm(this.innerText);saveToLocal()" onclick="if(this.innerText=='**')makePattern(${i},${j})">${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
- setTimeout(drawLines, 80);
+ setTimeout(drawLines, 50);
 }
 
 function makePattern(r,c){
- let b1=null, b2=null, c1=0, c2=0;
- let relCoords = [];
- 
- // Scan last 10 weeks, ANY column for families
- for(let i=r-1; i>=Math.max(0, r-10); i--){
+ let b1=null, b2=null, c1=0, c2=0, rel=[];
+ // Scan backwards for pattern
+ for(let i=r-1; i>=0; i--){
   for(let j=0; j<5; j++){
-   let v = data[i][j]; if(v=="**") continue;
-   let f = fam(v);
-   if(!b1) b1 = f;
-   else if(!b2 && f!=b1) b2 = f;
-   
-   if(f==b1 && c1<2){ relCoords.push({dr: i-r, dc: j, type: 1}); c1++; }
-   else if(f==b2 && c2<2){ relCoords.push({dr: i-r, dc: j, type: 2}); c2++; }
+   let v=data[i][j]; if(v=="**")continue;
+   let f=fam(v);
+   if(!b1){b1=f; rel.push({dr:i-r, dc:j, type:1}); c1++;}
+   else if(f==b1 && c1<2){rel.push({dr:i-r, dc:j, type:1}); c1++;}
+   else if(!b2 && f!=b1){b2=f; rel.push({dr:i-r, dc:j, type:2}); c2++;}
+   else if(f==b2 && c2<2){rel.push({dr:i-r, dc:j, type:2}); c2++;}
    if(c1==2 && c2==2) break;
   }
   if(c1==2 && c2==2) break;
  }
+ if(c1+c2<4) return alert("Pattern ke liye 4 jodi nahi mili!");
 
- if(c1+c2<4){ alert("Record mein 2+2 jodi nahi mili!"); return; }
-
- // Search FULL record for same relative shape
+ // SEARCH HISTORY
  let matches = [];
  for(let i=0; i<data.length; i++){
-  let ok = true;
-  relCoords.forEach(p => {
-   let checkR = i + p.dr, checkC = p.dc;
-   if(checkR<0 || checkR>=data.length || fam(data[checkR][checkC]) !== (p.type==1?b1:b2)) ok = false;
+  let ok=true;
+  rel.forEach(p=>{
+   let rr=i+p.dr, cc=p.dc;
+   if(rr<0 || rr>=data.length || fam(data[rr][cc])!==(p.type==1?b1:b2)) ok=false;
   });
-  if(ok && i!=r) matches.push({row: i, coords: relCoords, b1, b2});
+  if(ok && i!=r) matches.push({row:i, rel});
  }
-
- showCheckLines(matches, c);
-}
-
-function showCheckLines(matches, tCol){
- const div = document.getElementById("checks");
- div.innerHTML = matches.length ? "" : "No history match.";
- let pool = [];
-
- matches.forEach(m => {
-  let btn = document.createElement("div");
-  btn.className = "match-item";
-  btn.innerText = "Match Found: Row " + (m.row + 1);
-  btn.onclick = () => {
-   let map = Array(data.length).fill().map(()=>Array(5).fill(0));
+ 
+ let div=document.getElementById("checks"); div.innerHTML="";
+ matches.forEach(m=>{
+  let b=document.createElement("div"); b.className="match-item"; b.innerText="Found Match: Row "+(m.row+1);
+  b.onclick=()=>{
+   let map=Array(data.length).fill().map(()=>Array(5).fill(0));
    let o1=[], o2=[];
-   m.coords.forEach(p => {
-    let row = m.row+p.dr; map[row][p.dc]=p.type;
-    if(p.type==1) o1.push({r:row, c:p.dc}); else o2.push({r:row, c:p.dc});
+   m.rel.forEach(p=>{
+    let nr=m.row+p.dr; map[nr][p.dc]=p.type;
+    if(p.type==1)o1.push({r:nr,c:p.dc}); else o2.push({r:nr,c:p.dc});
    });
-   activeMark = {map, order1:o1, order2:o2};
-   draw();
+   activeMark={map, o1, o2}; draw();
   };
-  div.appendChild(btn);
-  if(data[m.row] && data[m.row][tCol] != "**") pool.push(data[m.row][tCol]);
+  div.appendChild(b);
  });
-
- let unique = [...new Set(pool)].slice(0, 3);
- document.getElementById("future").innerText = unique.length ? unique.join(" - ") : "??";
+ if(matches.length>0) {
+  let pV = data[matches[0].row][c];
+  document.getElementById("future").innerText = pV!=="**" ? pV : "??";
+ } else {
+  div.innerHTML="No match found in history.";
+ }
 }
 
 function drawLines(){
  const cvs=document.getElementById("mainCanvas"), ctx=cvs.getContext("2d"), table=document.getElementById("tbl");
  cvs.width=table.offsetWidth; cvs.height=table.offsetHeight;
  ctx.clearRect(0,0,cvs.width,cvs.height);
- if(!activeMark) return;
+ if(!activeMark)return;
  const rect=table.getBoundingClientRect();
-
- function d(pts, col){
-  if(pts.length<2) return;
+ function drawPath(pts, col){
+  if(pts.length<2)return;
   pts.sort((a,b)=>a.r-b.r);
   ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
   pts.forEach((p,i)=>{
-   let c=table.rows[p.r].cells[p.c], r=c.getBoundingClientRect();
+   let r=table.rows[p.r].cells[p.c].getBoundingClientRect();
    let x=r.left-rect.left+r.width/2, y=r.top-rect.top+r.height/2;
    i==0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
   ctx.stroke();
  }
- d(activeMark.order1, "#ff4757"); d(activeMark.order2, "#2e86de");
+ drawPath(activeMark.o1, "#ff4757"); drawPath(activeMark.o2, "#2e86de");
 }
 
-document.getElementById("csvFile").onchange = e => {
- let f=e.target.files[0]; if(!f) return;
- let r=new FileReader();
- r.onload=()=>{ data=r.result.split("\n").filter(x=>x.trim()).map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim()))); activeMark=null; draw(); };
- r.readAsText(f);
-};
-
-function downloadCSV(){ let csv=data.map(r=>r.join(",")).join("\n"); let a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="rajdhani_ai.csv"; a.click(); }
+function saveToLocal(){ localStorage.setItem("pData", JSON.stringify(data)); }
 function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
+document.getElementById("csvFile").onchange=e=>{
+ let reader=new FileReader();
+ reader.onload=()=>{data=reader.result.split("\n").filter(x=>x.trim()).map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim()))); draw(); saveToLocal();};
+ reader.readAsText(e.target.files[0]);
+};
 </script>
 </body>
 </html>
