@@ -3,193 +3,170 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Pradeep Official</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<title>Rajdhani Pro AI - Pradeep Edition</title>
 <style>
-:root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
-*{box-sizing:border-box;font-family:Poppins}
-body{margin:0;background:var(--bg);color:#fff;overflow-x:hidden}
-
-/* UI Structure */
-#app{padding:20px; display:flex; flex-direction:column; align-items:center}
-.toolbar{display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; justify-content:center}
-.toolbar button{background:#334155; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:600; cursor:pointer}
-
-/* Table Design */
-.table-box{position:relative; background:#fff; border-radius:12px; padding:10px; box-shadow:0 15px 50px rgba(0,0,0,0.8)}
-table{border-collapse:collapse; color:#000}
-td,th{border:1px solid #ddd; width:52px; height:52px; text-align:center; font-weight:800; font-size:18px; cursor:pointer; position:relative}
-th{background:#1e293b; color:#fff; font-size:12px}
-
-/* Circle & Highlighting */
-.circle-red{border:4px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,0.2); z-index:5}
-.circle-blue{border:4px solid var(--blue)!important; border-radius:50%; background:rgba(46,134,222,0.2); z-index:5}
-.marked-origin{background: #fde047 !important; color: #000 !important; border: 2px solid #ca8a04 !important}
-
-/* Canvas for Lines */
-canvas{position:absolute; top:0; left:0; pointer-events:none; z-index:2}
-
-/* Dashboard */
-.dashboard{display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; width:100%; max-width:1000px; margin-top:25px}
-.card{background:var(--panel); padding:20px; border-radius:15px; border-top:5px solid var(--gold)}
-.match-item{background:#2d3748; padding:15px; margin:10px 0; border-radius:10px; border-left:6px solid var(--gold); cursor:pointer}
+    :root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
+    body{ margin:0; background:var(--bg); color:#fff; font-family: 'Segoe UI', sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+    
+    .toolbar{ display:flex; gap:10px; margin-bottom:20px; }
+    button{ background:var(--panel); color:white; border:1px solid var(--gold); padding:10px 15px; border-radius:5px; cursor:pointer; font-weight:bold; }
+    
+    .table-box{ position:relative; background:white; padding:10px; border-radius:8px; }
+    table{ border-collapse: collapse; color: black; position: relative; z-index: 2; }
+    td, th{ border: 1px solid #ccc; width: 55px; height: 55px; text-align: center; font-size: 20px; font-weight: 800; cursor: pointer; }
+    th{ background: #eee; font-size: 12px; height: 30px; }
+    
+    /* Screenshot matching styles */
+    .circle-red { border: 4px solid var(--red) !important; border-radius: 10px; background: rgba(255, 71, 87, 0.1); }
+    .circle-blue { border: 4px solid var(--blue) !important; border-radius: 10px; background: rgba(46, 134, 222, 0.1); }
+    .marked-yellow { background: #facc15 !important; border: 2px solid #854d0e !important; }
+    
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+    .dashboard { margin-top: 20px; width: 100%; max-width: 400px; background: var(--panel); padding: 15px; border-radius: 10px; border-top: 4px solid var(--gold); }
+    .check-line { background: #2d3748; padding: 10px; margin: 5px 0; border-radius: 5px; cursor: pointer; border-left: 4px solid var(--gold); }
 </style>
 </head>
 <body>
 
-<div id="app">
     <div class="toolbar">
-        <input type="file" id="csvFile" accept=".csv" style="display:none">
-        <button onclick="csvFile.click()">📂 IMPORT CSV</button>
+        <input type="file" id="csvFile" style="display:none">
+        <button onclick="document.getElementById('csvFile').click()">📂 CSV LOAD</button>
         <button onclick="addRow()">➕ ADD ROW</button>
-        <button onclick="saveData()" style="background:#22c55e">💾 LOCAL SAVE</button>
-        <button onclick="location.reload()" style="background:#ef4444">🔄 RESET</button>
+        <button onclick="saveData()">💾 SAVE</button>
+        <button onclick="location.reload()" style="border-color:red">🔄 RESET</button>
     </div>
 
-    <div class="table-box">
-        <canvas id="mainCanvas"></canvas>
+    <div class="table-box" id="box">
+        <canvas id="canvas"></canvas>
         <table id="tbl"></table>
     </div>
 
     <div class="dashboard">
-        <div class="card">
-            <b>✔ CHECK LINES (HISTORY PATTERNS)</b>
-            <div id="checks">Click (**) to see similar family patterns...</div>
-        </div>
-        <div class="card">
-            <b>🔮 AI PREDICTION (3-PAIRS)</b>
-            <div id="future" style="font-size:2rem; text-align:center; color:var(--gold); font-weight:800">--</div>
-        </div>
+        <b>✔ CHECK LINES (HISTORY)</b>
+        <div id="checkList">Click on any result to see pattern...</div>
     </div>
-</div>
 
 <script>
-const FAMILY={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"11":["11","66","16","61"],"22":["22","77","27","72"],"33":["33","88","38","83"],"44":["44","99","49","94"],"55":["55","00","05","50"]};
+const FAMILY = {"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"11":["11","66","16","61"],"22":["22","77","27","72"],"33":["33","88","38","83"],"44":["44","99","49","94"],"55":["55","00","05","50"]};
 
-let data = JSON.parse(localStorage.getItem("pDataPradeep")) || Array(12).fill().map(()=>Array(5).fill("**"));
-let activeMark = null;
+let data = JSON.parse(localStorage.getItem('pradeepData')) || Array(12).fill().map(()=>Array(5).fill("**"));
+let activePattern = null;
 
-function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA"; }
-function norm(v){ if(!v || v=="**") return "**"; v=String(v); return v.length==1?"0"+v:v; }
+function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
 
-function draw(){
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-    data.forEach((r,i)=>{
-        h+="<tr>";
-        r.forEach((c,j)=>{
-            let cls = "";
-            if(activeMark && activeMark.map[i] && activeMark.map[i][j]) cls = activeMark.map[i][j]===1 ? "circle-red" : "circle-blue";
-            if(activeMark && activeMark.originR === i && activeMark.originC === j) cls += " marked-origin";
-            h+=`<td class="${cls}" contenteditable onblur="updateCell(${i},${j},this.innerText)" onclick="cellClick(${i},${j})">${c}</td>`;
+function render(){
+    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+    data.forEach((row, r)=>{
+        h += "<tr>";
+        row.forEach((cell, c)=>{
+            let style = "";
+            if(activePattern){
+                if(activePattern.yellowR === r && activePattern.yellowC === c) style = "marked-yellow";
+                if(activePattern.reds.some(p => p.r === r && p.c === c)) style = "circle-red";
+                if(activePattern.blues.some(p => p.r === r && p.c === c)) style = "circle-blue";
+            }
+            h += `<td class="${style}" contenteditable onblur="update(${r},${c},this.innerText)" onclick="findPattern(${r},${c})">${cell}</td>`;
         });
-        h+="</tr>";
+        h += "</tr>";
     });
-    document.getElementById("tbl").innerHTML = h;
+    document.getElementById('tbl').innerHTML = h;
     setTimeout(drawLines, 50);
 }
 
-function updateCell(r,c,v){ data[r][c]=norm(v); saveData(); }
-
-function cellClick(r,c){
-    if(data[r][c] === "**") scanHistory(r,c);
-    else markWhereItCameFrom(r,c);
+function update(r,c,v){ 
+    v = v.trim();
+    data[r][c] = (v.length === 1) ? "0"+v : (v === "" ? "**" : v);
+    saveData();
 }
 
-// Strictly mark where the pair came from in old records (same family)
-function markWhereItCameFrom(r,c){
-    let f = getFam(data[r][c]);
-    for(let i=r-1; i>=0; i--){
-        for(let j=0; j<5; j++){
-            if(getFam(data[i][j]) === f){
-                activeMark = { map:[], originR: i, originC: j };
-                draw(); return;
-            }
-        }
-    }
-}
-
-function scanHistory(r,c){
-    // 1. Identify patterns from the row above (last 10 weeks)
-    let patternFamilies = [];
-    for(let i=r-1; i>=Math.max(0, r-10); i--){
-        for(let j=0; j<5; j++){
-            let f = getFam(data[i][j]);
-            if(f !== "NA"){
-                patternFamilies.push({f, rOffset: i-r, cOffset: j, type: patternFamilies.length < 2 ? 1 : 2});
-            }
-            if(patternFamilies.length >= 4) break;
-        }
-        if(patternFamilies.length >= 4) break;
-    }
-
-    if(patternFamilies.length < 2) return alert("Kam se kam pichle record mein 2 jodis bharein!");
-
-    // 2. Search history for these families in same relative position
+function findPattern(r,c){
+    if(data[r][c] === "**") return;
+    
+    let targetFam = getFam(data[r][c]);
     let matches = [];
+
+    // Scan history for same family results
     for(let i=0; i<data.length; i++){
-        if(i === r) continue;
-        let score = 0;
-        patternFamilies.forEach(p => {
-            let rr = i + p.rOffset;
-            if(rr >= 0 && rr < data.length && getFam(data[rr][p.cOffset]) === p.f) score++;
-        });
-        if(score >= 2) matches.push({targetRow: i, pattern: patternFamilies, score});
+        if(getFam(data[i][c]) === targetFam && i !== r){
+            matches.push(i);
+        }
     }
 
-    // 3. Display Check Lines
-    let div = document.getElementById("checks"); div.innerHTML = "";
-    matches.sort((a,b)=>b.score - a.score).forEach(m => {
-        let btn = document.createElement("div"); btn.className = "match-item";
-        btn.innerText = `Check Line: Match at Row ${m.targetRow + 1} (Score ${m.score})`;
-        btn.onclick = () => {
-            let map = Array(data.length).fill().map(()=>Array(5).fill(0));
-            let pts = [];
-            m.pattern.forEach(p => {
-                let nr = m.targetRow + p.rOffset;
-                if(nr >= 0){ map[nr][p.cOffset] = p.type; pts.push({r:nr, c:p.cOffset, type:p.type}); }
-            });
-            activeMark = {map, pts, originR: m.targetRow, originC: c};
-            draw();
+    let list = document.getElementById('checkList');
+    list.innerHTML = "";
+    
+    matches.forEach(matchRow => {
+        let div = document.createElement('div');
+        div.className = "check-line";
+        div.innerText = `Pattern Match: Row ${matchRow+1}`;
+        div.onclick = () => {
+            // Screenshot logic: 2 left (Red), 2 right (Blue) from the row above
+            activePattern = {
+                yellowR: matchRow, yellowC: c,
+                reds: [{r: matchRow-1, c: c-1}, {r: matchRow-1, c: c-2}],
+                blues: [{r: matchRow-1, c: c+1}, {r: matchRow-1, c: c}],
+                targetR: matchRow, targetC: c
+            };
+            render();
         };
-        div.appendChild(btn);
+        list.appendChild(div);
     });
-
-    if(matches.length > 0){
-        let v = data[matches[0].targetRow][c];
-        document.getElementById("future").innerText = v !== "**" ? v + " - " + norm(parseInt(v)+1) + " - " + norm(parseInt(v)-1) : "??";
-    }
 }
 
 function drawLines(){
-    const cvs=document.getElementById("mainCanvas"), ctx=cvs.getContext("2d"), table=document.getElementById("tbl");
-    if(!table.rows.length || !activeMark || !activeMark.pts) return;
-    cvs.width = table.offsetWidth; cvs.height = table.offsetHeight;
-    const rect = table.getBoundingClientRect();
-    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const table = document.getElementById('tbl');
+    canvas.width = table.offsetWidth;
+    canvas.height = table.offsetHeight;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    activeMark.pts.forEach(p => {
-        let cellA = table.rows[p.r].cells[p.c].getBoundingClientRect();
-        let cellB = table.rows[activeMark.originR].cells[activeMark.originC].getBoundingClientRect();
-        ctx.strokeStyle = (p.type === 1) ? "#ff4757" : "#2e86de";
-        ctx.lineWidth = 3;
+    if(!activePattern) return;
+
+    const rect = table.getBoundingClientRect();
+    const targetCell = table.rows[activePattern.yellowR+1].cells[activePattern.yellowC];
+    const tRect = targetCell.getBoundingClientRect();
+    const tx = tRect.left - rect.left + tRect.width/2;
+    const ty = tRect.top - rect.top + tRect.height/2;
+
+    // Draw Red Lines
+    ctx.strokeStyle = "#ff4757"; ctx.lineWidth = 3;
+    activePattern.reds.forEach(p => {
+        if(p.r < 0 || p.c < 0 || p.c > 4) return;
+        let cell = table.rows[p.r+1].cells[p.c];
+        let cRect = cell.getBoundingClientRect();
         ctx.beginPath();
-        ctx.moveTo(cellA.left - rect.left + cellA.width/2, cellA.top - rect.top + cellA.height/2);
-        ctx.lineTo(cellB.left - rect.left + cellB.width/2, cellB.top - rect.top + cellB.height/2);
+        ctx.moveTo(cRect.left - rect.left + cRect.width/2, cRect.top - rect.top + cRect.height/2);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+    });
+
+    // Draw Blue Lines
+    ctx.strokeStyle = "#2e86de";
+    activePattern.blues.forEach(p => {
+        if(p.r < 0 || p.c < 0 || p.c > 4) return;
+        let cell = table.rows[p.r+1].cells[p.c];
+        let cRect = cell.getBoundingClientRect();
+        ctx.beginPath();
+        ctx.moveTo(cRect.left - rect.left + cRect.width/2, cRect.top - rect.top + cRect.height/2);
+        ctx.lineTo(tx, ty);
         ctx.stroke();
     });
 }
 
-function saveData(){ localStorage.setItem("pDataPradeep", JSON.stringify(data)); }
-function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-document.getElementById("csvFile").onchange = e => {
+function saveData(){ localStorage.setItem('pradeepData', JSON.stringify(data)); }
+function addRow(){ data.push(["**","**","**","**","**"]); render(); }
+
+document.getElementById('csvFile').onchange = e => {
     let reader = new FileReader();
     reader.onload = () => {
-        data = reader.result.split("\n").filter(x=>x.trim()).map(l=>l.split(",").slice(0,5).map(v=>norm(v.trim())));
-        draw();
+        data = reader.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>v.trim()));
+        render();
     };
     reader.readAsText(e.target.files[0]);
 };
-draw();
+
+render();
 </script>
 </body>
 </html>
