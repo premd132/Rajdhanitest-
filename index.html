@@ -127,6 +127,15 @@ function draw(){
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
+
+ if (activeMark) {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            drawLines("mainCanvas", document.getElementById("tbl"));
+        });
+    });
+ }
+} // ✅ ← YE MISSING THA
  if (activeMark) {
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
