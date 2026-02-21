@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – The AI Poward 2+2</title>
+<title>Rajdhani Pro AI – The AI Powared 2+2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -66,7 +66,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>STRICT 2+2 SYSTEM</p>
+ <p>The Ai Powered 2+2 SYSTEM</p>
  <button onclick="start()">START</button>
 </div>
 
@@ -165,31 +165,50 @@ function getType(r,c){
 
 /* ===== CANVAS LINES ===== */
 function drawLines(){
- const cvs=mainCanvas, ctx=cvs.getContext("2d");
- cvs.width=tbl.offsetWidth;
- cvs.height=tbl.offsetHeight;
+ const cvs = mainCanvas;
+ const ctx = cvs.getContext("2d");
+ cvs.width = tbl.offsetWidth;
+ cvs.height = tbl.offsetHeight;
  ctx.clearRect(0,0,cvs.width,cvs.height);
- const rect=tbl.getBoundingClientRect();
 
- drawGroup(".circle-red", "#ff4757");
- drawGroup(".circle-blue", "#2e86de");
+ if(!activeMark) return;
 
- function drawGroup(sel,col){
-  let cells=[...tbl.querySelectorAll(sel)];
-  if(cells.length<2) return;
-  cells.sort((a,b)=>a.parentNode.rowIndex-b.parentNode.rowIndex);
-  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.beginPath();
-  cells.forEach((c,i)=>{
-   let r=c.getBoundingClientRect();
-   let x=r.left-rect.left+r.width/2;
-   let y=r.top-rect.top+r.height/2;
-   if(i==0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
-  ctx.stroke();
+ const rect = tbl.getBoundingClientRect();
+
+ drawByType(1, "#ff4757"); // family 1
+ drawByType(2, "#2e86de"); // family 2
+
+ function drawByType(type, color){
+   let points = [];
+
+   // 🔥 EXACT SHAPE ORDER (row → col)
+   for(let i=0;i<activeMark.shape.length;i++){
+     for(let j=0;j<5;j++){
+       if(activeMark.shape[i][j] === type){
+         let cell = tbl.rows[activeMark.start + i].cells[j];
+         let r = cell.getBoundingClientRect();
+         points.push({
+           x: r.left - rect.left + r.width/2,
+           y: r.top - rect.top + r.height/2
+         });
+       }
+     }
+   }
+
+   if(points.length < 2) return;
+
+   ctx.strokeStyle = color;
+   ctx.lineWidth = 2.5;
+   ctx.beginPath();
+   ctx.moveTo(points[0].x, points[0].y);
+   for(let k=1;k<points.length;k++){
+     ctx.lineTo(points[k].x, points[k].y);
+   }
+   ctx.stroke();
  }
 }
 
-/* ===== STRICT 2+2 ===== */
+/* ===== The Ai Powered 2+2 ===== */
 function makePattern(r,c){
  targetCol=c;
  let start=Math.max(0,r-10);
