@@ -94,6 +94,8 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <script>
 /* ===== FAMILY ===== */
+<script>
+/* ===== FAMILY ===== */
 const FAMILY={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -108,7 +110,7 @@ const FAMILY={
 };
 
 let data = Array(10).fill().map(()=>Array(5).fill("**"));
-let activeMark=null, targetCol=null;
+let activeMark=null;
 
 /* ===== UTILS ===== */
 function fam(v){
@@ -127,7 +129,7 @@ function start(){
  draw();
 }
 
-/* ===== DRAW TABLE ===== */
+/* ===== DRAW ===== */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
  data.forEach((r,i)=>{
@@ -135,7 +137,7 @@ function draw(){
   r.forEach((c,j)=>{
    let cls="";
    if(activeMark){
-    let t=getType(i,j);
+    let t=activeMark.map[i]?.[j];
     if(t==1)cls="circle-red";
     if(t==2)cls="circle-blue";
    }
@@ -146,146 +148,77 @@ function draw(){
   h+="</tr>";
  });
  tbl.innerHTML=h;
-
- if(activeMark){
-  requestAnimationFrame(()=>{
-   requestAnimationFrame(()=>{
-    drawLines();
-   });
-  });
- }
+ drawLines();
 }
 
-function getType(r,c){
- let i=r-activeMark.start;
- if(i>=0 && i<activeMark.shape.length)
-  return activeMark.shape[i][c];
- return 0;
-}
-
-/* ===== CANVAS LINES ===== */
-function drawLines(){
- const cvs = mainCanvas;
- const ctx = cvs.getContext("2d");
- cvs.width = tbl.offsetWidth;
- cvs.height = tbl.offsetHeight;
- ctx.clearRect(0,0,cvs.width,cvs.height);
-
- if(!activeMark) return;
- const rect = tbl.getBoundingClientRect();
-
- drawSeq(activeMark.order1, "#ff4757"); // red
- drawSeq(activeMark.order2, "#2e86de"); // blue
-
- function drawSeq(order, color){
-   if(!order || order.length < 2) return;
-
-   ctx.strokeStyle = color;
-   ctx.lineWidth = 2.8;
-   ctx.beginPath();
-
-   order.forEach((p, idx) => {
-     const cell = tbl.rows[p.r].cells[p.c];
-     const r = cell.getBoundingClientRect();
-     const x = r.left - rect.left + r.width / 2;
-     const y = r.top - rect.top + r.height / 2;
-     if(idx === 0) ctx.moveTo(x, y);
-     else ctx.lineTo(x, y);
-   });
-
-   ctx.stroke();
- }
-}
-
-/* ===== The Ai Powered 2+2 ===== */
+/* ===== MAIN 2+2 AI ===== */
 function makePattern(r,c){
- targetCol=c;
- let start=Math.max(0,r-10);
- let shape = Array(r-start).fill().map(()=>Array(5).fill(0));
-let order1 = []; // family 1 order
-let order2 = []; // family 2 order
+ let b1=null,b2=null;
+ let order1=[],order2=[];
+ let map=Array(data.length).fill().map(()=>Array(5).fill(0));
 
- for(let i=r-1;i>=start;i--){
+ /* find 2 families */
+ for(let i=r-1;i>=0;i--){
   let v=data[i][c];
   if(v!="**"){
    let f=fam(v);
-   if(!b1)b1=f;
-   else if(!b2 && f!=b1)b2=f;
+   if(!b1) b1=f;
+   else if(!b2 && f!=b1){b2=f;break;}
   }
  }
- if(!b1||!b2){alert("2 alag families chahiye");return}
+ if(!b1||!b2){alert("2 alag family nahi mili");return;}
 
+ /* pick EXACT 2+2 */
  let c1=0,c2=0;
- for(let i=r-1;i>=start;i--){
+ for(let i=r-1;i>=0;i--){
   for(let j=0;j<5;j++){
    let f=fam(data[i][j]);
-   if(f==b1 && c1<2){shape[i-start][j]=1;c1++}
-   else if(f==b2 && c2<2){shape[i-start][j]=2;c2++}
-  }
- }
-
- if(c1==2 && c2==2) search(shape,b1,b2);
- else alert("Exact 2+2 nahi mila");
-}
-
-function search(shape,f1,f2){
- let matches=[];
- for(let i=0;i<=data.length-shape.length;i++){
-  let ok=true;
-  for(let r=0;r<shape.length;r++){
-   for(let c=0;c<5;c++){
-    if (f === b1 && c1 < 2) {
-    shape[i-start][j] = 1;
-    order1.push({ r: i, c: j });
+   if(f==b1 && c1<2){
+    map[i][j]=1;
+    order1.push({r:i,c:j});
     c1++;
-}
-else if (f === b2 && c2 < 2) {
-    shape[i-start][j] = 2;
-    order2.push({ r: i, c: j });
+   }
+   else if(f==b2 && c2<2){
+    map[i][j]=2;
+    order2.push({r:i,c:j});
     c2++;
-}
-  if(ok) matches.push(i);
+   }
+  }
+  if(c1==2 && c2==2) break;
  }
- show(matches,shape);
-}
 
-function show(matches,shape){
- checks.innerHTML="";
- matches.forEach(m=>{
-  let d=document.createElement("div");
-  d.style="cursor:pointer;margin:4px 0";
-  d.innerText="Match at row "+(m+1);
-  d.onclick=()=>{activeMark={start:m,shape};draw()}
-  checks.appendChild(d);
- });
-}
+ if(c1!=2||c2!=2){alert("Exact 2+2 nahi bana");return;}
 
-/* ===== CSV ===== */
-csvFile.onchange=e=>{
- let f=e.target.files[0]; if(!f)return;
- let r=new FileReader();
- r.onload=()=>{
-  data=r.result.split("\n")
-   .filter(x=>x.trim())
-   .map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim())));
-  activeMark=null; draw();
- };
- r.readAsText(f);
-}
-
-function downloadCSV(){
- let csv=data.map(r=>r.join(",")).join("\n");
- let blob=new Blob([csv],{type:"text/csv"});
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="rajdhani_ai.csv";
- a.click();
- URL.revokeObjectURL(a.href);
-}
-
-function addRow(){
- data.push(["**","**","**","**","**"]);
+ activeMark={map,order1,order2};
  draw();
+}
+
+/* ===== CANVAS ===== */
+function drawLines(){
+ const cvs=mainCanvas,ctx=cvs.getContext("2d");
+ cvs.width=tbl.offsetWidth;
+ cvs.height=tbl.offsetHeight;
+ ctx.clearRect(0,0,cvs.width,cvs.height);
+ if(!activeMark)return;
+ const rect=tbl.getBoundingClientRect();
+
+ draw(activeMark.order1,"#ff4757");
+ draw(activeMark.order2,"#2e86de");
+
+ function draw(arr,col){
+  if(arr.length<2)return;
+  ctx.strokeStyle=col;
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  arr.forEach((p,i)=>{
+   let cell=tbl.rows[p.r].cells[p.c];
+   let r=cell.getBoundingClientRect();
+   let x=r.left-rect.left+r.width/2;
+   let y=r.top-rect.top+r.height/2;
+   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.stroke();
+ }
 }
 </script>
 </body>
