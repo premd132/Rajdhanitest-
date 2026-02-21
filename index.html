@@ -4,274 +4,233 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rajdhani Pro AI – Strict 2+2</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
-
 <style>
-:root{
- --gold:#ffd700; --red:#ff4757; --blue:#2e86de;
- --bg:#0f172a; --panel:#1e293b;
-}
+:root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
 *{box-sizing:border-box;font-family:Poppins}
-body{margin:0;background:var(--bg);color:#fff}
+body{margin:0;background:var(--bg);color:#fff; overflow-x: hidden;}
 
-#home{
- height:100vh;display:flex;flex-direction:column;
- justify-content:center;align-items:center;text-align:center
-}
-#home h1{color:var(--gold);font-size:3rem}
-#home button{
- background:var(--gold);border:none;padding:14px 40px;
- border-radius:40px;font-weight:800;font-size:1.1rem
-}
+#home{ height:100vh;display:flex;flex-direction:column; justify-content:center;align-items:center;text-align:center }
+#home h1{color:var(--gold);font-size:3.5rem; margin-bottom: 0;}
+#home button{ background:var(--gold);border:none;padding:14px 50px; border-radius:40px;font-weight:800;font-size:1.2rem; cursor: pointer; box-shadow: 0 0 20px rgba(255,215,0,0.4); transition: 0.3s; }
+#home button:hover { transform: scale(1.05); }
 
 #app{display:none;padding:15px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px; justify-content: center;}
+.toolbar button{ background:#334155;color:#fff;border:none; padding:10px 18px;border-radius:8px;font-weight:600; cursor: pointer; }
 
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.toolbar button{
- background:#444;color:#fff;border:none;
- padding:8px 14px;border-radius:6px;font-weight:600
-}
-
-.table-box{
- position:relative;background:#fff;border-radius:10px;padding:5px
-}
+.table-box{ position:relative;background:#fff;border-radius:12px;padding:8px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 table{border-collapse:collapse;color:#000}
-td,th{
- border:1px solid #ddd;
- width:45px;height:45px;
- text-align:center;font-weight:700
-}
-th{background:#1e293b;color:#fff;font-size:11px}
+td,th{ border:1px solid #e2e8f0; width:48px;height:48px; text-align:center;font-weight:700; font-size: 15px; cursor: pointer;}
+th{background:#1e293b;color:#fff;font-size:12px}
 
-.circle-red{
- border:3px solid var(--red)!important;
- border-radius:50%;background:rgba(255,71,87,.2)
-}
-.circle-blue{
- border:3px solid var(--blue)!important;
- border-radius:50%;background:rgba(46,134,222,.2)
-}
+.circle-red{ border:3px solid var(--red)!important; border-radius:50%; background:rgba(255,71,87,.25) }
+.circle-blue{ border:3px solid var(--blue)!important; border-radius:50%; background:rgba(46,134,222,.25) }
 
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-
-.card{
- background:var(--panel);padding:12px;border-radius:10px;
- border-top:3px solid var(--gold)
-}
+canvas{position:absolute;top:0;left:0;pointer-events:none; z-index: 10;}
+.dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
+.card{ background:var(--panel);padding:15px;border-radius:12px; border-top:4px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.card b { display: block; margin-bottom: 10px; color: var(--gold); text-transform: uppercase; font-size: 14px; }
+.match-btn { background: #2d3748; padding: 10px; margin: 5px 0; border-radius: 6px; border-left: 4px solid var(--gold); font-size: 13px; cursor: pointer; transition: 0.2s; }
+.match-btn:hover { background: #4a5568; }
 </style>
 </head>
 
 <body>
 
 <div id="home">
- <h1>Rajdhani PRO AI</h1>
- <p>STRICT 2+2 SYSTEM</p>
- <button onclick="start()">START</button>
+    <h1>Rajdhani PRO AI</h1>
+    <p style="opacity: 0.7; letter-spacing: 2px;">STRICT 2+2 PATTERN SYSTEM</p>
+    <button onclick="start()">START ANALYSIS</button>
 </div>
 
 <div id="app">
- <div class="toolbar">
-  <input type="file" id="csvFile" accept=".csv" style="display:none">
-  <button onclick="csvFile.click()">📂 CSV UPLOAD</button>
-  <button onclick="downloadCSV()">💾 CSV SAVE</button>
-  <button onclick="addRow()">➕ ADD ROW</button>
-  <button onclick="location.reload()">🔄 RESET</button>
- </div>
+    <div class="toolbar">
+        <input type="file" id="csvFile" accept=".csv" style="display:none">
+        <button onclick="csvFile.click()">📂 IMPORT CSV</button>
+        <button onclick="downloadCSV()">💾 EXPORT CSV</button>
+        <button onclick="addRow()">➕ NEW WEEK</button>
+        <button onclick="location.reload()" style="background: #ef4444;">🔄 RESET</button>
+    </div>
 
- <center>
- <div class="table-box">
-  <canvas id="mainCanvas"></canvas>
-  <table id="tbl"></table>
- </div>
- </center>
+    <center>
+        <div class="table-box">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
 
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px">
-  <div class="card"><b>✔ Check Lines</b><div id="checks"></div></div>
-  <div class="card"><b>🔮 Prediction</b><div id="future"></div></div>
- </div>
+    <div class="dashboard">
+        <div class="card">
+            <b>✔ Check Lines (Matches)</b>
+            <div id="checks" style="max-height: 200px; overflow-y: auto;">Click a blank cell to scan...</div>
+        </div>
+        <div class="card">
+            <b>🔮 Prediction (Top 3)</b>
+            <div id="future" style="font-size: 2rem; font-weight: 800; color: var(--gold); text-align: center;">--</div>
+        </div>
+    </div>
 </div>
 
 <script>
-/* ===== FAMILY ===== */
 const FAMILY={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"]
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"],
+ "14":["14","19","41","46","64","69","91","96"], "15":["01","06","10","15","51","56","60","65"],
+ "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],
+ "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"],
+ "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"],
+ "11":["11","66","16","61"], "22":["22","77","27","72"], "33":["33","88","38","83"], "44":["44","99","49","94"], "55":["55","00","05","50"]
 };
 
-let data = Array(10).fill().map(()=>Array(5).fill("**"));
+let data = Array(15).fill().map(()=>Array(5).fill("**"));
 let activeMark=null, targetCol=null;
 
-/* ===== UTILS ===== */
-function fam(v){
- for(let k in FAMILY) if(FAMILY[k].includes(v)) return k;
- return "NA";
-}
-function norm(v){
- if(!v||v=="**")return"**";
- v=String(v); return v.length==1?"0"+v:v;
-}
+function fam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA"; }
+function norm(v){ if(!v||v=="**")return"**"; v=String(v); return v.length==1?"0"+v:v; }
 
-/* ===== START ===== */
-function start(){
- home.style.display="none";
- app.style.display="block";
- draw();
-}
+function start(){ document.getElementById('home').style.display="none"; document.getElementById('app').style.display="block"; draw(); }
 
-/* ===== DRAW TABLE ===== */
 function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
- data.forEach((r,i)=>{
-  h+="<tr>";
-  r.forEach((c,j)=>{
-   let cls="";
-   if(activeMark){
-    let t=getType(i,j);
-    if(t==1)cls="circle-red";
-    if(t==2)cls="circle-blue";
-   }
-   h+=`<td class="${cls}" contenteditable
-    oninput="data[${i}][${j}]=norm(this.innerText)"
-    onclick="${c=='**'?'makePattern('+i+','+j+')':''}">${c}</td>`;
-  });
-  h+="</tr>";
- });
- tbl.innerHTML=h;
-
- if(activeMark){
-  requestAnimationFrame(()=>{
-   requestAnimationFrame(()=>{
-    drawLines();
-   });
-  });
- }
+    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+    data.forEach((r,i)=>{
+        h+="<tr>";
+        r.forEach((c,j)=>{
+            let cls="";
+            if(activeMark){
+                let t=getType(i,j);
+                if(t==1)cls="circle-red";
+                if(t==2)cls="circle-blue";
+            }
+            h+=`<td class="${cls}" contenteditable oninput="data[${i}][${j}]=norm(this.innerText)" onclick="${c=='**'?'makePattern('+i+','+j+')':''}">${c}</td>`;
+        });
+        h+="</tr>";
+    });
+    document.getElementById('tbl').innerHTML=h;
+    if(activeMark) setTimeout(drawLines, 50);
 }
 
 function getType(r,c){
- let i=r-activeMark.start;
- if(i>=0 && i<activeMark.shape.length)
-  return activeMark.shape[i][c];
- return 0;
+    if(!activeMark) return 0;
+    let i=r-activeMark.start;
+    if(i>=0 && i<activeMark.shape.length) return activeMark.shape[i][c];
+    return 0;
 }
 
-/* ===== CANVAS LINES ===== */
 function drawLines(){
- const cvs=mainCanvas, ctx=cvs.getContext("2d");
- cvs.width=tbl.offsetWidth;
- cvs.height=tbl.offsetHeight;
- ctx.clearRect(0,0,cvs.width,cvs.height);
- const rect=tbl.getBoundingClientRect();
+    const cvs=document.getElementById('mainCanvas'), ctx=cvs.getContext("2d");
+    const tbl=document.getElementById('tbl');
+    cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const rect=tbl.getBoundingClientRect();
 
- drawGroup(".circle-red", "#ff4757");
- drawGroup(".circle-blue", "#2e86de");
-
- function drawGroup(sel,col){
-  let cells=[...tbl.querySelectorAll(sel)];
-  if(cells.length<2) return;
-  cells.sort((a,b)=>a.parentNode.rowIndex-b.parentNode.rowIndex);
-  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.beginPath();
-  cells.forEach((c,i)=>{
-   let r=c.getBoundingClientRect();
-   let x=r.left-rect.left+r.width/2;
-   let y=r.top-rect.top+r.height/2;
-   if(i==0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
-  ctx.stroke();
- }
+    function drawGroup(sel,col){
+        let cells=[...tbl.querySelectorAll(sel)];
+        if(cells.length<2) return;
+        ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
+        cells.forEach((c,i)=>{
+            let r=c.getBoundingClientRect();
+            let x=r.left-rect.left+r.width/2;
+            let y=r.top-rect.top+r.height/2;
+            if(i==0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+    }
+    drawGroup(".circle-red", "#ff4757");
+    drawGroup(".circle-blue", "#2e86de");
 }
 
-/* ===== STRICT 2+2 ===== */
 function makePattern(r,c){
- targetCol=c;
- let start=Math.max(0,r-10);
- let shape=Array(r-start).fill().map(()=>Array(5).fill(0));
- let b1=null,b2=null;
+    targetCol=c;
+    let lookback = 10;
+    let startIdx=Math.max(0,r-lookback);
+    let shape=Array(r-startIdx).fill().map(()=>Array(5).fill(0));
+    
+    // Aapka Logic: 2 families from target column
+    let b1=null, b2=null;
+    let f1Jodis=[], f2Jodis=[];
 
- for(let i=r-1;i>=start;i--){
-  let v=data[i][c];
-  if(v!="**"){
-   let f=fam(v);
-   if(!b1)b1=f;
-   else if(!b2 && f!=b1)b2=f;
-  }
- }
- if(!b1||!b2){alert("2 alag families chahiye");return}
+    for(let i=r-1; i>=startIdx; i--){
+        let v=data[i][c]; if(v=="**") continue;
+        let f=fam(v);
+        if(!b1){ b1=f; f1Jodis.push(v); }
+        else if(f==b1 && f1Jodis.length<2) { f1Jodis.push(v); }
+        else if(!b2 && f!=b1) { b2=f; f2Jodis.push(v); }
+        else if(f==b2 && f2Jodis.length<2) { f2Jodis.push(v); }
+        if(f1Jodis.length==2 && f2Jodis.length==2) break;
+    }
 
- let c1=0,c2=0;
- for(let i=r-1;i>=start;i--){
-  for(let j=0;j<5;j++){
-   let f=fam(data[i][j]);
-   if(f==b1 && c1<2){shape[i-start][j]=1;c1++}
-   else if(f==b2 && c2<2){shape[i-start][j]=2;c2++}
-  }
- }
+    if(f1Jodis.length<2 || f2Jodis.length<2){ alert("2+2 jodi nahi mili (2 Red, 2 Blue from target col)"); return; }
 
- if(c1==2 && c2==2) search(shape,b1,b2);
- else alert("Exact 2+2 nahi mila");
+    // Map those 4 positions into the shape
+    let c1=0, c2=0;
+    for(let i=r-1; i>=startIdx; i--){
+        for(let j=0; j<5; j++){
+            let f=fam(data[i][j]);
+            if(f==b1 && c1<2 && j==c){ shape[i-startIdx][j]=1; c1++; }
+            else if(f==b2 && c2<2 && j==c){ shape[i-startIdx][j]=2; c2++; }
+        }
+    }
+
+    search(shape,b1,b2);
 }
 
 function search(shape,f1,f2){
- let matches=[];
- for(let i=0;i<=data.length-shape.length;i++){
-  let ok=true;
-  for(let r=0;r<shape.length;r++){
-   for(let c=0;c<5;c++){
-    if(shape[r][c]==1 && fam(data[i+r][c])!=f1) ok=false;
-    if(shape[r][c]==2 && fam(data[i+r][c])!=f2) ok=false;
-   }
-  }
-  if(ok) matches.push(i);
- }
- show(matches,shape);
+    let matches=[];
+    // Full record scan
+    for(let i=0; i<=data.length-shape.length-1; i++){
+        let ok=true;
+        for(let r=0; r<shape.length; r++){
+            for(let c=0; c<5; c++){
+                let type = shape[r][c];
+                if(type==1 && fam(data[i+r][c])!=f1) ok=false;
+                if(type==2 && fam(data[i+r][c])!=f2) ok=false;
+            }
+        }
+        if(ok) matches.push({index: i, shape: shape});
+    }
+    showMatches(matches);
 }
 
-function show(matches,shape){
- checks.innerHTML="";
- matches.forEach(m=>{
-  let d=document.createElement("div");
-  d.style="cursor:pointer;margin:4px 0";
-  d.innerText="Match at row "+(m+1);
-  d.onclick=()=>{activeMark={start:m,shape};draw()}
-  checks.appendChild(d);
- });
+function showMatches(matches){
+    const container = document.getElementById('checks');
+    container.innerHTML = matches.length ? "" : "No history found.";
+    let pool = [];
+
+    matches.forEach(m=>{
+        let btn = document.createElement("div");
+        btn.className = "match-btn";
+        btn.innerText = "History Match: Row " + (m.index+1);
+        btn.onclick = () => { activeMark={start: m.index, shape: m.shape}; draw(); };
+        container.appendChild(btn);
+
+        // Get prediction from row below match
+        let nextRow = m.index + m.shape.length;
+        if(data[nextRow] && data[nextRow][targetCol] != "**") pool.push(data[nextRow][targetCol]);
+    });
+
+    // Update Prediction AI
+    let unique = [...new Set(pool)].slice(0,3);
+    document.getElementById('future').innerText = unique.length ? unique.join(" - ") : "--";
 }
 
-/* ===== CSV ===== */
 csvFile.onchange=e=>{
- let f=e.target.files[0]; if(!f)return;
- let r=new FileReader();
- r.onload=()=>{
-  data=r.result.split("\n")
-   .filter(x=>x.trim())
-   .map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim())));
-  activeMark=null; draw();
- };
- r.readAsText(f);
+    let f=e.target.files[0]; if(!f)return;
+    let reader=new FileReader();
+    reader.onload=()=>{
+        data=reader.result.split("\n").filter(x=>x.trim()).map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim())));
+        activeMark=null; draw();
+    };
+    reader.readAsText(f);
 }
 
 function downloadCSV(){
- let csv=data.map(r=>r.join(",")).join("\n");
- let blob=new Blob([csv],{type:"text/csv"});
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="rajdhani_ai.csv";
- a.click();
- URL.revokeObjectURL(a.href);
+    let csv=data.map(r=>r.join(",")).join("\n");
+    let a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    a.download="rajdhani_records.csv"; a.click();
 }
 
-function addRow(){
- data.push(["**","**","**","**","**"]);
- draw();
-}
+function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
 </script>
 </body>
 </html>
