@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – The AI Powared 2+2</title>
+<title>Rajdhani Pro AI – The AI Powered 2+2</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -66,7 +66,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>The Ai Powered 2+2 SYSTEM</p>
+ <p>The AI Powered 2+2 SYSTEM</p>
  <button onclick="start()">START</button>
 </div>
 
@@ -88,13 +88,18 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px">
   <div class="card"><b>✔ Check Lines</b><div id="checks"></div></div>
-  <div class="card"><b>🔮 Prediction</b><div id="future"></div></div>
+  <div class="card"><b>🔮 Prediction</b><div id="future">—</div></div>
  </div>
 </div>
 
 <script>
-/* ===== FAMILY ===== */
-<script>
+/* ===== DOM ===== */
+const home = document.getElementById("home");
+const app = document.getElementById("app");
+const tbl = document.getElementById("tbl");
+const mainCanvas = document.getElementById("mainCanvas");
+const csvFile = document.getElementById("csvFile");
+
 /* ===== FAMILY ===== */
 const FAMILY={
 "12":["12","17","21","26","62","67","71","76"],
@@ -143,7 +148,7 @@ function draw(){
    }
    h+=`<td class="${cls}" contenteditable
     oninput="data[${i}][${j}]=norm(this.innerText)"
-    onclick="${c=='**'?'makePattern('+i+','+j+')':''}">${c}</td>`;
+    onclick="makePattern(${i},${j})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -151,13 +156,14 @@ function draw(){
  drawLines();
 }
 
-/* ===== MAIN 2+2 AI ===== */
+/* ===== 2+2 AI ===== */
 function makePattern(r,c){
+ if(data[r][c] !== "**") return;
+
  let b1=null,b2=null;
  let order1=[],order2=[];
  let map=Array(data.length).fill().map(()=>Array(5).fill(0));
 
- /* find 2 families */
  for(let i=r-1;i>=0;i--){
   let v=data[i][c];
   if(v!="**"){
@@ -168,48 +174,37 @@ function makePattern(r,c){
  }
  if(!b1||!b2){alert("2 alag family nahi mili");return;}
 
- /* pick EXACT 2+2 */
  let c1=0,c2=0;
  for(let i=r-1;i>=0;i--){
   for(let j=0;j<5;j++){
    let f=fam(data[i][j]);
    if(f==b1 && c1<2){
-    map[i][j]=1;
-    order1.push({r:i,c:j});
-    c1++;
+    map[i][j]=1; order1.push({r:i,c:j}); c1++;
    }
    else if(f==b2 && c2<2){
-    map[i][j]=2;
-    order2.push({r:i,c:j});
-    c2++;
+    map[i][j]=2; order2.push({r:i,c:j}); c2++;
    }
   }
   if(c1==2 && c2==2) break;
  }
 
  if(c1!=2||c2!=2){alert("Exact 2+2 nahi bana");return;}
-
  activeMark={map,order1,order2};
  draw();
 }
 
 /* ===== CANVAS ===== */
 function drawLines(){
- const cvs=mainCanvas,ctx=cvs.getContext("2d");
- cvs.width=tbl.offsetWidth;
- cvs.height=tbl.offsetHeight;
- ctx.clearRect(0,0,cvs.width,cvs.height);
+ const ctx=mainCanvas.getContext("2d");
+ mainCanvas.width=tbl.offsetWidth;
+ mainCanvas.height=tbl.offsetHeight;
+ ctx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
  if(!activeMark)return;
  const rect=tbl.getBoundingClientRect();
 
- draw(activeMark.order1,"#ff4757");
- draw(activeMark.order2,"#2e86de");
-
  function draw(arr,col){
   if(arr.length<2)return;
-  ctx.strokeStyle=col;
-  ctx.lineWidth=3;
-  ctx.beginPath();
+  ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
   arr.forEach((p,i)=>{
    let cell=tbl.rows[p.r].cells[p.c];
    let r=cell.getBoundingClientRect();
@@ -219,6 +214,32 @@ function drawLines(){
   });
   ctx.stroke();
  }
+ draw(activeMark.order1,"#ff4757");
+ draw(activeMark.order2,"#2e86de");
+}
+
+/* ===== CSV ===== */
+csvFile.onchange=e=>{
+ let f=e.target.files[0]; if(!f)return;
+ let r=new FileReader();
+ r.onload=()=>{
+  data=r.result.split("\n").filter(x=>x.trim())
+   .map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim())));
+  activeMark=null; draw();
+ };
+ r.readAsText(f);
+}
+
+function downloadCSV(){
+ let csv=data.map(r=>r.join(",")).join("\n");
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="rajdhani_ai.csv"; a.click();
+}
+
+function addRow(){
+ data.push(["**","**","**","**","**"]);
+ draw();
 }
 </script>
 </body>
