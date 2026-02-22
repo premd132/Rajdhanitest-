@@ -2,20 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rajdhani Pro AI – Logic Locked</title>
+<title>Rajdhani Pro AI – Real Pattern Fixed</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
 body{margin:0;background:#0f172a;color:#fff;font-family:Poppins}
-.container{display:flex;gap:15px;padding:12px}
 table{border-collapse:collapse;background:#fff;color:#000}
 td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:700}
-th{background:#1e293b;color:#fff;font-size:12px}
+th{background:#1e293b;color:#fff}
 .circle-red{border:3px solid #ff4757;border-radius:50%}
 .circle-blue{border:3px solid #2e86de;border-radius:50%}
 .check{background:#111;padding:8px;margin:6px 0;border-left:4px solid #2e86de;cursor:pointer}
-#popup{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+#popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7)}
 #popup .box{background:#fff;color:#000;padding:10px;border-radius:10px}
 canvas{position:absolute;top:0;left:0;pointer-events:none}
 .table-wrap{position:relative}
@@ -30,12 +29,11 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
  <button onclick="addRow()">Add Row</button>
 </div>
 
-<div class="container">
+<div style="display:flex;gap:15px;padding:10px">
  <div class="table-wrap">
   <canvas id="mainCanvas"></canvas>
   <table id="tbl"></table>
  </div>
-
  <div style="width:220px">
   <h3>✔ Check Lines</h3>
   <div id="checks"></div>
@@ -70,8 +68,7 @@ const fam=v=>{for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null}
 /* ===== DATA ===== */
 let data=JSON.parse(localStorage.getItem("rajdhaniData")||"null")
  || Array(60).fill().map(()=>Array(5).fill("**"));
-
-let basePattern=null;
+let pattern=null;
 
 /* ===== DOM ===== */
 const tbl=document.getElementById("tbl");
@@ -85,14 +82,14 @@ const popup=document.getElementById("popup");
 const pad=n=>n<10?"0"+n:n;
 function saveLS(){localStorage.setItem("rajdhaniData",JSON.stringify(data))}
 
-/* ===== DRAW TABLE ===== */
+/* ===== DRAW ===== */
 function draw(){
  let h="<tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>";
  data.forEach((r,i)=>{
   h+="<tr>";
   r.forEach((c,j)=>{
-   let cls=basePattern?.map[i]?.[j]==1?"circle-red":
-           basePattern?.map[i]?.[j]==2?"circle-blue":"";
+   let cls=pattern?.map[i]?.[j]==1?"circle-red":
+           pattern?.map[i]?.[j]==2?"circle-blue":"";
    h+=`<td class="${cls}" contenteditable
         oninput="data[${i}][${j}]=this.innerText.trim();saveLS();resetPattern()"
         onclick="cellClick(${i},${j})">${c}</td>`;
@@ -100,7 +97,7 @@ function draw(){
   h+="</tr>";
  });
  tbl.innerHTML=h;
- drawLines(mainCanvas,tbl,basePattern?.o1,basePattern?.o2);
+ drawLines(mainCanvas,tbl,pattern?.p1,pattern?.p2);
 }
 draw();
 
@@ -110,67 +107,69 @@ function cellClick(r,c){
  buildPattern(r,c);
 }
 
-/* ===== BUILD PATTERN (RELATIVE SHAPE) ===== */
+/* ===== BUILD REAL PATTERN ===== */
 function buildPattern(r,c){
  let map=Array(data.length).fill().map(()=>Array(5).fill(0));
- let fam1=null,fam2=null,o1=[],o2=[],moves1=[],moves2=[];
+ let f1=null,f2=null,p1=[],p2=[],rd1=[],cd1=[],rd2=[],cd2=[];
 
  for(let i=r;i>=0&&i>r-10;i--){
   for(let dc=-1;dc<=1;dc++){
    let j=c+dc;if(j<0||j>=5)continue;
    let f=fam(data[i][j]); if(!f)continue;
 
-   if(!fam1){
-    fam1=f; map[i][j]=1; o1.push({r:i,c:j});
-   }
-   else if(f===fam1&&o1.length<3){
-    moves1.push(j-o1[o1.length-1].c);
-    map[i][j]=1; o1.push({r:i,c:j});
-   }
-   else if(!fam2){
-    fam2=f; map[i][j]=2; o2.push({r:i,c:j});
-   }
-   else if(f===fam2&&o2.length<3){
-    moves2.push(j-o2[o2.length-1].c);
-    map[i][j]=2; o2.push({r:i,c:j});
+   if(!f1){
+    f1=f;map[i][j]=1;p1.push({r:i,c:j});
+   }else if(f===f1&&p1.length<3){
+    rd1.push(p1[p1.length-1].r-i);
+    cd1.push(j-p1[p1.length-1].c);
+    map[i][j]=1;p1.push({r:i,c:j});
+   }else if(!f2){
+    f2=f;map[i][j]=2;p2.push({r:i,c:j});
+   }else if(f===f2&&p2.length<3){
+    rd2.push(p2[p2.length-1].r-i);
+    cd2.push(j-p2[p2.length-1].c);
+    map[i][j]=2;p2.push({r:i,c:j});
    }
   }
  }
- if(o1.length<2||o2.length<2){alert("Valid pattern nahi mila");return;}
+ if(p1.length<2||p2.length<2){alert("Real pattern nahi mila");return;}
 
- basePattern={fam1,fam2,o1,o2,moves1,moves2,map};
+ pattern={f1,f2,p1,p2,rd1,cd1,rd2,cd2,map};
  draw();
  findCheckLines();
 }
 
-/* ===== CHECK LINE (OLD RECORDS ONLY) ===== */
+/* ===== CHECK LINE (EXACT MATCH) ===== */
 function findCheckLines(){
  checks.innerHTML="";
  let count=1;
 
- for(let r=0;r<data.length-10&&count<=4;r++){
-  let m1=[],m2=[],p1=null,p2=null;
+ for(let start=0;start<data.length-10&&count<=4;start++){
+  let c1=[],c2=[];
 
-  for(let i=r;i<r+10;i++){
+  for(let i=start;i<data.length;i++){
    for(let j=0;j<5;j++){
     let f=fam(data[i][j]);
-    if(f===basePattern.fam1){
-     if(p1!==null)m1.push(j-p1);
-     p1=j;
-    }
-    if(f===basePattern.fam2){
-     if(p2!==null)m2.push(j-p2);
-     p2=j;
-    }
+    if(f===pattern.f1)c1.push({r:i,c:j});
+    if(f===pattern.f2)c2.push({r:i,c:j});
    }
   }
 
-  if(m1.slice(0,basePattern.moves1.length).join()==basePattern.moves1.join() &&
-     m2.slice(0,basePattern.moves2.length).join()==basePattern.moves2.join()){
+  function match(points,rd,cd){
+   if(points.length<rd.length+1)return false;
+   for(let i=0;i<rd.length;i++){
+    if(points[i].r-points[i+1].r!==rd[i])return false;
+    if(points[i+1].c-points[i].c!==cd[i])return false;
+   }
+   return true;
+  }
+
+  if(match(c1,pattern.rd1,pattern.cd1)&&
+     match(c2,pattern.rd2,pattern.cd2)){
    let d=document.createElement("div");
    d.className="check";
-   d.innerText=pad(count)+". Row "+pad(r+1);
-   d.onclick=()=>openPopup(r);
+   d.innerText=pad(count)+". Row "+pad(start+1);
+   d.onclick=()=>openPopup(start);
    checks.appendChild(d);
    count++;
   }
@@ -186,20 +185,20 @@ function openPopup(r){
  rows.forEach(i=>{
   let tr="<tr>";
   for(let j=0;j<5;j++){
-   let cls=basePattern.map[i]?.[j]==1?"circle-red":
-           basePattern.map[i]?.[j]==2?"circle-blue":"";
+   let cls=pattern.map[i]?.[j]==1?"circle-red":
+           pattern.map[i]?.[j]==2?"circle-blue":"";
    tr+=`<td class="${cls}">${data[i][j]}</td>`;
   }
   tr+="</tr>";
   popTbl.innerHTML+=tr;
  });
 
- let o1=basePattern.o1.filter(p=>rows.includes(p.r))
-  .map(p=>({r:rows.indexOf(p.r),c:p.c}));
- let o2=basePattern.o2.filter(p=>rows.includes(p.r))
-  .map(p=>({r:rows.indexOf(p.r),c:p.c}));
+ let a1=pattern.p1.filter(p=>rows.includes(p.r))
+   .map(p=>({r:rows.indexOf(p.r),c:p.c}));
+ let a2=pattern.p2.filter(p=>rows.includes(p.r))
+   .map(p=>({r:rows.indexOf(p.r),c:p.c}));
 
- setTimeout(()=>drawLines(popCanvas,popTbl,o1,o2),50);
+ setTimeout(()=>drawLines(popCanvas,popTbl,a1,a2),50);
 }
 
 /* ===== DRAW LINES ===== */
@@ -240,7 +239,7 @@ function saveCSV(){
  a.download="rajdhani.csv";a.click();
 }
 function addRow(){data.push(["**","**","**","**","**"]);saveLS();draw();}
-function resetPattern(){basePattern=null;checks.innerHTML="";}
+function resetPattern(){pattern=null;checks.innerHTML="";}
 </script>
 </body>
 </html>
