@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Family Connection</title>
+<title>Rajdhani Pro AI – Check Lines</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -34,7 +34,8 @@ body{margin:0;background:var(--bg);color:#fff}
 }
 
 .table-box{
- position:relative;background:#fff;border-radius:10px;padding:5px
+ position:relative;background:#fff;border-radius:10px;padding:5px;
+ max-height:70vh; overflow:auto;
 }
 table{border-collapse:collapse;color:#000}
 td,th{
@@ -59,6 +60,15 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
  background:var(--panel);padding:12px;border-radius:10px;
  border-top:3px solid var(--gold)
 }
+
+.match{
+ background:#0b1220;
+ padding:10px;
+ margin:6px 0;
+ border-left:4px solid #2e86de;
+ cursor:pointer;
+}
+.match:hover{background:#111a33}
 </style>
 </head>
 
@@ -66,29 +76,28 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>Flexible Family Connection System</p>
+ <p>Family Pattern Check Lines</p>
  <button onclick="start()">START</button>
 </div>
 
 <div id="app">
  <div class="toolbar">
-  <input type="file" id="csvFile" accept=".csv" style="display:none">
-  <button onclick="csvFile.click()">📂 CSV UPLOAD</button>
-  <button onclick="downloadCSV()">💾 CSV SAVE</button>
   <button onclick="addRow()">➕ ADD ROW</button>
   <button onclick="location.reload()">🔄 RESET</button>
  </div>
 
  <center>
- <div class="table-box">
+ <div class="table-box" id="tableWrap">
   <canvas id="mainCanvas"></canvas>
   <table id="tbl"></table>
  </div>
  </center>
 
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px">
-  <div class="card"><b>✔ Check Lines</b><div id="checks"></div></div>
-  <div class="card"><b>🔮 Prediction</b><div id="future">—</div></div>
+ <div style="margin-top:15px">
+  <div class="card">
+   <b>✔ MATCHES FOUND</b>
+   <div id="checks"></div>
+  </div>
  </div>
 </div>
 
@@ -98,8 +107,8 @@ const home = document.getElementById("home");
 const app = document.getElementById("app");
 const tbl = document.getElementById("tbl");
 const mainCanvas = document.getElementById("mainCanvas");
-const csvFile = document.getElementById("csvFile");
 const checks = document.getElementById("checks");
+const tableWrap = document.getElementById("tableWrap");
 
 /* ===== FAMILY ===== */
 const FAMILY={
@@ -115,17 +124,14 @@ const FAMILY={
 "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = Array(15).fill().map(()=>Array(5).fill("**"));
+let data = Array(60).fill().map(()=>Array(5).fill("**"));
 let activeMark=null;
+let matches=[];
 
 /* ===== UTILS ===== */
 function fam(v){
  for(let k in FAMILY) if(FAMILY[k].includes(v)) return k;
  return "NA";
-}
-function norm(v){
- if(!v||v=="**")return"**";
- v=String(v); return v.length==1?"0"+v:v;
 }
 
 /* ===== START ===== */
@@ -135,7 +141,7 @@ function start(){
  draw();
 }
 
-/* ===== DRAW TABLE ===== */
+/* ===== DRAW ===== */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
  data.forEach((r,i)=>{
@@ -147,9 +153,7 @@ function draw(){
     if(t==1)cls="circle-red";
     if(t==2)cls="circle-blue";
    }
-   h+=`<td class="${cls}" contenteditable
-    oninput="data[${i}][${j}]=norm(this.innerText)"
-    onclick="makePattern(${i},${j})">${c}</td>`;
+   h+=`<td class="${cls}" onclick="makePattern(${i},${j})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -157,54 +161,66 @@ function draw(){
  drawLines();
 }
 
-/* ===== FLEXIBLE FAMILY CONNECTION ===== */
+/* ===== PATTERN ===== */
 function makePattern(r,c){
- if(data[r][c] !== "**") return;
-
  let map = Array(data.length).fill().map(()=>Array(5).fill(0));
- let order1=[], order2=[];
- let fam1=null, fam2=null;
+ let fam1=null,fam2=null;
+ let o1=[],o2=[];
 
- // scan upward rows, left/same/right allowed
- for(let i=r-1;i>=0;i--){
-  for(let dc=-1; dc<=1; dc++){
+ for(let i=r;i>=0 && i>r-10;i--){
+  for(let dc=-1;dc<=1;dc++){
    let j=c+dc;
-   if(j<0 || j>=5) continue;
-
+   if(j<0||j>=5) continue;
    let v=data[i][j];
    if(v==="**") continue;
-
    let f=fam(v);
 
    if(!fam1){
-    fam1=f;
-    map[i][j]=1;
-    order1.push({r:i,c:j});
-   }
-   else if(f===fam1 && order1.length<3){
-    map[i][j]=1;
-    order1.push({r:i,c:j});
-   }
-   else if(!fam2 && f!==fam1){
-    fam2=f;
-    map[i][j]=2;
-    order2.push({r:i,c:j});
-   }
-   else if(f===fam2 && order2.length<3){
-    map[i][j]=2;
-    order2.push({r:i,c:j});
+    fam1=f; map[i][j]=1; o1.push({r:i,c:j});
+   }else if(f===fam1 && o1.length<2){
+    map[i][j]=1; o1.push({r:i,c:j});
+   }else if(!fam2 && f!==fam1){
+    fam2=f; map[i][j]=2; o2.push({r:i,c:j});
+   }else if(f===fam2 && o2.length<2){
+    map[i][j]=2; o2.push({r:i,c:j});
    }
   }
  }
 
- if(order1.length<2 || order2.length<2){
-  alert("Family connection pattern nahi mila");
-  return;
- }
-
- activeMark={map,order1,order2};
- showCheckLines(order1,order2);
+ if(o1.length<2||o2.length<2) return;
+ activeMark={map,o1,o2,start:r};
  draw();
+ findMatches(fam1,fam2);
+}
+
+/* ===== FIND MATCHES ===== */
+function findMatches(f1,f2){
+ checks.innerHTML="";
+ matches=[];
+ for(let r=0;r<data.length;r++){
+  let c1=0,c2=0;
+  for(let i=r;i>=0 && i>r-10;i--){
+   for(let j=0;j<5;j++){
+    let f=fam(data[i][j]);
+    if(f===f1) c1++;
+    if(f===f2) c2++;
+   }
+  }
+  if(c1>=2 && c2>=2){
+   matches.push(r);
+   let d=document.createElement("div");
+   d.className="match";
+   d.innerText="Pattern Match Found at Row "+(r+1);
+   d.onclick=()=>scrollToRow(r,f1,f2);
+   checks.appendChild(d);
+  }
+ }
+}
+
+/* ===== SCROLL + SHOW ===== */
+function scrollToRow(r,f1,f2){
+ tableWrap.scrollTop = r*45;
+ makePattern(r,2);
 }
 
 /* ===== CANVAS ===== */
@@ -213,14 +229,11 @@ function drawLines(){
  mainCanvas.width=tbl.offsetWidth;
  mainCanvas.height=tbl.offsetHeight;
  ctx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
- if(!activeMark)return;
- const rect=tbl.getBoundingClientRect();
+ if(!activeMark) return;
 
+ const rect=tbl.getBoundingClientRect();
  function line(arr,col){
-  if(arr.length<2)return;
-  ctx.strokeStyle=col;
-  ctx.lineWidth=3;
-  ctx.beginPath();
+  ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
   arr.forEach((p,i)=>{
    let cell=tbl.rows[p.r].cells[p.c];
    let r=cell.getBoundingClientRect();
@@ -230,37 +243,11 @@ function drawLines(){
   });
   ctx.stroke();
  }
- line(activeMark.order1,"#ff4757");
- line(activeMark.order2,"#2e86de");
+ line(activeMark.o1,"#ff4757");
+ line(activeMark.o2,"#2e86de");
 }
 
-/* ===== CHECK LINES ===== */
-function showCheckLines(o1,o2){
- checks.innerHTML="";
- checks.innerHTML+=`🔴 Family-1: ${o1.map(p=>data[p.r][p.c]).join(" → ")}<br>`;
- checks.innerHTML+=`🔵 Family-2: ${o2.map(p=>data[p.r][p.c]).join(" → ")}`;
-}
-
-/* ===== CSV ===== */
-csvFile.onchange=e=>{
- let f=e.target.files[0]; if(!f)return;
- let r=new FileReader();
- r.onload=()=>{
-  data=r.result.split("\n").filter(x=>x.trim())
-   .map(x=>x.split(",").slice(0,5).map(v=>norm(v.trim())));
-  activeMark=null; draw();
- };
- r.readAsText(f);
-}
-
-function downloadCSV(){
- let csv=data.map(r=>r.join(",")).join("\n");
- let a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- a.download="rajdhani_family_connection.csv";
- a.click();
-}
-
+/* ===== ADD ROW ===== */
 function addRow(){
  data.push(["**","**","**","**","**"]);
  draw();
