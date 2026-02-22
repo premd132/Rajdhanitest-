@@ -2,85 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rajdhani Pro AI – Pradeep Edition</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Rajdhani Pro AI – Pradeep Kumar Dehariya</title>
     <style>
-        :root { --bg: #020617; --panel: #1e293b; --accent: #3b82f6; --red: #ff4757; --blue: #2e86de; --gold: #fbbf24; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --red: #f43f5e; --blue: #3b82f6; --gold: #f59e0b; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; }
         
-        /* Layout */
-        .app-container { display: grid; grid-template-columns: 1fr 350px; gap: 20px; padding: 20px; max-width: 1600px; margin: auto; }
-        header { background: #0f172a; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+        .dashboard { display: grid; grid-template-columns: 1fr 350px; gap: 20px; padding: 20px; }
         
-        /* Table Styling */
-        .table-area { background: #fff; padding: 20px; border-radius: 12px; position: relative; overflow: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; width: 100%; position: relative; z-index: 5; }
-        th { background: #0f172a; color: #f8fafc; padding: 12px; font-size: 0.9rem; border: 1px solid #334155; }
-        td { border: 1px solid #e2e8f0; width: 65px; height: 65px; text-align: center; font-weight: 800; font-size: 1.3rem; cursor: pointer; position: relative; transition: 0.2s; }
-        td:hover { background: #f1f5f9; }
+        /* Table Controls */
+        .controls { background: var(--card); padding: 15px; display: flex; gap: 10px; border-bottom: 3px solid var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; background: var(--accent); }
+        
+        /* Main Table */
+        .table-container { background: white; padding: 20px; border-radius: 12px; position: relative; overflow: auto; color: #334; }
+        table { border-collapse: collapse; width: 100%; position: relative; z-index: 2; }
+        th { background: #334155; color: white; padding: 12px; border: 1px solid #475569; }
+        td { border: 1px solid #cbd5e1; width: 60px; height: 60px; text-align: center; font-weight: 800; font-size: 1.2rem; cursor: pointer; position: relative; }
+        
+        /* Pattern Visuals */
+        .circle-red { border: 3px solid var(--red); border-radius: 50%; width: 45px; height: 45px; display: inline-flex; align-items: center; justify-content: center; margin: auto; color: var(--red); }
+        .circle-blue { border: 3px solid var(--blue); border-radius: 50%; width: 45px; height: 45px; display: inline-flex; align-items: center; justify-content: center; margin: auto; color: var(--blue); }
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        
+        /* Sidebar */
+        .sidebar-section { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .check-line-item { background: #0f172a; border-left: 4px solid var(--gold); padding: 10px; margin-top: 10px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .check-line-item:hover { background: #1e293b; transform: translateX(5px); }
+        
+        .ai-box { background: linear-gradient(to bottom right, #1e293b, #0f172a); border: 1px solid var(--gold); padding: 15px; border-radius: 10px; text-align: center; }
+        .pair-badge { background: var(--gold); color: black; padding: 5px 12px; border-radius: 20px; font-weight: 900; margin: 5px; display: inline-block; }
 
-        /* Circles & Lines */
-        .circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: auto; position: relative; z-index: 10; }
-        .c-1 { border: 4px solid var(--red); color: var(--red); box-shadow: 0 0 10px rgba(255,71,87,0.4); }
-        .c-2 { border: 4px solid var(--blue); color: var(--blue); box-shadow: 0 0 10px rgba(46,134,222,0.4); }
-        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
-
-        /* Sidebars */
-        .sidebar-box { background: var(--panel); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
-        .check-card { background: #0f172a; border-left: 4px solid var(--accent); padding: 12px; margin: 10px 0; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .check-card:hover { transform: scale(1.03); background: #1e293b; }
-        
-        .ai-prediction { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid var(--gold); padding: 15px; border-radius: 12px; text-align: center; }
-        .pred-pair { display: inline-block; background: var(--gold); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: 800; margin: 5px; font-size: 1.2rem; }
-
-        /* Popup */
-        #popup { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(8px); }
-        .pop-content { background: white; padding: 30px; border-radius: 20px; position: relative; width: 80%; max-width: 600px; color: #000; }
-        
-        .btn { background: var(--accent); border: none; color: white; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        #popup { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 999; }
+        .popup-inner { background: white; padding: 20px; border-radius: 15px; color: black; max-width: 90%; }
     </style>
 </head>
 <body>
 
-<header>
-    <div><span style="color:var(--gold)">PRADEEP</span> RAJDHANI AI</div>
-    <div style="display:flex; gap:10px;">
-        <input type="file" id="csvIn" style="display:none" onchange="loadCSV(this)">
-        <button class="btn" style="background:#475569" onclick="document.getElementById('csvIn').click()">Import</button>
-        <button class="btn" onclick="addRow()">+ Row</button>
-        <button class="btn" style="background:#10b981" onclick="saveCSV()">Export</button>
-    </div>
-</header>
+<div class="controls">
+    <h2 style="margin:0; color:var(--gold)">RAJDHANI PRO AI</h2>
+    <input type="file" id="csvFile" style="display:none" onchange="handleFile(this)">
+    <button class="btn" onclick="document.getElementById('csvFile').click()">Import CSV</button>
+    <button class="btn" onclick="addRow()">Add New Row</button>
+    <button class="btn" style="background:#10b981" onclick="exportData()">Export CSV</button>
+</div>
 
-<div class="app-container">
-    <div class="table-area" id="mainWrapper">
+<div class="dashboard">
+    <div class="table-container" id="mainWrapper">
         <svg id="mainSvg"></svg>
         <table id="mainTbl"></table>
     </div>
 
-    <div class="right-bar">
-        <div class="ai-prediction">
-            <h3 style="margin:0; color:var(--gold)">🤖 Future AI Pairs</h3>
-            <p style="font-size:0.8rem; opacity:0.8">Calculated from 1-2-3 Patterns</p>
-            <div id="predResult">-- -- --</div>
+    <div class="sidebar">
+        <div class="ai-box sidebar-section">
+            <h3 style="margin:0; color:var(--gold)">🔮 FUTURE AI PREDICTION</h3>
+            <div id="predictionDisp" style="margin-top:10px;">Click blank cell to predict</div>
         </div>
 
-        <div class="sidebar-box">
-            <h3 style="margin:0; border-bottom:1px solid #334155; padding-bottom:10px">🎯 Check Lines</h3>
-            <div id="checkList"><p style="font-size:0.8rem; color:#94a3b8">Click any blank cell (**) to start analysis.</p></div>
+        <div class="sidebar-section">
+            <h3 style="margin:0;">📋 CHECK LINES</h3>
+            <div id="checkLinesList">
+                <p style="font-size:0.8rem; color:#94a3b8;">Pattern matches will appear here...</p>
+            </div>
         </div>
     </div>
 </div>
 
 <div id="popup" onclick="this.style.display='none'">
-    <div class="pop-content" onclick="event.stopPropagation()">
-        <h2 style="margin-top:0">Historical Pattern</h2>
-        <div class="table-area" id="popWrapper" style="border:1px solid #ccc">
+    <div class="popup-inner" onclick="event.stopPropagation()">
+        <h3>Historical Record Check</h3>
+        <div style="position:relative" id="popWrapper">
             <svg id="popSvg"></svg>
             <table id="popTbl"></table>
         </div>
-        <button class="btn" style="width:100%; margin-top:20px" onclick="document.getElementById('popup').style.display='none'">Close</button>
     </div>
 </div>
 
@@ -93,71 +86,66 @@ const FAMILY = {
     "35":["03","08","30","35","53","58","80","85"], "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem("pro_ai_data")) || Array(25).fill().map(() => Array(5).fill("**"));
-let currentPattern = null;
+let data = JSON.parse(localStorage.getItem("raj_ai_data")) || Array(20).fill().map(()=>Array(5).fill("**"));
+let activePattern = null;
 
-const getFam = (v) => { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; };
+function getFam(v) { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
 
 function render() {
     const tbl = document.getElementById("mainTbl");
     let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-    data.forEach((row, rIdx) => {
+    data.forEach((row, ri) => {
         html += "<tr>";
-        row.forEach((cell, cIdx) => {
+        row.forEach((cell, ci) => {
             let cls = "";
-            if(currentPattern) {
-                if(currentPattern.p1.some(p => p.r === rIdx && p.c === cIdx)) cls = "circle c-1";
-                if(currentPattern.p2.some(p => p.r === rIdx && p.c === cIdx)) cls = "circle c-2";
+            if(activePattern) {
+                if(activePattern.p1.some(p => p.r === ri && p.c === ci)) cls = "circle-red";
+                if(activePattern.p2.some(p => p.r === ri && p.c === ci)) cls = "circle-blue";
             }
-            html += `<td onclick="analyze(${rIdx},${cIdx})" contenteditable="true" onblur="update(${rIdx},${cIdx},this.innerText)">
+            html += `<td onclick="cellClick(${ri},${ci})" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)">
                 <div class="${cls}">${cell}</div></td>`;
         });
         html += "</tr>";
     });
     tbl.innerHTML = html;
-    draw("mainSvg", "mainTbl", currentPattern);
+    drawLines("mainSvg", "mainTbl", activePattern);
 }
 
-function update(r, c, v) { 
-    data[r][c] = v.trim(); 
-    localStorage.setItem("pro_ai_data", JSON.stringify(data)); 
-    render(); 
-}
-
+function updateCell(r,c,v) { data[r][c] = v.trim(); localStorage.setItem("raj_ai_data", JSON.stringify(data)); render(); }
 function addRow() { data.push(["**","**","**","**","**"]); render(); }
 
-function analyze(r, c) {
+function cellClick(r, c) {
     if(data[r][c] !== "**") return;
     
-    let p1 = [], p2 = [], fam1 = null, fam2 = null;
-
-    // Search last 10 weeks
+    // Pattern Engine: Search pichle 10 hafte
+    let p1 = [], p2 = [], f1 = null, f2 = null;
+    
     for(let i = r-1; i >= 0 && i >= r-10; i--) {
         for(let j=0; j<5; j++) {
             let f = getFam(data[i][j]);
             if(!f) continue;
-            if(!fam1) { fam1 = f; p1.push({r:i, c:j, v:data[i][j]}); }
-            else if(f === fam1 && p1.length < 3) p1.push({r:i, c:j, v:data[i][j]});
-            else if(!fam2 && f !== fam1) { fam2 = f; p2.push({r:i, c:j, v:data[i][j]}); }
-            else if(f === fam2 && p2.length < 3) p2.push({r:i, c:j, v:data[i][j]});
+            if(!f1) { f1 = f; p1.push({r:i, c:j}); }
+            else if(f === f1 && p1.length < 3) p1.push({r:i, c:j});
+            else if(!f2 && f !== f1) { f2 = f; p2.push({r:i, c:j}); }
+            else if(f === f2 && p2.length < 3) p2.push({r:i, c:j});
         }
     }
 
     if(p1.length >= 2) {
-        currentPattern = { p1, p2, fam1, fam2 };
+        activePattern = { p1, p2, f1, f2 };
         render();
-        findCheckLines();
-        generateFutureAI();
+        generateCheckLines(r);
+        runAI(f1, f2);
     }
 }
 
-function draw(svgId, tblId, pat) {
+function drawLines(svgId, tblId, pat) {
     const svg = document.getElementById(svgId);
     const tbl = document.getElementById(tblId);
     svg.innerHTML = "";
     if(!pat) return;
 
-    const makePath = (points, color) => {
+    const createPath = (points, color) => {
         if(points.length < 2) return;
         let d = "";
         points.forEach((p, i) => {
@@ -171,78 +159,77 @@ function draw(svgId, tblId, pat) {
         path.setAttribute("stroke", color);
         path.setAttribute("fill", "none");
         path.setAttribute("stroke-width", "3");
-        path.setAttribute("stroke-dasharray", "6");
+        path.setAttribute("stroke-dasharray", "5,5");
         svg.appendChild(path);
     };
-    makePath(pat.p1, "#ff4757");
-    makePath(pat.p2, "#2e86de");
+    createPath(pat.p1, "#f43f5e");
+    createPath(pat.p2, "#3b82f6");
 }
 
-function findCheckLines() {
-    const list = document.getElementById("checkList");
+function generateCheckLines(currentR) {
+    const list = document.getElementById("checkLinesList");
     list.innerHTML = "";
-    let count = 0;
+    let found = 0;
 
-    for(let i=0; i<data.length-3; i++) {
-        let matches = data[i].filter(v => getFam(v) === currentPattern.fam1);
-        if(matches.length > 0 && i < currentPattern.p1[0].r - 2) {
-            count++;
+    // Search historical data for similar family combos
+    for(let i=0; i < currentR - 5; i++) {
+        let hasF1 = data[i].some(v => getFam(v) === activePattern.f1);
+        if(hasF1) {
+            found++;
             let div = document.createElement("div");
-            div.className = "check-card";
-            div.innerHTML = `<b>Match #${count}</b><br><small>Historical Row: ${i+1}</small>`;
-            div.onclick = () => showPop(i);
+            div.className = "check-line-item";
+            div.innerHTML = `<strong>Match #${found}</strong><br><small>Historical Row ${i+1}</small>`;
+            div.onclick = () => showHistoryPopup(i);
             list.appendChild(div);
         }
+        if(found >= 5) break;
     }
 }
 
-function showPop(rowIdx) {
+function showHistoryPopup(rowIdx) {
     document.getElementById("popup").style.display = "flex";
     const popTbl = document.getElementById("popTbl");
     let html = "";
-    let popP1 = [], popP2 = [];
+    let hp1 = [], hp2 = [];
 
     for(let i=0; i<3; i++) {
         let r = rowIdx + i;
         html += "<tr>";
         data[r].forEach((v, c) => {
             let cls = "";
-            if(getFam(v) === currentPattern.fam1) { cls="circle c-1"; popP1.push({r:i, c}); }
-            if(getFam(v) === currentPattern.fam2) { cls="circle c-2"; popP2.push({r:i, c}); }
+            if(getFam(v) === activePattern.f1) { cls = "circle-red"; hp1.push({r:i, c}); }
+            if(getFam(v) === activePattern.f2) { cls = "circle-blue"; hp2.push({r:i, c}); }
             html += `<td><div class="${cls}">${v}</div></td>`;
         });
         html += "</tr>";
     }
     popTbl.innerHTML = html;
-    setTimeout(() => draw("popSvg", "popTbl", {p1:popP1, p2:popP2}), 50);
+    setTimeout(() => drawLines("popSvg", "popTbl", {p1:hp1, p2:hp2}), 100);
 }
 
-function generateFutureAI() {
-    const res = document.getElementById("predResult");
-    // Logic: Picking random numbers from the detected families as prediction
-    let f1 = FAMILY[currentPattern.fam1];
-    let f2 = FAMILY[currentPattern.fam2] || f1;
-    let p = [f1[0], f2[1], f1[2]];
-    res.innerHTML = p.map(n => `<span class="pred-pair">${n}</span>`).join("");
+function runAI(f1, f2) {
+    const disp = document.getElementById("predictionDisp");
+    const pairs = FAMILY[f1].sort(() => 0.5 - Math.random()).slice(0, 3);
+    disp.innerHTML = pairs.map(p => `<span class="pair-badge">${p}</span>`).join("");
 }
 
-function saveCSV() {
+function handleFile(input) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        data = reader.result.trim().split("\n").map(l => l.split(","));
+        localStorage.setItem("raj_ai_data", JSON.stringify(data));
+        render();
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function exportData() {
     const csv = data.map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], {type: 'text/csv'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `Rajdhani_AI_${Date.now()}.csv`;
+    a.download = `Rajdhani_Pro_AI.csv`;
     a.click();
-}
-
-function loadCSV(input) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        data = reader.result.trim().split("\n").map(l => l.split(","));
-        localStorage.setItem("pro_ai_data", JSON.stringify(data));
-        render();
-    };
-    reader.readAsText(input.files[0]);
 }
 
 render();
