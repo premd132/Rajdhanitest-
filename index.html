@@ -3,75 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Final Popup Fixed</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>Rajdhani Pro AI – Final CSV</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-:root{
- --gold:#ffd700; --red:#ff4757; --blue:#2e86de;
- --bg:#0f172a; --panel:#1e293b;
-}
-*{box-sizing:border-box;font-family:Poppins}
-body{margin:0;background:var(--bg);color:#fff}
-
-/* TABLE */
-.table-box{position:relative;background:#fff;border-radius:10px;padding:5px}
-table{border-collapse:collapse;color:#000}
-td,th{border:1px solid #ddd;width:45px;height:45px;text-align:center;font-weight:700}
-th{background:#1e293b;color:#fff;font-size:11px}
-
-.circle-red{border:3px solid var(--red);border-radius:50%}
-.circle-blue{border:3px solid var(--blue);border-radius:50%}
-
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-
-/* CHECK LINE */
-.match{
- background:#0b1220;padding:8px;margin:6px 0;
- border-left:4px solid #2e86de;cursor:pointer
-}
-
-/* POPUP */
-#popup{
- position:fixed;inset:0;background:rgba(0,0,0,.75);
- display:none;align-items:center;justify-content:center
-}
-#popup .box{
- background:#fff;color:#000;padding:10px;border-radius:10px;
- position:relative
-}
-#popWrap{position:relative}
+body{margin:0;background:#0f172a;color:#fff;font-family:Poppins}
+table{border-collapse:collapse;background:#fff;color:#000}
+td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:700}
+th{background:#1e293b;color:#fff}
+.circle-red{border:3px solid #ff4757;border-radius:50%}
+.circle-blue{border:3px solid #2e86de;border-radius:50%}
+.match{background:#111;padding:8px;margin:6px 0;border-left:4px solid #2e86de;cursor:pointer}
+#popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7)}
+#popup .box{background:#fff;color:#000;padding:10px;border-radius:10px}
 </style>
 </head>
 
 <body>
 
-<div style="display:flex;gap:10px;padding:10px">
+<h2 style="padding:10px">Rajdhani Pro AI</h2>
 
- <div class="table-box">
-  <canvas id="mainCanvas"></canvas>
+<input type="file" id="csvFile">
+<button onclick="saveCSV()">Save CSV</button>
+
+<div style="display:flex;gap:20px;padding:10px">
+ <div>
   <table id="tbl"></table>
  </div>
-
- <div style="width:220px">
-  <h3>✔ CHECK LINES</h3>
+ <div>
+  <h3>✔ Check Lines</h3>
   <div id="checks"></div>
  </div>
-
 </div>
 
 <div id="popup" onclick="this.style.display='none'">
  <div class="box" onclick="event.stopPropagation()">
-  <div id="popWrap">
-   <canvas id="popCanvas"></canvas>
-   <table id="popTbl"></table>
-  </div>
+  <table id="popTbl"></table>
  </div>
 </div>
 
 <script>
-/* ===== FAMILY ===== */
+/* FAMILY */
 const FAMILY={
 "12":["12","17","21","26","62","67","71","76"],
 "13":["13","18","31","36","63","68","81","86"],
@@ -84,150 +56,106 @@ const FAMILY={
 "35":["03","08","30","35","53","58","80","85"],
 "45":["04","09","40","45","54","59","90","95"]
 };
+const fam=v=>{for(let k in FAMILY)if(FAMILY[k].includes(v))return k;};
 
-function fam(v){
- for(let k in FAMILY) if(FAMILY[k].includes(v)) return k;
- return null;
-}
-
-/* ===== SAMPLE DATA ===== */
-let data=[
-["19","66","30","82","20"],
-["43","09","34","19","75"],
-["13","36","01","96","79"],
-["57","35","58","91","75"],
-["91","40","45","47","21"],
-["86","46","47","36","06"],
-["85","60","17","58","07"],
-["18","59","95","90","97"],
-["42","51","13","98","48"],
-["45","53","43","59","97"],
-["12","29","90","72","13"],
-["08","70","55","57","52"],
-["15","42","72","83","33"],
-["48","68","00","64","46"],
-["75","21","18","36","05"],
-["31","46","**","**","**"]
-];
-
+let data=Array(50).fill().map(()=>Array(5).fill("**"));
 let basePattern=null;
 
 const tbl=document.getElementById("tbl");
-const mainCanvas=document.getElementById("mainCanvas");
 const checks=document.getElementById("checks");
-const popup=document.getElementById("popup");
 const popTbl=document.getElementById("popTbl");
-const popCanvas=document.getElementById("popCanvas");
 
-/* ===== DRAW MAIN TABLE ===== */
+/* DRAW */
 function draw(){
  let h="<tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>";
  data.forEach((r,i)=>{
   h+="<tr>";
   r.forEach((c,j)=>{
-   let cls="";
-   if(basePattern && basePattern.map[i]?.[j])
-    cls=basePattern.map[i][j]==1?"circle-red":"circle-blue";
+   let cls=basePattern?.map[i]?.[j]==1?"circle-red":
+           basePattern?.map[i]?.[j]==2?"circle-blue":"";
    h+=`<td class="${cls}" onclick="clickCell(${i},${j})">${c}</td>`;
   });
   h+="</tr>";
  });
  tbl.innerHTML=h;
- drawLines(mainCanvas, tbl, basePattern?.o1, basePattern?.o2);
 }
 
-/* ===== CLICK ===== */
+/* BUILD PATTERN */
 function clickCell(r,c){
- if(data[r][c]!=="**") return;
- buildPattern(r,c);
-}
+ if(data[r][c]!=="**")return;
 
-/* ===== BUILD PATTERN ===== */
-function buildPattern(r,c){
  let map=Array(data.length).fill().map(()=>Array(5).fill(0));
- let o1=[],o2=[],f1=null,f2=null;
+ let f1=null,f2=null,o1=[],o2=[],cols=new Set();
 
  for(let i=r;i>=0&&i>r-8;i--){
   for(let dc=-1;dc<=1;dc++){
    let j=c+dc;if(j<0||j>=5)continue;
-   let f=fam(data[i][j]);
-   if(!f)continue;
-   if(!f1){f1=f;map[i][j]=1;o1.push({r:i,c:j});}
-   else if(f===f1&&o1.length<3){map[i][j]=1;o1.push({r:i,c:j});}
-   else if(!f2){f2=f;map[i][j]=2;o2.push({r:i,c:j});}
-   else if(f===f2&&o2.length<3){map[i][j]=2;o2.push({r:i,c:j});}
+   let f=fam(data[i][j]); if(!f)continue;
+   if(!f1){f1=f;map[i][j]=1;o1.push({r:i,c:j});cols.add(j);}
+   else if(f===f1&&o1.length<3){map[i][j]=1;o1.push({r:i,c:j});cols.add(j);}
+   else if(!f2){f2=f;map[i][j]=2;o2.push({r:i,c:j});cols.add(j);}
+   else if(f===f2&&o2.length<3){map[i][j]=2;o2.push({r:i,c:j});cols.add(j);}
   }
  }
+ if(o1.length<2||o2.length<2){alert("Pattern nahi mila");return;}
 
- basePattern={map,o1,o2,row:r};
+ basePattern={fam1:f1,fam2:f2,cols:[...cols],map};
  draw();
- makeCheckLines();
+ findCheckLines();
 }
 
-/* ===== CHECK LINES ===== */
-function makeCheckLines(){
+/* CHECK LINES FROM OLD RECORDS */
+function findCheckLines(){
  checks.innerHTML="";
- for(let i=0;i<4;i++){
-  let d=document.createElement("div");
-  d.className="match";
-  d.innerText=`0${i+1}. Row ${basePattern.row-i}`;
-  d.onclick=()=>openPopup(basePattern.row-i);
-  checks.appendChild(d);
+ let count=1;
+ for(let r=0;r<data.length-6&&count<=4;r++){
+  let s1=new Set(),s2=new Set();
+  for(let i=r;i<r+6;i++){
+   for(let col of basePattern.cols){
+    let f=fam(data[i][col]);
+    if(f===basePattern.fam1)s1.add(data[i][col]);
+    if(f===basePattern.fam2)s2.add(data[i][col]);
+   }
+  }
+  if(s1.size>=2&&s2.size>=2){
+   let d=document.createElement("div");
+   d.className="match";
+   d.innerText=(count<10?"0":"")+count+". Row "+(r+1);
+   d.onclick=()=>openPopup(r);
+   checks.appendChild(d);
+   count++;
+  }
  }
 }
 
-/* ===== POPUP ===== */
+/* POPUP */
 function openPopup(r){
- popup.style.display="flex";
+ document.getElementById("popup").style.display="flex";
  popTbl.innerHTML="";
-
- let rows=[r-1,r,r+1].filter(i=>i>=0&&i<data.length);
-
- rows.forEach(i=>{
+ [r-1,r,r+1].forEach(i=>{
+  if(i<0||i>=data.length)return;
   let tr="<tr>";
   for(let j=0;j<5;j++){
-   let cls="";
-   if(basePattern.map[i]?.[j])
-    cls=basePattern.map[i][j]==1?"circle-red":"circle-blue";
+   let cls=basePattern.map[i]?.[j]==1?"circle-red":
+           basePattern.map[i]?.[j]==2?"circle-blue":"";
    tr+=`<td class="${cls}">${data[i][j]}</td>`;
   }
   tr+="</tr>";
   popTbl.innerHTML+=tr;
  });
-
- setTimeout(()=>{
-  let o1=basePattern.o1.filter(p=>rows.includes(p.r))
-   .map(p=>({r:rows.indexOf(p.r),c:p.c}));
-  let o2=basePattern.o2.filter(p=>rows.includes(p.r))
-   .map(p=>({r:rows.indexOf(p.r),c:p.c}));
-
-  drawLines(popCanvas,popTbl,o1,o2);
- },50);
 }
 
-/* ===== DRAW LINES ===== */
-function drawLines(canvas,table,o1=[],o2=[]){
- if(!canvas||!table)return;
- const ctx=canvas.getContext("2d");
- canvas.width=table.offsetWidth;
- canvas.height=table.offsetHeight;
- ctx.clearRect(0,0,canvas.width,canvas.height);
- const rect=table.getBoundingClientRect();
-
- function line(arr,color){
-  if(!arr||arr.length<2)return;
-  ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();
-  arr.forEach((p,i)=>{
-   let cell=table.rows[p.r+1].cells[p.c];
-   let r=cell.getBoundingClientRect();
-   let x=r.left-rect.left+r.width/2;
-   let y=r.top-rect.top+r.height/2;
-   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  });
-  ctx.stroke();
- }
- line(o1,"#ff4757");
- line(o2,"#2e86de");
+/* CSV */
+csvFile.onchange=e=>{
+ let r=new FileReader();
+ r.onload=()=>{data=r.result.trim().split("\n").map(x=>x.split(","));draw();};
+ r.readAsText(e.target.files[0]);
+};
+function saveCSV(){
+ let csv=data.map(r=>r.join(",")).join("\n");
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv]));
+ a.download="rajdhani.csv";a.click();
 }
 
 draw();
