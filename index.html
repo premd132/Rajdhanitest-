@@ -1,245 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Rajdhani Pro AI – Real Pattern Fixed</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Rajdhani Pro AI – Advanced Pattern Analyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; 
+            --red: #ef4444; --blue: #3b82f6; --text: #f8fafc;
+        }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        header { background: var(--card); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 100; }
+        .btn { background: var(--accent); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+        .btn-alt { background: #475569; }
 
-<style>
-body{margin:0;background:#0f172a;color:#fff;font-family:Poppins}
-table{border-collapse:collapse;background:#fff;color:#000}
-td,th{border:1px solid #ccc;width:45px;height:45px;text-align:center;font-weight:700}
-th{background:#1e293b;color:#fff}
-.circle-red{border:3px solid #ff4757;border-radius:50%}
-.circle-blue{border:3px solid #2e86de;border-radius:50%}
-.check{background:#111;padding:8px;margin:6px 0;border-left:4px solid #2e86de;cursor:pointer}
-#popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7)}
-#popup .box{background:#fff;color:#000;padding:10px;border-radius:10px}
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-.table-wrap{position:relative}
-</style>
+        .main-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; }
+        
+        /* Table Styling */
+        .table-container { background: var(--card); padding: 20px; border-radius: 12px; position: relative; overflow-x: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        table { border-collapse: collapse; width: 100%; position: relative; z-index: 2; }
+        th { background: #334155; color: #94a3b8; padding: 12px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        td { border: 1px solid #334155; width: 50px; height: 50px; text-align: center; font-weight: 700; font-size: 1.1rem; cursor: cell; transition: 0.2s; position: relative; }
+        td:hover { background: #2d3748; }
+        td:focus { outline: 2px solid var(--accent); background: #1e293b; }
+
+        /* Pattern Markers */
+        .circle-1 { border: 3px solid var(--red); border-radius: 50%; width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; color: var(--red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+        .circle-2 { border: 3px solid var(--blue); border-radius: 50%; width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; color: var(--blue); box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+
+        /* Sidebar Check Lines */
+        .sidebar { background: var(--card); border-radius: 12px; padding: 20px; height: fit-content; }
+        .check-item { background: #0f172a; border-left: 4px solid var(--accent); padding: 12px; margin-bottom: 10px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .check-item:hover { background: #1e293b; transform: scale(1.02); }
+        .check-item small { color: #94a3b8; display: block; }
+
+        /* Overlay Canvas */
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+
+        /* Popup */
+        #popup { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .pop-content { background: var(--card); padding: 30px; border-radius: 16px; position: relative; border: 1px solid #475569; }
+        
+        .empty-cell { color: #475569; font-weight: 400; }
+    </style>
 </head>
-
 <body>
 
-<div style="padding:10px">
- <input type="file" id="csvFile">
- <button onclick="saveCSV()">Save CSV</button>
- <button onclick="addRow()">Add Row</button>
-</div>
+<header>
+    <div style="font-weight: 800; font-size: 1.5rem; color: var(--accent);">RAJDHANI <span style="color:#fff">PRO AI</span></div>
+    <div style="display:flex; gap:10px">
+        <input type="file" id="csvFile" style="display:none">
+        <button class="btn btn-alt" onclick="document.getElementById('csvFile').click()">Import CSV</button>
+        <button class="btn btn-alt" onclick="saveCSV()">Export CSV</button>
+        <button class="btn" onclick="addRow()">+ New Row</button>
+    </div>
+</header>
 
-<div style="display:flex;gap:15px;padding:10px">
- <div class="table-wrap">
-  <canvas id="mainCanvas"></canvas>
-  <table id="tbl"></table>
- </div>
- <div style="width:220px">
-  <h3>✔ Check Lines</h3>
-  <div id="checks"></div>
- </div>
+<div class="main-layout">
+    <div class="table-container" id="mainContainer">
+        <canvas id="mainCanvas"></canvas>
+        <table id="tbl"></table>
+    </div>
+
+    <div class="sidebar">
+        <h3 style="margin-top:0">🎯 Check Lines</h3>
+        <p id="noPattern" style="color:#64748b; font-size:0.9rem">Click a blank cell (**) to analyze patterns from previous weeks.</p>
+        <div id="checkResults"></div>
+    </div>
 </div>
 
 <div id="popup" onclick="this.style.display='none'">
- <div class="box" onclick="event.stopPropagation()">
-  <div class="table-wrap">
-   <canvas id="popCanvas"></canvas>
-   <table id="popTbl"></table>
-  </div>
- </div>
+    <div class="pop-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0">Old Record Match</h3>
+        <div style="position:relative">
+            <canvas id="popCanvas"></canvas>
+            <table id="popTbl"></table>
+        </div>
+        <button class="btn" style="margin-top:20px; width:100%" onclick="document.getElementById('popup').style.display='none'">Close View</button>
+    </div>
 </div>
 
 <script>
-/* ===== FAMILY ===== */
-const FAMILY={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"]
+/* FAMILY LOGIC */
+const FAMILY = {
+    "12":["12","17","21","26","62","67","71","76"],
+    "13":["13","18","31","36","63","68","81","86"],
+    "14":["14","19","41","46","64","69","91","96"],
+    "15":["01","06","10","15","51","56","60","65"],
+    "23":["23","28","32","37","73","78","82","87"],
+    "24":["24","29","42","47","74","79","92","97"],
+    "25":["02","07","20","25","52","57","70","75"],
+    "34":["34","39","43","48","84","89","93","98"],
+    "35":["03","08","30","35","53","58","80","85"],
+    "45":["04","09","40","45","54","59","90","95"]
 };
-const fam=v=>{for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null};
 
-/* ===== DATA ===== */
-let data=JSON.parse(localStorage.getItem("rajdhaniData")||"null")
- || Array(60).fill().map(()=>Array(5).fill("**"));
-let pattern=null;
+let data = JSON.parse(localStorage.getItem("rajdhani_v2")) || Array(30).fill().map(() => Array(5).fill("**"));
+let currentPattern = null;
 
-/* ===== DOM ===== */
-const tbl=document.getElementById("tbl");
-const checks=document.getElementById("checks");
-const mainCanvas=document.getElementById("mainCanvas");
-const popCanvas=document.getElementById("popCanvas");
-const popTbl=document.getElementById("popTbl");
-const popup=document.getElementById("popup");
-
-/* ===== UTILS ===== */
-const pad=n=>n<10?"0"+n:n;
-function saveLS(){localStorage.setItem("rajdhaniData",JSON.stringify(data))}
-
-/* ===== DRAW ===== */
-function draw(){
- let h="<tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>";
- data.forEach((r,i)=>{
-  h+="<tr>";
-  r.forEach((c,j)=>{
-   let cls=pattern?.map[i]?.[j]==1?"circle-red":
-           pattern?.map[i]?.[j]==2?"circle-blue":"";
-   h+=`<td class="${cls}" contenteditable
-        oninput="data[${i}][${j}]=this.innerText.trim();saveLS();resetPattern()"
-        onclick="cellClick(${i},${j})">${c}</td>`;
-  });
-  h+="</tr>";
- });
- tbl.innerHTML=h;
- drawLines(mainCanvas,tbl,pattern?.p1,pattern?.p2);
-}
-draw();
-
-/* ===== CELL CLICK ===== */
-function cellClick(r,c){
- if(data[r][c]!=="**")return;
- buildPattern(r,c);
-}
-
-/* ===== BUILD REAL PATTERN ===== */
-function buildPattern(r,c){
- let map=Array(data.length).fill().map(()=>Array(5).fill(0));
- let f1=null,f2=null,p1=[],p2=[],rd1=[],cd1=[],rd2=[],cd2=[];
-
- for(let i=r;i>=0&&i>r-10;i--){
-  for(let dc=-1;dc<=1;dc++){
-   let j=c+dc;if(j<0||j>=5)continue;
-   let f=fam(data[i][j]); if(!f)continue;
-
-   if(!f1){
-    f1=f;map[i][j]=1;p1.push({r:i,c:j});
-   }else if(f===f1&&p1.length<3){
-    rd1.push(p1[p1.length-1].r-i);
-    cd1.push(j-p1[p1.length-1].c);
-    map[i][j]=1;p1.push({r:i,c:j});
-   }else if(!f2){
-    f2=f;map[i][j]=2;p2.push({r:i,c:j});
-   }else if(f===f2&&p2.length<3){
-    rd2.push(p2[p2.length-1].r-i);
-    cd2.push(j-p2[p2.length-1].c);
-    map[i][j]=2;p2.push({r:i,c:j});
-   }
-  }
- }
- if(p1.length<2||p2.length<2){alert("Real pattern nahi mila");return;}
-
- pattern={f1,f2,p1,p2,rd1,cd1,rd2,cd2,map};
- draw();
- findCheckLines();
-}
-
-/* ===== CHECK LINE (EXACT MATCH) ===== */
-function findCheckLines(){
- checks.innerHTML="";
- let count=1;
-
- for(let start=0;start<data.length-10&&count<=4;start++){
-  let c1=[],c2=[];
-
-  for(let i=start;i<data.length;i++){
-   for(let j=0;j<5;j++){
-    let f=fam(data[i][j]);
-    if(f===pattern.f1)c1.push({r:i,c:j});
-    if(f===pattern.f2)c2.push({r:i,c:j});
-   }
-  }
-
-  function match(points,rd,cd){
-   if(points.length<rd.length+1)return false;
-   for(let i=0;i<rd.length;i++){
-    if(points[i].r-points[i+1].r!==rd[i])return false;
-    if(points[i+1].c-points[i].c!==cd[i])return false;
-   }
-   return true;
-  }
-
-  if(match(c1,pattern.rd1,pattern.cd1)&&
-     match(c2,pattern.rd2,pattern.cd2)){
-   let d=document.createElement("div");
-   d.className="check";
-   d.innerText=pad(count)+". Row "+pad(start+1);
-   d.onclick=()=>openPopup(start);
-   checks.appendChild(d);
-   count++;
-  }
- }
-}
-
-/* ===== POPUP ===== */
-function openPopup(r){
- popup.style.display="flex";
- popTbl.innerHTML="";
- let rows=[r-1,r,r+1].filter(i=>i>=0&&i<data.length);
-
- rows.forEach(i=>{
-  let tr="<tr>";
-  for(let j=0;j<5;j++){
-   let cls=pattern.map[i]?.[j]==1?"circle-red":
-           pattern.map[i]?.[j]==2?"circle-blue":"";
-   tr+=`<td class="${cls}">${data[i][j]}</td>`;
-  }
-  tr+="</tr>";
-  popTbl.innerHTML+=tr;
- });
-
- let a1=pattern.p1.filter(p=>rows.includes(p.r))
-   .map(p=>({r:rows.indexOf(p.r),c:p.c}));
- let a2=pattern.p2.filter(p=>rows.includes(p.r))
-   .map(p=>({r:rows.indexOf(p.r),c:p.c}));
-
- setTimeout(()=>drawLines(popCanvas,popTbl,a1,a2),50);
-}
-
-/* ===== DRAW LINES ===== */
-function drawLines(canvas,table,a1=[],a2=[]){
- if(!canvas||!table)return;
- const ctx=canvas.getContext("2d");
- canvas.width=table.offsetWidth;
- canvas.height=table.offsetHeight;
- ctx.clearRect(0,0,canvas.width,canvas.height);
- const rect=table.getBoundingClientRect();
-
- function line(arr,col){
-  if(arr.length<2)return;
-  ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();
-  arr.forEach((p,i)=>{
-   let cell=table.rows[p.r+1].cells[p.c];
-   let r=cell.getBoundingClientRect();
-   let x=r.left-rect.left+r.width/2;
-   let y=r.top-rect.top+r.height/2;
-   i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  });
-  ctx.stroke();
- }
- line(a1,"#ff4757");
- line(a2,"#2e86de");
-}
-
-/* ===== CSV ===== */
-csvFile.onchange=e=>{
- let r=new FileReader();
- r.onload=()=>{data=r.result.trim().split("\n").map(x=>x.split(","));saveLS();resetPattern();draw();}
- r.readAsText(e.target.files[0]);
+const getFam = (v) => {
+    for (let k in FAMILY) if (FAMILY[k].includes(v)) return k;
+    return null;
 };
-function saveCSV(){
- let csv=data.map(r=>r.join(",")).join("\n");
- let a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([csv]));
- a.download="rajdhani.csv";a.click();
+
+/* RENDER TABLE */
+function render() {
+    const tbl = document.getElementById("tbl");
+    let html = "<thead><tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr></thead><tbody>";
+    
+    data.forEach((row, rIdx) => {
+        html += "<tr>";
+        row.forEach((cell, cIdx) => {
+            let content = cell;
+            let cls = "";
+            if(currentPattern) {
+                if(currentPattern.p1.some(p => p.r === rIdx && p.c === cIdx)) cls = "circle-1";
+                if(currentPattern.p2.some(p => p.r === rIdx && p.c === cIdx)) cls = "circle-2";
+            }
+            const display = content === "**" ? `<span class="empty-cell">**</span>` : content;
+            html += `<td contenteditable="true" onblur="updateCell(${rIdx},${cIdx},this.innerText)" onclick="handleCellClick(${rIdx},${cIdx})">
+                <div class="${cls}">${display}</div>
+            </td>`;
+        });
+        html += "</tr>";
+    });
+    tbl.innerHTML = html + "</tbody>";
+    
+    if(currentPattern) drawLines("mainCanvas", "tbl", currentPattern);
 }
-function addRow(){data.push(["**","**","**","**","**"]);saveLS();draw();}
-function resetPattern(){pattern=null;checks.innerHTML="";}
+
+function updateCell(r, c, val) {
+    data[r][c] = val.trim();
+    localStorage.setItem("rajdhani_v2", JSON.stringify(data));
+    currentPattern = null;
+    render();
+}
+
+function addRow() {
+    data.push(["**","**","**","**","**"]);
+    render();
+}
+
+/* PATTERN ENGINE */
+function handleCellClick(r, c) {
+    if (data[r][c] !== "**") return;
+    
+    // Look back 10 weeks for patterns
+    let p1 = [], p2 = [];
+    let foundFams = [];
+
+    for (let i = r - 1; i >= 0 && i >= r - 10; i--) {
+        for (let j = 0; j < 5; j++) {
+            let f = getFam(data[i][j]);
+            if (f) {
+                if (foundFams.length === 0) {
+                    foundFams.push(f);
+                    p1.push({r: i, c: j, f: f});
+                } else if (f === foundFams[0] && p1.length < 3) {
+                    p1.push({r: i, c: j, f: f});
+                } else if (foundFams.length === 1 && f !== foundFams[0]) {
+                    foundFams.push(f);
+                    p2.push({r: i, c: j, f: f});
+                } else if (f === foundFams[1] && p2.length < 3) {
+                    p2.push({r: i, c: j, f: f});
+                }
+            }
+        }
+    }
+
+    if (p1.length >= 2) {
+        currentPattern = { p1, p2 };
+        document.getElementById("noPattern").style.display = "none";
+        render();
+        generateCheckLines();
+    } else {
+        alert("No clear pattern found in the last 10 rows.");
+    }
+}
+
+/* DRAWING LOGIC */
+function drawLines(canvasId, tableId, pattern) {
+    const canvas = document.getElementById(canvasId);
+    const table = document.getElementById(tableId);
+    const ctx = canvas.getContext("2d");
+    
+    canvas.width = table.offsetWidth;
+    canvas.height = table.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const drawPath = (points, color) => {
+        if (points.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+
+        points.forEach((p, i) => {
+            const cell = table.rows[p.r + 1].cells[p.c];
+            const x = cell.offsetLeft + cell.offsetWidth / 2;
+            const y = cell.offsetTop + cell.offsetHeight / 2;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    };
+
+    drawPath(pattern.p1, "#ef4444");
+    drawPath(pattern.p2, "#3b82f6");
+}
+
+/* CHECK LINES SEARCH */
+function generateCheckLines() {
+    const container = document.getElementById("checkResults");
+    container.innerHTML = "";
+    
+    // Logic: Look for where these same families appeared together in history
+    let matches = [];
+    for (let i = 0; i < data.length - 5; i++) {
+        let rowFams = data[i].map(v => getFam(v));
+        if (rowFams.includes(currentPattern.p1[0].f)) {
+            matches.push(i);
+        }
+    }
+
+    matches.slice(0, 4).forEach((matchRow, idx) => {
+        const div = document.createElement("div");
+        div.className = "check-item";
+        div.innerHTML = `<small>Pattern Match #${idx+1}</small>Row Found: ${matchRow + 1}`;
+        div.onclick = () => showOldRecord(matchRow);
+        container.appendChild(div);
+    });
+}
+
+function showOldRecord(startRow) {
+    const popTbl = document.getElementById("popTbl");
+    const popup = document.getElementById("popup");
+    popup.style.display = "flex";
+    
+    let html = "<tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th></tr>";
+    let popPattern = { p1: [], p2: [] };
+
+    for (let i = 0; i < 3; i++) {
+        let rIdx = startRow + i;
+        if (!data[rIdx]) continue;
+        html += "<tr>";
+        data[rIdx].forEach((cell, cIdx) => {
+            let f = getFam(cell);
+            let cls = "";
+            if (f === currentPattern.p1[0].f) {
+                cls = "circle-1";
+                popPattern.p1.push({r: i, c: cIdx});
+            }
+            html += `<td><div class="${cls}">${cell}</div></td>`;
+        });
+        html += "</tr>";
+    }
+    popTbl.innerHTML = html;
+    
+    setTimeout(() => drawLines("popCanvas", "popTbl", popPattern), 100);
+}
+
+/* CSV EXPORT */
+function saveCSV() {
+    let content = data.map(r => r.join(",")).join("\n");
+    let blob = new Blob([content], {type: 'text/csv'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = `Rajdhani_Records_${new Date().toLocaleDateString()}.csv`;
+    a.click();
+}
+
+// File Upload
+document.getElementById('csvFile').addEventListener('change', function(e) {
+    let reader = new FileReader();
+    reader.onload = function() {
+        data = reader.result.trim().split("\n").map(line => line.split(","));
+        render();
+    };
+    reader.readAsText(e.target.files[0]);
+});
+
+render();
 </script>
 </body>
 </html>
