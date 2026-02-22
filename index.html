@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Exact Column Pattern</title>
+<title>Rajdhani Pro AI – Final Fixed</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -15,7 +15,6 @@
 *{box-sizing:border-box;font-family:Poppins}
 body{margin:0;background:var(--bg);color:#fff}
 
-/* HOME */
 #home{
  height:100vh;display:flex;flex-direction:column;
  justify-content:center;align-items:center;text-align:center
@@ -26,7 +25,6 @@ body{margin:0;background:var(--bg);color:#fff}
  border-radius:40px;font-weight:800;font-size:1.1rem
 }
 
-/* APP */
 #app{display:none;padding:12px}
 
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
@@ -41,7 +39,6 @@ body{margin:0;background:var(--bg);color:#fff}
  gap:10px
 }
 
-/* TABLE */
 .table-box{
  position:relative;background:#fff;border-radius:10px;
  padding:5px;max-height:65vh;overflow:auto
@@ -58,7 +55,6 @@ th{background:#1e293b;color:#fff;font-size:11px}
 
 canvas{position:absolute;top:0;left:0;pointer-events:none}
 
-/* CARDS */
 .card{
  background:var(--panel);padding:12px;border-radius:10px;
  border-top:3px solid var(--gold)
@@ -78,7 +74,6 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 #popup .box{
  background:#fff;color:#000;
  padding:10px;border-radius:10px;
- max-width:95vw
 }
 </style>
 </head>
@@ -87,7 +82,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>Exact Column Family Pattern System</p>
+ <p>Final Fixed Family Pattern System</p>
  <button onclick="start()">START</button>
 </div>
 
@@ -102,7 +97,6 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
  </div>
 
  <div class="main">
-
   <div class="table-box" id="tableWrap">
    <canvas id="mainCanvas"></canvas>
    <table id="tbl"></table>
@@ -119,11 +113,9 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
     <div id="future"></div>
    </div>
   </div>
-
  </div>
 </div>
 
-<!-- POPUP -->
 <div id="popup" onclick="this.style.display='none'">
  <div class="box" onclick="event.stopPropagation()">
   <canvas id="popCanvas"></canvas>
@@ -147,7 +139,7 @@ const FAMILY={
 };
 
 /* ===== DOM ===== */
-const home=homeEl=document.getElementById("home");
+const home=document.getElementById("home");
 const app=document.getElementById("app");
 const tbl=document.getElementById("tbl");
 const mainCanvas=document.getElementById("mainCanvas");
@@ -181,7 +173,7 @@ function start(){
  draw();
 }
 
-/* ===== DRAW TABLE ===== */
+/* ===== DRAW ===== */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
  data.forEach((r,i)=>{
@@ -207,25 +199,47 @@ function cellClick(r,c){
  buildPattern(r,c);
 }
 
-/* ===== BUILD BASE PATTERN ===== */
+/* ===== BUILD PATTERN (FIXED) ===== */
 function buildPattern(r,c){
  let map=Array(data.length).fill().map(()=>Array(5).fill(0));
  let fam1=null,fam2=null,o1=[],o2=[];
- let cols=[];
+ let usedCols=[];
 
  for(let i=r;i>=0 && i>r-10;i--){
-  let f=fam(data[i][c]);
-  if(!f) continue;
+  for(let dc=-1;dc<=1;dc++){
+   let j=c+dc;
+   if(j<0||j>=5) continue;
+   let f=fam(data[i][j]);
+   if(!f) continue;
 
-  if(!fam1){fam1=f;map[i][c]=1;o1.push({r:i,c});}
-  else if(f===fam1 && o1.length<3){map[i][c]=1;o1.push({r:i,c});}
-  else if(!fam2 && f!==fam1){fam2=f;map[i][c]=2;o2.push({r:i,c});}
-  else if(f===fam2 && o2.length<3){map[i][c]=2;o2.push({r:i,c});}
+   if(!fam1){
+    fam1=f; map[i][j]=1; o1.push({r:i,c:j}); usedCols.push(j);
+   }
+   else if(f===fam1 && o1.length<3){
+    map[i][j]=1; o1.push({r:i,c:j}); usedCols.push(j);
+   }
+   else if(!fam2 && f!==fam1){
+    fam2=f; map[i][j]=2; o2.push({r:i,c:j}); usedCols.push(j);
+   }
+   else if(f===fam2 && o2.length<3){
+    map[i][j]=2; o2.push({r:i,c:j}); usedCols.push(j);
+   }
+  }
  }
 
- if(o1.length<2||o2.length<2) return;
+ if(o1.length<2||o2.length<2){
+  alert("Valid 2 Family pattern nahi mila");
+  return;
+ }
 
- basePattern={fam1,fam2,o1,o2,map,col:c,row:r};
+ basePattern={
+  fam1,fam2,
+  o1,o2,
+  map,
+  cols:[...new Set(usedCols)],
+  row:r
+ };
+
  draw();
  findMatches();
  futureAI();
@@ -238,9 +252,11 @@ function findMatches(){
  for(let r=0;r<data.length-10 && count<=4;r++){
   let c1=0,c2=0;
   for(let i=r;i<r+10;i++){
-   let f=fam(data[i][basePattern.col]);
-   if(f===basePattern.fam1) c1++;
-   if(f===basePattern.fam2) c2++;
+   for(let col of basePattern.cols){
+    let f=fam(data[i][col]);
+    if(f===basePattern.fam1) c1++;
+    if(f===basePattern.fam2) c2++;
+   }
   }
   if(c1>=basePattern.o1.length && c2>=basePattern.o2.length){
    let d=document.createElement("div");
@@ -256,30 +272,33 @@ function findMatches(){
 /* ===== POPUP ===== */
 function openPopup(r){
  popup.style.display="flex";
- let start=r-1,end=r+1;
  popTbl.innerHTML="";
- let h="";
+ let start=r-1,end=r+1;
  for(let i=start;i<=end;i++){
   if(i<0||i>=data.length) continue;
-  h+="<tr>";
+  let row="<tr>";
   for(let j=0;j<5;j++){
    let cls=basePattern.map[i]?.[j]
-    ?basePattern.map[i][j]==1?"circle-red":"circle-blue"
-    :"";
-   h+=`<td class="${cls}">${data[i][j]}</td>`;
+    ?basePattern.map[i][j]==1?"circle-red":"circle-blue":"";
+   row+=`<td class="${cls}">${data[i][j]}</td>`;
   }
-  h+="</tr>";
+  row+="</tr>";
+  popTbl.innerHTML+=row;
  }
- popTbl.innerHTML=h;
 }
 
 /* ===== FUTURE AI ===== */
 function futureAI(){
  let score={};
  for(let i=0;i<data.length;i++){
-  let f=fam(data[i][basePattern.col]);
-  if(f===basePattern.fam1||f===basePattern.fam2){
-   score[data[i][basePattern.col]]=(score[data[i][basePattern.col]]||0)+1;
+  for(let col of basePattern.cols){
+   let v=data[i][col];
+   if(v!=="**"){
+    let f=fam(v);
+    if(f===basePattern.fam1||f===basePattern.fam2){
+     score[v]=(score[v]||0)+1;
+    }
+   }
   }
  }
  future.innerHTML=Object.keys(score)
@@ -327,7 +346,7 @@ function downloadCSV(){
  let csv=data.map(r=>r.join(",")).join("\n");
  let a=document.createElement("a");
  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- a.download="rajdhani_exact_column.csv";
+ a.download="rajdhani_final.csv";
  a.click();
 }
 
