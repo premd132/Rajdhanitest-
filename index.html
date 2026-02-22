@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Diagonal 2+2</title>
+<title>Rajdhani Pro AI – Family Connection</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -66,7 +66,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>Diagonal Family 2+2 System</p>
+ <p>Flexible Family Connection System</p>
  <button onclick="start()">START</button>
 </div>
 
@@ -135,7 +135,7 @@ function start(){
  draw();
 }
 
-/* ===== DRAW ===== */
+/* ===== DRAW TABLE ===== */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
  data.forEach((r,i)=>{
@@ -157,49 +157,48 @@ function draw(){
  drawLines();
 }
 
-/* ===== DIAGONAL 2+2 LOGIC ===== */
+/* ===== FLEXIBLE FAMILY CONNECTION ===== */
 function makePattern(r,c){
  if(data[r][c] !== "**") return;
 
- let base = fam(data[r-1]?.[c]);
- if(!base || base==="NA"){alert("Upar family nahi mili");return;}
-
- let fam1 = base, fam2 = null;
  let map = Array(data.length).fill().map(()=>Array(5).fill(0));
  let order1=[], order2=[];
+ let fam1=null, fam2=null;
 
- // ↖ LEFT DIAGONAL
- let rr=r-1, cc=c-1;
- while(rr>=0 && cc>=0){
-  let v=data[rr][cc]; let f=fam(v);
-  if(v!=="**"){
-   if(f===fam1 && order1.length<2){
-    map[rr][cc]=1; order1.push({r:rr,c:cc});
-   }else if(!fam2 && f!==fam1){
-    fam2=f; map[rr][cc]=2; order2.push({r:rr,c:cc});
-   }else if(f===fam2 && order2.length<2){
-    map[rr][cc]=2; order2.push({r:rr,c:cc});
+ // scan upward rows, left/same/right allowed
+ for(let i=r-1;i>=0;i--){
+  for(let dc=-1; dc<=1; dc++){
+   let j=c+dc;
+   if(j<0 || j>=5) continue;
+
+   let v=data[i][j];
+   if(v==="**") continue;
+
+   let f=fam(v);
+
+   if(!fam1){
+    fam1=f;
+    map[i][j]=1;
+    order1.push({r:i,c:j});
+   }
+   else if(f===fam1 && order1.length<3){
+    map[i][j]=1;
+    order1.push({r:i,c:j});
+   }
+   else if(!fam2 && f!==fam1){
+    fam2=f;
+    map[i][j]=2;
+    order2.push({r:i,c:j});
+   }
+   else if(f===fam2 && order2.length<3){
+    map[i][j]=2;
+    order2.push({r:i,c:j});
    }
   }
-  rr--; cc--;
- }
-
- // ↗ RIGHT DIAGONAL
- rr=r-1; cc=c+1;
- while(rr>=0 && cc<5){
-  let v=data[rr][cc]; let f=fam(v);
-  if(v!=="**"){
-   if(f===fam1 && order1.length<2){
-    map[rr][cc]=1; order1.push({r:rr,c:cc});
-   }else if(f===fam2 && order2.length<2){
-    map[rr][cc]=2; order2.push({r:rr,c:cc});
-   }
-  }
-  rr--; cc++;
  }
 
  if(order1.length<2 || order2.length<2){
-  alert("Photo jaisa diagonal pattern nahi mila");
+  alert("Family connection pattern nahi mila");
   return;
  }
 
@@ -219,7 +218,9 @@ function drawLines(){
 
  function line(arr,col){
   if(arr.length<2)return;
-  ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
+  ctx.strokeStyle=col;
+  ctx.lineWidth=3;
+  ctx.beginPath();
   arr.forEach((p,i)=>{
    let cell=tbl.rows[p.r].cells[p.c];
    let r=cell.getBoundingClientRect();
@@ -236,8 +237,8 @@ function drawLines(){
 /* ===== CHECK LINES ===== */
 function showCheckLines(o1,o2){
  checks.innerHTML="";
- checks.innerHTML+=`🔴 Red: ${o1.map(p=>data[p.r][p.c]).join(" → ")}<br>`;
- checks.innerHTML+=`🔵 Blue: ${o2.map(p=>data[p.r][p.c]).join(" → ")}`;
+ checks.innerHTML+=`🔴 Family-1: ${o1.map(p=>data[p.r][p.c]).join(" → ")}<br>`;
+ checks.innerHTML+=`🔵 Family-2: ${o2.map(p=>data[p.r][p.c]).join(" → ")}`;
 }
 
 /* ===== CSV ===== */
@@ -256,7 +257,8 @@ function downloadCSV(){
  let csv=data.map(r=>r.join(",")).join("\n");
  let a=document.createElement("a");
  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- a.download="rajdhani_diagonal_ai.csv"; a.click();
+ a.download="rajdhani_family_connection.csv";
+ a.click();
 }
 
 function addRow(){
