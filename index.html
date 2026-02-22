@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Check Lines</title>
+<title>Rajdhani Pro AI – Matches</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -35,7 +35,7 @@ body{margin:0;background:var(--bg);color:#fff}
 
 .table-box{
  position:relative;background:#fff;border-radius:10px;padding:5px;
- max-height:70vh; overflow:auto;
+ max-height:65vh; overflow:auto;
 }
 table{border-collapse:collapse;color:#000}
 td,th{
@@ -76,12 +76,16 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>Family Pattern Check Lines</p>
+ <p>Numbered Check Lines + CSV</p>
  <button onclick="start()">START</button>
 </div>
 
 <div id="app">
+
  <div class="toolbar">
+  <input type="file" id="csvFile" accept=".csv" style="display:none">
+  <button onclick="csvFile.click()">📂 CSV UPLOAD</button>
+  <button onclick="downloadCSV()">💾 CSV SAVE</button>
   <button onclick="addRow()">➕ ADD ROW</button>
   <button onclick="location.reload()">🔄 RESET</button>
  </div>
@@ -99,6 +103,7 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
    <div id="checks"></div>
   </div>
  </div>
+
 </div>
 
 <script>
@@ -109,6 +114,7 @@ const tbl = document.getElementById("tbl");
 const mainCanvas = document.getElementById("mainCanvas");
 const checks = document.getElementById("checks");
 const tableWrap = document.getElementById("tableWrap");
+const csvFile = document.getElementById("csvFile");
 
 /* ===== FAMILY ===== */
 const FAMILY={
@@ -124,9 +130,8 @@ const FAMILY={
 "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = Array(60).fill().map(()=>Array(5).fill("**"));
+let data = Array(80).fill().map(()=>Array(5).fill("**"));
 let activeMark=null;
-let matches=[];
 
 /* ===== UTILS ===== */
 function fam(v){
@@ -141,7 +146,7 @@ function start(){
  draw();
 }
 
-/* ===== DRAW ===== */
+/* ===== DRAW TABLE ===== */
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
  data.forEach((r,i)=>{
@@ -161,13 +166,13 @@ function draw(){
  drawLines();
 }
 
-/* ===== PATTERN ===== */
+/* ===== CREATE PATTERN ===== */
 function makePattern(r,c){
  let map = Array(data.length).fill().map(()=>Array(5).fill(0));
  let fam1=null,fam2=null;
  let o1=[],o2=[];
 
- for(let i=r;i>=0 && i>r-10;i--){
+ for(let i=r;i>=0 && i>r-12;i--){
   for(let dc=-1;dc<=1;dc++){
    let j=c+dc;
    if(j<0||j>=5) continue;
@@ -188,7 +193,7 @@ function makePattern(r,c){
  }
 
  if(o1.length<2||o2.length<2) return;
- activeMark={map,o1,o2,start:r};
+ activeMark={map,o1,o2};
  draw();
  findMatches(fam1,fam2);
 }
@@ -196,10 +201,11 @@ function makePattern(r,c){
 /* ===== FIND MATCHES ===== */
 function findMatches(f1,f2){
  checks.innerHTML="";
- matches=[];
+ let count=1;
+
  for(let r=0;r<data.length;r++){
   let c1=0,c2=0;
-  for(let i=r;i>=0 && i>r-10;i--){
+  for(let i=r;i>=0 && i>r-12;i--){
    for(let j=0;j<5;j++){
     let f=fam(data[i][j]);
     if(f===f1) c1++;
@@ -207,18 +213,18 @@ function findMatches(f1,f2){
    }
   }
   if(c1>=2 && c2>=2){
-   matches.push(r);
    let d=document.createElement("div");
    d.className="match";
-   d.innerText="Pattern Match Found at Row "+(r+1);
-   d.onclick=()=>scrollToRow(r,f1,f2);
+   d.innerText = count+". Pattern Match Found at Row "+(r+1);
+   d.onclick=()=>scrollToRow(r);
    checks.appendChild(d);
+   count++;
   }
  }
 }
 
-/* ===== SCROLL + SHOW ===== */
-function scrollToRow(r,f1,f2){
+/* ===== SCROLL + REDRAW ===== */
+function scrollToRow(r){
  tableWrap.scrollTop = r*45;
  makePattern(r,2);
 }
@@ -245,6 +251,29 @@ function drawLines(){
  }
  line(activeMark.o1,"#ff4757");
  line(activeMark.o2,"#2e86de");
+}
+
+/* ===== CSV UPLOAD ===== */
+csvFile.onchange=e=>{
+ let f=e.target.files[0]; if(!f)return;
+ let r=new FileReader();
+ r.onload=()=>{
+  data=r.result.split("\n")
+   .filter(x=>x.trim())
+   .map(x=>x.split(",").slice(0,5).map(v=>v.trim()));
+  activeMark=null;
+  draw();
+ };
+ r.readAsText(f);
+};
+
+/* ===== CSV SAVE ===== */
+function downloadCSV(){
+ let csv=data.map(r=>r.join(",")).join("\n");
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="rajdhani_matches.csv";
+ a.click();
 }
 
 /* ===== ADD ROW ===== */
