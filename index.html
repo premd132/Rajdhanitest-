@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Base Family Check</title>
+<title>Rajdhani Pro AI – Base Family CSV</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
@@ -25,7 +25,15 @@ body{margin:0;background:var(--bg);color:#fff}
  border-radius:40px;font-weight:800;font-size:1.1rem
 }
 
-#app{display:none;padding:15px}
+#app{display:none;padding:12px}
+
+.toolbar{
+ display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px
+}
+.toolbar button{
+ background:#444;color:#fff;border:none;
+ padding:8px 14px;border-radius:6px;font-weight:600
+}
 
 .table-box{
  position:relative;background:#fff;border-radius:10px;
@@ -59,23 +67,31 @@ canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 <div id="home">
  <h1>Rajdhani PRO AI</h1>
- <p>Base Family Pattern Checker</p>
+ <p>Base Family Pattern + CSV</p>
  <button onclick="start()">START</button>
 </div>
 
 <div id="app">
 
-<center>
-<div class="table-box" id="tableWrap">
- <canvas id="mainCanvas"></canvas>
- <table id="tbl"></table>
-</div>
-</center>
+ <div class="toolbar">
+  <input type="file" id="csvFile" accept=".csv" style="display:none">
+  <button onclick="csvFile.click()">📂 CSV UPLOAD</button>
+  <button onclick="downloadCSV()">💾 CSV SAVE</button>
+  <button onclick="addRow()">➕ ADD ROW</button>
+  <button onclick="location.reload()">🔄 RESET</button>
+ </div>
 
-<div class="card">
- <b>✔ MATCHES FOUND</b>
- <div id="checks"></div>
-</div>
+ <center>
+ <div class="table-box" id="tableWrap">
+  <canvas id="mainCanvas"></canvas>
+  <table id="tbl"></table>
+ </div>
+ </center>
+
+ <div class="card">
+  <b>✔ MATCHES FOUND</b>
+  <div id="checks"></div>
+ </div>
 
 </div>
 
@@ -87,6 +103,7 @@ const tbl=document.getElementById("tbl");
 const mainCanvas=document.getElementById("mainCanvas");
 const checks=document.getElementById("checks");
 const tableWrap=document.getElementById("tableWrap");
+const csvFile=document.getElementById("csvFile");
 
 /* ===== FAMILY ===== */
 const FAMILY={
@@ -139,39 +156,33 @@ function draw(){
  drawLines();
 }
 
-/* ===== STEP-1 : MAKE BASE PATTERN FROM BOTTOM ===== */
+/* ===== BASE PATTERN FROM BOTTOM ===== */
 function makeBasePattern(r,c){
  let map=Array(data.length).fill().map(()=>Array(5).fill(0));
- let f1=null,f2=null;
- let o1=[],o2=[];
+ let f1=null,f2=null,o1=[],o2=[];
 
  for(let i=r;i>=0 && i>r-10;i--){
   for(let j=0;j<5;j++){
    let f=fam(data[i][j]);
    if(!f) continue;
-
    if(!f1){f1=f;map[i][j]=1;o1.push({r:i,c:j});}
    else if(f===f1 && o1.length<2){map[i][j]=1;o1.push({r:i,c:j});}
    else if(!f2 && f!==f1){f2=f;map[i][j]=2;o2.push({r:i,c:j});}
    else if(f===f2 && o2.length<2){map[i][j]=2;o2.push({r:i,c:j});}
   }
  }
-
  if(o1.length<2||o2.length<2) return;
 
- baseFam1=f1;
- baseFam2=f2;
-
+ baseFam1=f1; baseFam2=f2;
  activeMark={map,o1,o2};
  draw();
  findOldMatches();
 }
 
-/* ===== STEP-2 : CHECK OLD RECORDS ===== */
+/* ===== FIND OLD RECORD MATCHES ===== */
 function findOldMatches(){
  checks.innerHTML="";
- let count=1;
-
+ let n=1;
  for(let r=0;r<data.length-10;r++){
   let c1=0,c2=0;
   for(let i=r;i<r+10;i++){
@@ -184,10 +195,10 @@ function findOldMatches(){
   if(c1>=2 && c2>=2){
    let d=document.createElement("div");
    d.className="match";
-   d.innerText=count+". Row "+(r+1);
+   d.innerText=n+". Row "+(r+1);
    d.onclick=()=>scrollToRow(r);
    checks.appendChild(d);
-   count++;
+   n++;
   }
  }
 }
@@ -220,6 +231,35 @@ function drawLines(){
  }
  line(activeMark.o1,"#ff4757");
  line(activeMark.o2,"#2e86de");
+}
+
+/* ===== CSV UPLOAD ===== */
+csvFile.onchange=e=>{
+ let f=e.target.files[0]; if(!f)return;
+ let r=new FileReader();
+ r.onload=()=>{
+  data=r.result.split("\n")
+   .filter(x=>x.trim())
+   .map(x=>x.split(",").slice(0,5).map(v=>v.trim()));
+  activeMark=null;
+  draw();
+ };
+ r.readAsText(f);
+};
+
+/* ===== CSV SAVE ===== */
+function downloadCSV(){
+ let csv=data.map(r=>r.join(",")).join("\n");
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="rajdhani_base_family.csv";
+ a.click();
+}
+
+/* ===== ADD ROW ===== */
+function addRow(){
+ data.push(["**","**","**","**","**"]);
+ draw();
 }
 </script>
 </body>
