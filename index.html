@@ -54,105 +54,156 @@
 </div>
 
 <script>
-// --- CORE DATA ---
-const STORAGE_KEY = "kalyan_pro_v7";
-const FAMILY = {
- "01":["01","06","10","15","51","56","60","65"], "02":["02","07","20","25","52","57","70","75"],
- "03":["03","08","30","35","53","58","80","85"], "04":["04","09","40","45","54","59","90","95"],
- "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"]
+
+const STORAGE_KEY="kalyan_pro_v8";
+
+const FAMILY={
+"01":["01","06","10","15","51","56","60","65"],
+"02":["02","07","20","25","52","57","70","75"],
+"03":["03","08","30","35","53","58","80","85"],
+"04":["04","09","40","45","54","59","90","95"],
+"11":["11","16","61","66"],
+"22":["22","27","72","77"],
+"33":["33","38","83","88"]
 };
 
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(6).fill("**"));
-let currentPat = null;
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||Array(12).fill().map(()=>Array(6).fill("**"));
+let currentPat=null;
 
-function getFam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null;}
-
-// --- CSV UPLOAD LOGIC (FIXED) ---
-document.getElementById('csvFile').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const text = event.target.result;
-        const rows = text.split(/\r?\n/); // Split by new line
-        data = rows.filter(r => r.trim() !== "").map(row => {
-            let cells = row.split(',');
-            // Ensure 6 columns per row
-            while(cells.length < 6) cells.push("**");
-            return cells.slice(0, 6).map(c => {
-                let v = c.trim();
-                return (v === "" || v === "null") ? "**" : (v.length === 1 ? "0"+v : v);
-            });
-        });
-        draw();
-        alert("CSV Loaded! " + data.length + " rows found.");
-    };
-    reader.readAsText(file);
-});
+function getFam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null;}
 
 function draw(){
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((r, ri) => {
-        h += "<tr>";
-        r.forEach((c, ci) => {
-            let content = c;
-            if(currentPat){
-                if(currentPat.p1.some(p => p.r === ri && p.c === ci)) content = `<span class="circle-f1">${c}</span>`;
-                if(currentPat.p2.some(p => p.r === ri && p.c === ci)) content = `<span class="circle-f2">${c}</span>`;
-            }
-            h += `<td onclick="${c=='**'?'find22Pattern('+ri+','+ci+')':''}" contenteditable oninput="edit(${ri},${ci},this)">${content}</td>`;
-        });
-        h += "</tr>";
-    });
-    document.getElementById("tbl").innerHTML = h;
-    if(currentPat) setTimeout(() => drawLines("mainCanvas", "tbl", currentPat), 50);
+let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+data.forEach((r,ri)=>{
+h+="<tr>";
+r.forEach((c,ci)=>{
+let content=c;
+if(currentPat){
+if(currentPat.p1.some(p=>p.r===ri&&p.c===ci))content=`<span class="circle-f1">${c}</span>`;
+if(currentPat.p2.some(p=>p.r===ri&&p.c===ci))content=`<span class="circle-f2">${c}</span>`;
+}
+h+=`<td onclick="${c=='**'?'analyze('+ri+','+ci+')':''}" contenteditable onblur="edit(${ri},${ci},this)">${content}</td>`;
+});
+h+="</tr>";
+});
+tbl.innerHTML=h;
+if(currentPat)setTimeout(()=>drawLines("mainCanvas","tbl",currentPat),50);
 }
 
-function find22Pattern(r, c) {
-    let p1 = [], p2 = [], f1 = null, f2 = null;
-    // Scan last 10 rows
-    for(let i = r-1; i >= 0 && i >= r-10; i--){
-        for(let j = 0; j < 6; j++){
-            let v = data[i][j]; if(v=="**") continue;
-            let fam = getFam(v);
-            if(!f1) { f1 = fam; p1.push({r:i, c:j}); }
-            else if(fam === f1 && p1.length < 2) p1.push({r:i, c:j});
-            else if(!f2 && fam !== f1) { f2 = fam; p2.push({r:i, c:j}); }
-            else if(fam === f2 && p2.length < 2) p2.push({r:i, c:j});
-        }
-    }
-    if(p1.length < 2 || p2.length < 2) { alert("Data kam hai! 2 family ki 2-2 jodi nahi mili."); return; }
-    currentPat = { p1, p2 };
-    draw();
+function analyze(r,c){
+
+let p1=[],p2=[],f1=null,f2=null;
+
+// fresh scan every click
+for(let i=r-1;i>=0 && i>=r-15;i--){
+for(let j=0;j<6;j++){
+let v=data[i][j];
+if(v=="**")continue;
+let fam=getFam(v);
+
+if(!f1){f1=fam;p1.push({r:i,c:j});}
+else if(fam===f1 && p1.length<2)p1.push({r:i,c:j});
+else if(!f2 && fam!==f1){f2=fam;p2.push({r:i,c:j});}
+else if(fam===f2 && p2.length<2)p2.push({r:i,c:j});
+
+if(p1.length===2 && p2.length===2)break;
+}
+if(p1.length===2 && p2.length===2)break;
 }
 
-function drawLines(cvsId, tblId, pat) {
-    const cvs = document.getElementById(cvsId);
-    const tbl = document.getElementById(tblId);
-    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-    const ctx = cvs.getContext("2d");
-    ctx.lineWidth = 3;
-
-    const connect = (pts, col) => {
-        ctx.strokeStyle = col; ctx.beginPath();
-        pts.forEach((p, i) => {
-            let cell = tbl.rows[p.r+1].cells[p.c]; // +1 for header
-            let x = cell.offsetLeft + cell.offsetWidth/2;
-            let y = cell.offsetTop + cell.offsetHeight/2;
-            if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-    };
-    connect(pat.p1, "#0084ff"); connect(pat.p2, "#ff4d4d");
+if(p1.length<2||p2.length<2){
+alert("2-2 Family Pattern nahi mila.");
+return;
 }
 
-function edit(r,c,el){ data[r][c] = el.innerText.trim(); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
+currentPat={p1,p2,f1,f2};
+draw();
+findCheckLines();
+futureAI();
+}
+
+function findCheckLines(){
+
+checks.innerHTML="";
+let count=0;
+
+for(let i=0;i<data.length-3;i++){
+
+let fams=[];
+for(let k=0;k<4;k++){
+for(let j=0;j<6;j++){
+let v=data[i+k][j];
+if(v!="**")fams.push(getFam(v));
+}
+}
+
+let f1count=fams.filter(x=>x===currentPat.f1).length;
+let f2count=fams.filter(x=>x===currentPat.f2).length;
+
+if(f1count>=2 && f2count>=2){
+count++;
+let div=document.createElement("div");
+div.className="check-item";
+div.innerHTML=`Check Line ${count} (Row ${i+1})`;
+div.onclick=()=>showPopup(i);
+checks.appendChild(div);
+}
+
+if(count===4)break;
+}
+
+if(count===0)checks.innerHTML="No matching 2.2 pattern found.";
+}
+
+function showPopup(start){
+alert("Check Line from Row "+(start+1));
+}
+
+function futureAI(){
+
+let pool=[...(FAMILY[currentPat.f1]||[]),...(FAMILY[currentPat.f2]||[])];
+
+let picks=[];
+while(picks.length<3 && pool.length>0){
+let r=Math.floor(Math.random()*pool.length);
+picks.push(pool.splice(r,1)[0]);
+}
+
+checks.innerHTML+="<div style='margin-top:10px;color:gold;'>Future AI: "+picks.join(" , ")+"</div>";
+}
+
+function drawLines(cvsId,tblId,pat){
+const cvs=document.getElementById(cvsId);
+const tbl=document.getElementById(tblId);
+cvs.width=tbl.offsetWidth;
+cvs.height=tbl.offsetHeight;
+const ctx=cvs.getContext("2d");
+ctx.clearRect(0,0,cvs.width,cvs.height);
+
+const connect=(pts,col)=>{
+ctx.strokeStyle=col;
+ctx.lineWidth=3;
+ctx.beginPath();
+pts.forEach((p,i)=>{
+let cell=tbl.rows[p.r+1].cells[p.c];
+let x=cell.offsetLeft+cell.offsetWidth/2;
+let y=cell.offsetTop+cell.offsetHeight/2;
+if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+});
+ctx.stroke();
+};
+
+connect(pat.p1,"#0084ff");
+connect(pat.p2,"#ff4d4d");
+}
+
+function edit(r,c,el){data[r][c]=el.innerText.trim();}
+function addRow(){data.push(["**","**","**","**","**","**"]);draw();}
+function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
+function clearData(){localStorage.clear();location.reload();}
 
 draw();
+
 </script>
 </body>
 </html>
