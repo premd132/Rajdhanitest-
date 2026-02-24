@@ -3,55 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – 2-Family System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Kalyan Pro AI – Dual Family System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --gold: #ffd700; 
-            --blue-circle: #0084ff; 
-            --green-line: #00ff88; 
-            --bg: #0f172a; 
-            --panel: #1e293b; 
+            --gold: #ffd700; --blue-c: #0084ff; --red-c: #ff4d4d; 
+            --green-l: #00ff88; --bg: #0f172a; --panel: #1e293b; 
         }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
-        #home-screen { height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
-        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .enter-btn { background: var(--gold); color: #000; padding: 15px 40px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; margin-top:20px; }
-        #main-app { display: none; padding: 15px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        body { margin: 0; background: var(--bg); color: #fff; }
+        
+        /* Dashboard */
+        #main-app { padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; }
+        
+        /* Table & Markers */
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        td, th { border: 1px solid #ddd; width: 45px; height: 45px; text-align: center; font-weight: bold; position: relative; }
         th { background: #1e293b; color: white; font-size: 11px; }
-        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; position: relative; }
+
+        /* CIRCLE COLORS */
+        .circle-f1 { border: 3px solid var(--blue-c) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.1); }
+        .circle-f2 { border: 3px solid var(--red-c) !important; border-radius: 50%; background: rgba(255, 77, 77, 0.1); }
+        
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; }
+        
+        .check-item { background: #0f172a; padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid var(--blue-c); cursor: pointer; font-size: 13px; }
+        
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
         button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
     </style>
 </head>
 <body>
 
-<div id="home-screen">
-    <h1 class="hero-title">Kalyan PRO AI v3</h1>
-    <p style="opacity:0.7">2-FAMILY PATTERN SYSTEM</p>
-    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
-</div>
-
 <div id="main-app">
     <div class="toolbar">
         <input type="file" id="csv" style="display:none">
-        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 IMPORT CSV</button>
-        <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 IMPORT</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
         <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
     </div>
 
     <center>
-        <div class="table-container">
+        <div class="table-container" id="chart-wrap">
             <canvas id="mainCanvas"></canvas>
             <table id="tbl"></table>
         </div>
@@ -59,12 +59,12 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>✔ 2-Family Matches</h3>
-            <div id="checks"></div>
+            <h3>✔ CHECK LINES (2-FAMILY MATCH)</h3>
+            <div id="checks">Click blank cell to start...</div>
         </div>
         <div class="card">
-            <h3>🤖 Pattern Info</h3>
-            <div id="ai">Click a blank cell to analyze...</div>
+            <h3>🤖 AI PREDICTION</h3>
+            <div id="ai-res">---</div>
         </div>
     </div>
 </div>
@@ -72,15 +72,14 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
-    <h3>Historical Connection</h3>
-    <div class="table-container" style="width:100%; border:1px solid #ddd; overflow:auto;">
+    <h3 style="margin:0 0 10px 0">Historical Match View</h3>
+    <div class="table-container" style="width:100%; overflow:auto;">
         <canvas id="popCanvas"></canvas>
         <div id="popData"></div>
     </div>
 </div>
 
 <script>
-const STORAGE_KEY="pdata_Kalyan_2fam";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -88,129 +87,101 @@ const FAMILY = {
  "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
  "45":["04","09","40","45","54","59","90","95"]
 };
-    
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill().map(()=>Array(6).fill("**"));
-let activeMark=null;
 
-function startApp() {
-    document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    draw();
-}
+let data = JSON.parse(localStorage.getItem("pdata_dual_v4")) || Array(15).fill().map(()=>Array(6).fill("**"));
+let activePat = null;
 
 function getFam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null;}
-function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
 
 function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'make2FamilyPattern('+ri+','+ci+')':'' }">${c}</td>`;
-  });
-  h+="</tr>";
- });
- document.getElementById("tbl").innerHTML=h;
- if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
-}
-
-function isPartOfPattern(ri, ci){
-    if(!activeMark) return false;
-    let i = ri - activeMark.start;
-    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
-}
-
-function drawLines(cvsId, tblEl) {
-    const cvs = document.getElementById(cvsId);
-    const ctx = cvs.getContext("2d");
-    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    const cells = tblEl.querySelectorAll(".circle");
-    if(cells.length < 2) return;
-    
-    const tRect = tblEl.getBoundingClientRect();
-    ctx.strokeStyle = "#00ff88"; // GREEN LINE
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    cells.forEach((c, idx) => {
-        const r = c.getBoundingClientRect();
-        const x = r.left - tRect.left + r.width/2;
-        const y = r.top - tRect.top + r.height/2;
-        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((r,ri)=>{
+        h+="<tr>";
+        r.forEach((c,ci)=>{
+            let cls = "";
+            if(activePat){
+                let shapeVal = getShapeVal(ri, ci);
+                if(shapeVal === 1) cls = "circle-f1";
+                if(shapeVal === 2) cls = "circle-f2";
+            }
+            h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'initAnalysis('+ri+','+ci+')':'' }">${c}</td>`;
+        });
+        h+="</tr>";
     });
-    ctx.stroke();
+    document.getElementById("tbl").innerHTML=h;
+    if(activePat) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-function make2FamilyPattern(r, c) {
-    let f1 = null, f2 = null;
-    let shape = [];
-    
-    // Find last 2 different families in the last 6 weeks
-    for(let i = r-1; i >= 0; i--) {
-        let v = data[i][c];
-        if(v !== "**") {
-            let family = getFam(v);
-            if(!f1) f1 = family;
-            else if(!f2 && family !== f1) f2 = family;
-        }
+function getShapeVal(ri, ci){
+    if(!activePat) return 0;
+    let i = ri - activePat.start;
+    if(i >= 0 && i < activePat.shape.length) return activePat.shape[i][ci];
+    return 0;
+}
+
+function initAnalysis(r, c) {
+    let f1 = null, f2 = null, shape = [];
+    // Last 10 weeks se 2 different families dhoondhein
+    for(let i=r-1; i>=0; i--){
+        let v = data[i][c]; if(v=="**") continue;
+        let fam = getFam(v);
+        if(!f1) f1 = fam; else if(!f2 && fam !== f1) f2 = fam;
         if(f1 && f2) break;
     }
+    if(!f1 || !f2) { alert("Analysis ke liye upar 2 different families chahiye!"); return; }
 
-    if(!f1 || !f2) { alert("Need at least 2 different families above to form pattern!"); return; }
-
-    // Build 2-Family Shape (scanning last 5 rows)
-    for(let i = Math.max(0, r-5); i <= r; i++) {
-        let rowShape = [];
-        for(let j = 0; j < 6; j++) {
+    // Shape Build (Last 5 Rows)
+    for(let i=Math.max(0, r-5); i<=r; i++){
+        let row = [];
+        for(let j=0; j<6; j++){
             let fam = getFam(data[i][j]);
-            if(fam === f1) rowShape.push(1); // Family 1
-            else if(fam === f2) rowShape.push(2); // Family 2
-            else rowShape.push(0);
+            row.push(fam === f1 ? 1 : (fam === f2 ? 2 : 0));
         }
-        shape.push(rowShape);
+        shape.push(row);
     }
-
-    document.getElementById("ai").innerHTML = `<b>Searching:</b> Family ${f1} & ${f2}`;
-    searchPattern(shape, f1, f2);
+    searchMatches(shape, f1, f2, r);
 }
 
-function searchPattern(shape, f1, f2) {
+function searchMatches(shape, f1, f2, currentR) {
     let matches = [];
-    for(let i = 0; i <= data.length - shape.length; i++) {
+    for(let i=0; i < data.length - shape.length; i++){
         let ok = true;
-        for(let k = 0; k < shape.length; k++) {
-            for(let j = 0; j < 6; j++) {
-                if(shape[k][j] === 1 && getFam(data[i+k][j]) !== f1) ok = false;
-                if(shape[k][j] === 2 && getFam(data[i+k][j]) !== f2) ok = false;
+        for(let k=0; k<shape.length; k++){
+            for(let j=0; j<6; j++){
+                if(shape[k][j]===1 && getFam(data[i+k][j])!==f1) ok=false;
+                if(shape[k][j]===2 && getFam(data[i+k][j])!==f2) ok=false;
                 if(!ok) break;
             }
             if(!ok) break;
         }
-        if(ok) matches.push({index: i});
+        if(ok && i < currentR - shape.length) matches.push(i);
     }
-    showChecks(shape, matches);
+    // Turant pattern apply karein aur check line dikhayein
+    activePat = { start: currentR - shape.length + 1, shape: shape };
+    draw();
+    displayResults(shape, matches, f1, f2);
 }
 
-function showChecks(shape, matches) {
+function displayResults(shape, matches, f1, f2) {
     const box = document.getElementById("checks");
-    box.innerHTML = matches.length ? "" : "No 2-Family match found.";
-    matches.forEach((m, i) => {
+    box.innerHTML = matches.length ? "" : "No history match found.";
+    matches.forEach((idx, i) => {
         let d = document.createElement("div");
-        d.className = "check-card";
-        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid #0084ff;";
-        d.innerHTML = `2-Family Match found at Row ${m.index + 1}`;
-        d.onclick = () => { activeMark = {start: m.index, shape: shape}; draw(); showOne(shape, m.index); };
+        d.className = "check-item";
+        d.innerHTML = `<b>MATCH #${i+1}</b> - Found at Row ${idx+1}`;
+        d.onclick = () => showPopupView(shape, idx);
         box.appendChild(d);
     });
+    document.getElementById("ai-res").innerHTML = `Found Families: <b style='color:var(--blue-c)'>${f1}</b> & <b style='color:var(--red-c)'>${f2}</b>`;
 }
 
-function showOne(shape, idx) {
-    let html = "<table id='popTbl' style='width:100%;'>";
-    for(let i = 0; i < shape.length; i++) {
+function showPopupView(shape, idx) {
+    let html = "<table id='popTbl' style='width:100%'>";
+    for(let i=0; i<shape.length; i++){
         html += "<tr>";
         data[idx+i].forEach((v, j) => {
-            html += `<td class="${shape[i][j] > 0 ? 'circle' : ''}">${v}</td>`;
+            let cls = shape[i][j]===1 ? "circle-f1" : (shape[i][j]===2 ? "circle-f2" : "");
+            html += `<td class="${cls}">${v}</td>`;
         });
         html += "</tr>";
     }
@@ -220,19 +191,45 @@ function showOne(shape, idx) {
     setTimeout(() => drawLines("popCanvas", document.getElementById("popTbl")), 100);
 }
 
-function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    
+    const tRect = tblEl.getBoundingClientRect();
+    const dots = [...tblEl.querySelectorAll(".circle-f1, .circle-f2")];
+    if(dots.length < 2) return;
+
+    ctx.strokeStyle = "#00ff88"; // Neon Green Line
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    dots.forEach((d, i) => {
+        const r = d.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+function edit(r,c,el){ data[r][c]=el.innerText.trim(); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function saveData(){ localStorage.setItem("pdata_dual_v4", JSON.stringify(data)); alert("Data Saved!"); }
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
 document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => v.trim()));
         draw();
     };
     fr.readAsText(e.target.files[0]);
 };
+
+// Start
+document.getElementById('main-app').style.display = 'block';
+draw();
 </script>
 </body>
 </html>
