@@ -2,97 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Kalyan Pro AI – 2.2 Cross System</title>
+    <title>Kalyan Pro AI – CSV Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue-c: #0084ff; --red-c: #ff4d4d; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; }
-        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; display: inline-block; margin-top: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
+        
+        /* Toolbar */
+        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; }
+        
+        /* Table Styling */
+        .table-outer { padding: 20px; display: flex; justify-content: center; }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
         table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ccc; width: 50px; height: 50px; text-align: center; font-weight: bold; position: relative; cursor: pointer; }
-        th { background: #1e293b; color: white; }
-        .circle-f1 { border: 4px solid var(--blue-c) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.15); width: 42px; height: 42px; display: inline-block; line-height: 34px; }
-        .circle-f2 { border: 4px solid var(--red-c) !important; border-radius: 50%; background: rgba(255, 77, 77, 0.15); width: 42px; height: 42px; display: inline-block; line-height: 34px; }
+        td, th { border: 1px solid #ddd; width: 50px; height: 50px; text-align: center; font-weight: bold; position: relative; cursor: pointer; }
+        th { background: #1e293b; color: white; font-size: 12px; }
+
+        /* Markers */
+        .circle-f1 { border: 4px solid var(--blue-c) !important; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: rgba(0, 132, 255, 0.1); }
+        .circle-f2 { border: 4px solid var(--red-c) !important; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 77, 77, 0.1); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-left: 5px solid var(--gold); }
+
+        .card { background: var(--panel); margin: 15px; padding: 15px; border-radius: 12px; border-left: 5px solid var(--gold); }
         .check-item { background: #0f172a; padding: 12px; margin-top: 8px; border-radius: 8px; cursor: pointer; border: 1px solid #334155; }
-        #popup { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        
+        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 20px; border-radius: 5px; transition: 0.3s; }
+        button:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
 
 <div class="toolbar">
-    <input type="file" id="csv" style="display:none">
-    <button onclick="document.getElementById('csv').click()" style="background:#444; color:white; padding:10px 20px; border-radius:5px;">📂 IMPORT CSV</button>
-    <button onclick="addRow()" style="background:#444; color:white; padding:10px 20px; border-radius:5px;">➕ ADD ROW</button>
-    <button onclick="saveData()" style="background:#28a745; color:white; padding:10px 20px; border-radius:5px;">💾 SAVE</button>
+    <input type="file" id="csvFile" accept=".csv" style="display:none">
+    <button onclick="document.getElementById('csvFile').click()" style="background: var(--gold); color: #000;">📂 UPLOAD CSV</button>
+    <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
+    <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
+    <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ RESET</button>
 </div>
 
-<center>
+<div class="table-outer">
     <div class="table-container">
         <canvas id="mainCanvas"></canvas>
         <table id="tbl"></table>
     </div>
-</center>
-
-<div class="dashboard">
-    <div class="card">
-        <h3>🎯 CROSS MATCH CHECK LINES</h3>
-        <div id="checks">Click a blank cell to find 2.2 Cross Pattern...</div>
-    </div>
-    <div class="card">
-        <h3>📊 PATTERN INFO</h3>
-        <div id="ai-info">Ready.</div>
-    </div>
 </div>
 
-<div id="popup" onclick="this.style.display='none'">
-    <div style="background:white; padding:20px; border-radius:15px; color:black; position:relative;" onclick="event.stopPropagation()">
-        <h3>Historical Cross Pattern</h3>
-        <div class="table-container">
-            <canvas id="popCanvas"></canvas>
-            <div id="popData"></div>
-        </div>
-    </div>
+<div class="card">
+    <h3 style="margin:0; color:var(--gold);">✔ CHECK LINES (2.2 Pattern)</h3>
+    <div id="checks">Upload CSV and click a blank cell...</div>
 </div>
 
 <script>
+// --- CORE DATA ---
+const STORAGE_KEY = "kalyan_pro_v7";
 const FAMILY = {
  "01":["01","06","10","15","51","56","60","65"], "02":["02","07","20","25","52","57","70","75"],
  "03":["03","08","30","35","53","58","80","85"], "04":["04","09","40","45","54","59","90","95"],
- "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"]
+ "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"]
 };
 
-let data = JSON.parse(localStorage.getItem("pdata_cross_v6")) || Array(15).fill().map(()=>Array(6).fill("**"));
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(10).fill().map(()=>Array(6).fill("**"));
 let currentPat = null;
 
 function getFam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null;}
 
+// --- CSV UPLOAD LOGIC (FIXED) ---
+document.getElementById('csvFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const text = event.target.result;
+        const rows = text.split(/\r?\n/); // Split by new line
+        data = rows.filter(r => r.trim() !== "").map(row => {
+            let cells = row.split(',');
+            // Ensure 6 columns per row
+            while(cells.length < 6) cells.push("**");
+            return cells.slice(0, 6).map(c => {
+                let v = c.trim();
+                return (v === "" || v === "null") ? "**" : (v.length === 1 ? "0"+v : v);
+            });
+        });
+        draw();
+        alert("CSV Loaded! " + data.length + " rows found.");
+    };
+    reader.readAsText(file);
+});
+
 function draw(){
     let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((r,ri)=>{
-        h+="<tr>";
-        r.forEach((c,ci)=>{
-            let inner = c;
+    data.forEach((r, ri) => {
+        h += "<tr>";
+        r.forEach((c, ci) => {
+            let content = c;
             if(currentPat){
-                if(currentPat.p1.some(p=>p.r===ri && p.c===ci)) inner = `<span class="circle-f1">${c}</span>`;
-                if(currentPat.p2.some(p=>p.r===ri && p.c===ci)) inner = `<span class="circle-f2">${c}</span>`;
+                if(currentPat.p1.some(p => p.r === ri && p.c === ci)) content = `<span class="circle-f1">${c}</span>`;
+                if(currentPat.p2.some(p => p.r === ri && p.c === ci)) content = `<span class="circle-f2">${c}</span>`;
             }
-            h+=`<td contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'findCross('+ri+','+ci+')':'' }">${inner}</td>`;
+            h += `<td onclick="${c=='**'?'find22Pattern('+ri+','+ci+')':''}" contenteditable oninput="edit(${ri},${ci},this)">${content}</td>`;
         });
-        h+="</tr>";
+        h += "</tr>";
     });
-    document.getElementById("tbl").innerHTML=h;
+    document.getElementById("tbl").innerHTML = h;
     if(currentPat) setTimeout(() => drawLines("mainCanvas", "tbl", currentPat), 50);
 }
 
-function findCross(r, c) {
+function find22Pattern(r, c) {
     let p1 = [], p2 = [], f1 = null, f2 = null;
-    
-    // Search in last 10 rows for 2.2 pattern
+    // Scan last 10 rows
     for(let i = r-1; i >= 0 && i >= r-10; i--){
         for(let j = 0; j < 6; j++){
             let v = data[i][j]; if(v=="**") continue;
@@ -102,96 +121,36 @@ function findCross(r, c) {
             else if(!f2 && fam !== f1) { f2 = fam; p2.push({r:i, c:j}); }
             else if(fam === f2 && p2.length < 2) p2.push({r:i, c:j});
         }
-        if(p1.length === 2 && p2.length === 2) break;
     }
-
-    if(p1.length < 2 || p2.length < 2) {
-        alert("Pattern Error: 2 different family ki 2-2 jodi nahi mili!");
-        return;
-    }
-
-    currentPat = { p1, p2, f1, f2 };
+    if(p1.length < 2 || p2.length < 2) { alert("Data kam hai! 2 family ki 2-2 jodi nahi mili."); return; }
+    currentPat = { p1, p2 };
     draw();
-    searchHistory(f1, f2);
 }
 
-function searchHistory(f1, f2) {
-    let matches = [];
-    for(let i=0; i < data.length - 3; i++) {
-        let h1 = [], h2 = [];
-        // Check if these two families exist in close proximity in history
-        for(let row=i; row < i+4; row++){
-            data[row].forEach((v, col) => {
-                let fam = getFam(v);
-                if(fam === f1) h1.push({r:row, c:col});
-                if(fam === f2) h2.push({r:row, c:col});
-            });
-        }
-        if(h1.length >= 2 && h2.length >= 2) matches.push({idx: i, p1: h1.slice(0,2), p2: h2.slice(0,2)});
-    }
-    
-    const box = document.getElementById("checks");
-    box.innerHTML = matches.length ? "" : "No 2.2 Cross match in history.";
-    matches.forEach((m, i) => {
-        let d = document.createElement("div");
-        d.className = "check-item";
-        d.innerHTML = `<b>CROSS MATCH #${i+1}</b> - Week ${m.idx+1}`;
-        d.onclick = () => showPop(m);
-        box.appendChild(d);
-    });
-}
-
-function showPop(m) {
-    let html = "<table>";
-    for(let i=0; i<4; i++){
-        html += "<tr>";
-        data[m.idx+i].forEach((v, j) => {
-            let cls = "";
-            if(m.p1.some(p=>p.r===m.idx+i && p.c===j)) cls="circle-f1";
-            if(m.p2.some(p=>p.r===m.idx+i && p.c===j)) cls="circle-f2";
-            html += `<td><span class="${cls}">${v}</span></td>`;
-        });
-        html += "</tr>";
-    }
-    document.getElementById("popData").innerHTML = html + "</table>";
-    document.getElementById("popup").style.display = "flex";
-    
-    // Adjust relative points for popup canvas
-    let relPat = {
-        p1: m.p1.map(p => ({r: p.r - m.idx, c: p.c})),
-        p2: m.p2.map(p => ({r: p.r - m.idx, c: p.c}))
-    };
-    setTimeout(() => drawLines("popCanvas", "popData", relPat), 100);
-}
-
-function drawLines(cvsId, parentId, pat) {
+function drawLines(cvsId, tblId, pat) {
     const cvs = document.getElementById(cvsId);
-    const parent = document.getElementById(parentId);
-    const tbl = parent.tagName === "TABLE" ? parent : parent.querySelector("table");
+    const tbl = document.getElementById(tblId);
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     const ctx = cvs.getContext("2d");
-    ctx.clearRect(0,0,cvs.width,cvs.height);
     ctx.lineWidth = 3;
 
-    const drawLine = (pts, color) => {
-        ctx.strokeStyle = color;
-        ctx.beginPath();
+    const connect = (pts, col) => {
+        ctx.strokeStyle = col; ctx.beginPath();
         pts.forEach((p, i) => {
-            let cell = tbl.rows[p.r].cells[p.c];
+            let cell = tbl.rows[p.r+1].cells[p.c]; // +1 for header
             let x = cell.offsetLeft + cell.offsetWidth/2;
             let y = cell.offsetTop + cell.offsetHeight/2;
-            if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
         ctx.stroke();
     };
-
-    drawLine(pat.p1, "#0084ff");
-    drawLine(pat.p2, "#ff4d4d");
+    connect(pat.p1, "#0084ff"); connect(pat.p2, "#ff4d4d");
 }
 
-function edit(r,c,el){ data[r][c]=el.innerText.trim(); }
+function edit(r,c,el){ data[r][c] = el.innerText.trim(); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("pdata_cross_v6", JSON.stringify(data)); alert("Saved!"); }
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
 draw();
 </script>
