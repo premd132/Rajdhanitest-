@@ -52,7 +52,63 @@
     <h3 style="margin:0; color:var(--gold);">✔ CHECK LINES (2.2 Pattern)</h3>
     <div id="checks">Upload CSV and click a blank cell...</div>
 </div>
+// ---- CSV UPLOAD FIX ----
+document.getElementById('csvFile').addEventListener('change', function(e){
 
+    const file = e.target.files[0];
+    if(!file){
+        alert("File select nahi hui.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+
+        const text = event.target.result;
+
+        if(!text){
+            alert("CSV file empty hai.");
+            return;
+        }
+
+        const rows = text.split(/\r?\n/);
+
+        data = rows
+        .filter(r => r.trim() !== "")
+        .map(row => {
+
+            let cols = row.split(",");
+
+            // 6 column ensure karo
+            while(cols.length < 6) cols.push("**");
+
+            return cols.slice(0,6).map(c => {
+
+                let v = c.trim();
+
+                if(v === "" || v === "null") return "**";
+
+                // zero padding
+                if(v.length === 1) return "0"+v;
+
+                return v;
+            });
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+        draw();
+
+        alert("✅ CSV Successfully Loaded: " + data.length + " rows");
+    };
+
+    reader.onerror = function(){
+        alert("❌ CSV Read Error.");
+    };
+
+    reader.readAsText(file);
+});
 <script>
 
 const STORAGE_KEY="kalyan_pro_v8";
