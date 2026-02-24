@@ -1,236 +1,238 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>PRADEEP PREMIUM AI v11</title>
-<style>
-    :root { --bg: #0f172a; --card: #1e293b; --gold: #fbbf24; --red: #f43f5e; --blue: #38bdf8; --text: #f1f5f9; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; margin: 0; overflow-x: hidden; }
-    
-    .nav { background: var(--card); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .nav h1 { font-size: 1.5rem; margin: 0; letter-spacing: 1px; }
-    
-    .container { display: grid; grid-template-columns: 1fr 360px; gap: 25px; padding: 25px; max-width: 1600px; margin: auto; }
-    
-    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-    .btn-up { background: var(--blue); color: #000; }
-    .btn-add { background: var(--gold); color: #000; }
-    .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-
-    /* Chart Styling */
-    .chart-card { background: #ffffff; padding: 25px; border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    table { border-collapse: collapse; width: 100%; color: #1e293b; position: relative; z-index: 10; }
-    th { background: #334155; color: #fff; padding: 14px; border: 1px solid #475569; font-size: 14px; }
-    td { border: 1px solid #e2e8f0; width: 60px; height: 60px; text-align: center; font-weight: 800; font-size: 1.2rem; cursor: pointer; position: relative; padding: 0; }
-    
-    /* Markers */
-    .circle-red, .circle-blue { border-radius: 50%; width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 11; }
-    .circle-red { border: 4px solid var(--red); color: var(--red); background: rgba(244, 63, 94, 0.1); }
-    .circle-blue { border: 4px solid var(--blue); color: var(--blue); background: rgba(56, 189, 248, 0.1); }
-    
-    svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-
-    /* Panels */
-    .panel { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-    .panel h3 { margin: 0 0 15px 0; color: var(--gold); border-bottom: 1px solid #334155; padding-bottom: 8px; font-size: 16px; }
-    .check-card { background: #0f172a; border-left: 4px solid var(--gold); padding: 12px; margin-top: 10px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
-    .check-card:hover { background: #1e293b; border-left-width: 8px; }
-    
-    .ai-badge { background: var(--gold); color: #000; padding: 6px 14px; border-radius: 6px; font-weight: 900; margin: 5px; display: inline-block; font-size: 15px; }
-
-    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalyan Pro AI – 2-Family System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; 
+            --green-line: #00ff88; 
+            --bg: #0f172a; 
+            --panel: #1e293b; 
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
+        #home-screen { height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
+        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .enter-btn { background: var(--gold); color: #000; padding: 15px 40px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; margin-top:20px; }
+        #main-app { display: none; padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
+        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; position: relative; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
+    </style>
 </head>
 <body>
 
-<div class="nav">
-    <h1>PRADEEP <span style="color:var(--gold)">PREMIUM AI</span> <small style="font-size:12px; opacity:0.6">v11.0</small></h1>
-    <div style="display:flex; gap:12px;">
-        <input type="file" id="fileIn" style="display:none" onchange="importCSV(this)">
-        <button class="btn btn-up" onclick="fileIn.click()">📁 IMPORT CSV</button>
-        <button class="btn btn-add" onclick="addRow()">+ ADD ROW</button>
+<div id="home-screen">
+    <h1 class="hero-title">Kalyan PRO AI v3</h1>
+    <p style="opacity:0.7">2-FAMILY PATTERN SYSTEM</p>
+    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
+</div>
+
+<div id="main-app">
+    <div class="toolbar">
+        <input type="file" id="csv" style="display:none">
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 IMPORT CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
+    </div>
+
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>✔ 2-Family Matches</h3>
+            <div id="checks"></div>
+        </div>
+        <div class="card">
+            <h3>🤖 Pattern Info</h3>
+            <div id="ai">Click a blank cell to analyze...</div>
+        </div>
     </div>
 </div>
 
-<div class="container">
-    <div class="chart-card">
-        <svg id="mainSvg"></svg>
-        <table id="mainTbl"></table>
-    </div>
-
-    <div>
-        <div class="panel">
-            <h3>🤖 FUTURE AI (3 PAIRS)</h3>
-            <div id="aiDisp" style="text-align:center;">Analyze blank cell...</div>
-        </div>
-
-        <div class="panel">
-            <h3>🎯 CHECK LINES (MAX 4)</h3>
-            <div id="checkDisp">Matching records will appear here.</div>
-        </div>
-    </div>
-</div>
-
-<div id="pop" onclick="this.style.display='none'">
-    <div style="background:white; padding:30px; border-radius:20px; color:#1e293b; max-width:500px; width:90%;" onclick="event.stopPropagation()">
-        <h2 style="margin-top:0; color:#0f172a">History Connection Match</h2>
-        <div style="position:relative; background:#f8fafc; border-radius:10px; padding:10px;">
-            <svg id="popSvg"></svg>
-            <table id="popTbl" style="width:100%"></table>
-        </div>
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
+    <h3>Historical Connection</h3>
+    <div class="table-container" style="width:100%; border:1px solid #ddd; overflow:auto;">
+        <canvas id="popCanvas"></canvas>
+        <div id="popData"></div>
     </div>
 </div>
 
 <script>
+const STORAGE_KEY="pdata_Kalyan_2fam";
 const FAMILY = {
-    "01":["01","06","10","15","51","56","60","65"], "02":["02","07","20","25","52","57","70","75"],
-    "03":["03","08","30","35","53","58","80","85"], "04":["04","09","40","45","54","59","90","95"],
-    "05":["00","05","50","55"], "12":["12","17","21","26","62","67","71","76"],
-    "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"]
+ "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
 };
-
-let tableData = JSON.parse(localStorage.getItem("p_premium_v11")) || Array(18).fill().map(()=>Array(5).fill("**"));
-let currentPat = null;
-
-const getFam = v => { for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; };
-const fixVal = v => { v=v.trim(); return (v==="**" || v==="") ? "**" : (v.length===1 ? "0"+v : v); };
-
-function render() {
-    const tbl = document.getElementById("mainTbl");
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-    tableData.forEach((row, ri) => {
-        h += "<tr>";
-        row.forEach((cell, ci) => {
-            let inner = cell;
-            if(currentPat) {
-                if(currentPat.p1.some(p=>p.r===ri && p.c===ci)) inner = `<div class="circle-red">${cell}</div>`;
-                if(currentPat.p2.some(p=>p.r===ri && p.c===ci)) inner = `<div class="circle-blue">${cell}</div>`;
-            }
-            h += `<td onclick="analyze(${ri},${ci})" contenteditable="true" onblur="updateCell(${ri},${ci},this.innerText)">${inner}</td>`;
-        });
-        h += "</tr>";
-    });
-    tbl.innerHTML = h;
-    setTimeout(() => drawSVG("mainSvg", "mainTbl", currentPat), 10);
-}
-
-function updateCell(r, c, v) { 
-    tableData[r][c] = fixVal(v); 
-    localStorage.setItem("p_premium_v11", JSON.stringify(tableData)); 
-    render(); 
-}
-
-function addRow() { tableData.push(["**","**","**","**","**"]); render(); }
-
-function importCSV(input) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        tableData = reader.result.trim().split("\n").map(r => r.split(",").map(c => fixVal(c)));
-        render();
-    };
-    reader.readAsText(input.files[0]);
-}
-
-function analyze(r, c) {
-    if(tableData[r][c] !== "**") return;
-    let p1 = [], p2 = [], f1 = null, f2 = null;
-
-    // Search last 10 weeks for 2 pairs from 2 families
-    for(let i=r-1; i>=0 && i>=r-10; i--) {
-        for(let j=0; j<5; j++) {
-            let v = tableData[i][j]; if(v==="**") continue;
-            let fam = getFam(v);
-            if(!f1) { f1=fam; p1.push({r:i, c:j}); }
-            else if(fam===f1 && p1.length < 2) p1.push({r:i, c:j});
-            else if(!f2 && fam!==f1) { f2=fam; p2.push({r:i, c:j}); }
-            else if(fam===f2 && p2.length < 2) p2.push({r:i, c:j});
-        }
-        if(p1.length===2 && p2.length===2) break;
-    }
-
-    if(p1.length > 0) {
-        currentPat = { p1, p2, f1, f2 };
-        render();
-        findCheck(r);
-        futureAI(f1, f2);
-    }
-}
-
-function findCheck(targetR) {
-    const disp = document.getElementById("checkDisp");
-    disp.innerHTML = "";
-    let count = 0;
-    // History scan for matching families
-    for(let i=0; i < targetR - 4; i++) {
-        let match1 = tableData[i].some(v => getFam(v) === currentPat.f1);
-        let match2 = tableData[i+1]?.some(v => getFam(v) === currentPat.f2);
-        
-        if(match1 && match2) {
-            count++;
-            let div = document.createElement("div");
-            div.className = "check-card";
-            div.innerHTML = `<b>MATCH FOUND #${count}</b><br><small>Historical Week ${i+1}</small>`;
-            div.onclick = () => showPop(i);
-            disp.appendChild(div);
-        }
-        if(count >= 4) break;
-    }
-    if(count===0) disp.innerHTML = "No historical 2-family match found.";
-}
-
-function showPop(idx) {
-    const pop = document.getElementById("pop");
-    pop.style.display = "flex";
-    const popTbl = document.getElementById("popTbl");
-    let h = "", pts1 = [], pts2 = [];
     
-    for(let i=0; i<3; i++) {
-        let r = idx + i; if(!tableData[r]) continue;
-        h += "<tr>";
-        tableData[r].forEach((v, ci) => {
-            let cls = "";
-            if(getFam(v)===currentPat.f1) { cls="circle-red"; pts1.push({r:i, c:ci}); }
-            else if(getFam(v)===currentPat.f2) { cls="circle-blue"; pts2.push({r:i, c:ci}); }
-            h += `<td><div class="${cls}">${v}</div></td>`;
-        });
-        h += "</tr>";
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill().map(()=>Array(6).fill("**"));
+let activeMark=null;
+
+function startApp() {
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    draw();
+}
+
+function getFam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null;}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'make2FamilyPattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+}
+
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
+}
+
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const cells = tblEl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
+    
+    const tRect = tblEl.getBoundingClientRect();
+    ctx.strokeStyle = "#00ff88"; // GREEN LINE
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+function make2FamilyPattern(r, c) {
+    let f1 = null, f2 = null;
+    let shape = [];
+    
+    // Find last 2 different families in the last 6 weeks
+    for(let i = r-1; i >= 0; i--) {
+        let v = data[i][c];
+        if(v !== "**") {
+            let family = getFam(v);
+            if(!f1) f1 = family;
+            else if(!f2 && family !== f1) f2 = family;
+        }
+        if(f1 && f2) break;
     }
-    popTbl.innerHTML = h;
-    setTimeout(() => drawSVG("popSvg", "popTbl", {p1:pts1, p2:pts2}), 50);
+
+    if(!f1 || !f2) { alert("Need at least 2 different families above to form pattern!"); return; }
+
+    // Build 2-Family Shape (scanning last 5 rows)
+    for(let i = Math.max(0, r-5); i <= r; i++) {
+        let rowShape = [];
+        for(let j = 0; j < 6; j++) {
+            let fam = getFam(data[i][j]);
+            if(fam === f1) rowShape.push(1); // Family 1
+            else if(fam === f2) rowShape.push(2); // Family 2
+            else rowShape.push(0);
+        }
+        shape.push(rowShape);
+    }
+
+    document.getElementById("ai").innerHTML = `<b>Searching:</b> Family ${f1} & ${f2}`;
+    searchPattern(shape, f1, f2);
 }
 
-function drawSVG(sid, tid, pat) {
-    const svg = document.getElementById(sid);
-    const tbl = document.getElementById(tid);
-    svg.innerHTML = "";
-    if(!pat) return;
+function searchPattern(shape, f1, f2) {
+    let matches = [];
+    for(let i = 0; i <= data.length - shape.length; i++) {
+        let ok = true;
+        for(let k = 0; k < shape.length; k++) {
+            for(let j = 0; j < 6; j++) {
+                if(shape[k][j] === 1 && getFam(data[i+k][j]) !== f1) ok = false;
+                if(shape[k][j] === 2 && getFam(data[i+k][j]) !== f2) ok = false;
+                if(!ok) break;
+            }
+            if(!ok) break;
+        }
+        if(ok) matches.push({index: i});
+    }
+    showChecks(shape, matches);
+}
 
-    const drawLine = (pts, col) => {
-        if(pts.length < 2) return;
-        let d = "";
-        pts.forEach((p, i) => {
-            const td = tbl.rows[p.r + (tid==="mainTbl"?1:0)].cells[p.c];
-            let x = td.offsetLeft + td.offsetWidth/2;
-            let y = td.offsetTop + td.offsetHeight/2;
-            d += (i===0 ? "M " : " L ") + x + " " + y;
+function showChecks(shape, matches) {
+    const box = document.getElementById("checks");
+    box.innerHTML = matches.length ? "" : "No 2-Family match found.";
+    matches.forEach((m, i) => {
+        let d = document.createElement("div");
+        d.className = "check-card";
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid #0084ff;";
+        d.innerHTML = `2-Family Match found at Row ${m.index + 1}`;
+        d.onclick = () => { activeMark = {start: m.index, shape: shape}; draw(); showOne(shape, m.index); };
+        box.appendChild(d);
+    });
+}
+
+function showOne(shape, idx) {
+    let html = "<table id='popTbl' style='width:100%;'>";
+    for(let i = 0; i < shape.length; i++) {
+        html += "<tr>";
+        data[idx+i].forEach((v, j) => {
+            html += `<td class="${shape[i][j] > 0 ? 'circle' : ''}">${v}</td>`;
         });
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", d); path.setAttribute("stroke", col);
-        path.setAttribute("fill", "none"); path.setAttribute("stroke-width", "4");
-        path.setAttribute("stroke-dasharray", "6");
-        svg.appendChild(path);
+        html += "</tr>";
+    }
+    document.getElementById("popData").innerHTML = html + "</table>";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
+    setTimeout(() => drawLines("popCanvas", document.getElementById("popTbl")), 100);
+}
+
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        draw();
     };
-    drawLine(pat.p1, "#f43f5e");
-    drawLine(pat.p2, "#38bdf8");
-}
-
-function futureAI(f1, f2) {
-    const disp = document.getElementById("aiDisp");
-    let pairs = [...(FAMILY[f1]||[]), ...(FAMILY[f2]||[])];
-    disp.innerHTML = pairs.sort(()=>0.5-Math.random()).slice(0,3).map(n => `<span class="ai-badge">${n}</span>`).join("");
-}
-
-render();
+    fr.readAsText(e.target.files[0]);
+};
 </script>
 </body>
 </html>
