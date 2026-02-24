@@ -119,26 +119,48 @@ function getShapeVal(ri, ci){
     return 0;
 }
 
+// --- Is Logic ko Replace kijiye (Sirf Analysis wala part) ---
+
 function initAnalysis(r, c) {
     let f1 = null, f2 = null, shape = [];
-    // Last 10 weeks se 2 different families dhoondhein
-    for(let i=r-1; i>=0; i--){
-        let v = data[i][c]; if(v=="**") continue;
-        let fam = getFam(v);
-        if(!f1) f1 = fam; else if(!f2 && fam !== f1) f2 = fam;
-        if(f1 && f2) break;
+    
+    // 1. SCANNING: Upar ki 15 rows tak check karega
+    for(let i = r - 1; i >= 0; i--) {
+        let v = data[i][c];
+        if(v !== "**" && v !== "") {
+            let fam = getFam(v);
+            if(fam) {
+                if(!f1) f1 = fam; 
+                else if(!f2 && fam !== f1) f2 = fam;
+            }
+        }
+        if(f1 && f2) break; // Dono milte hi ruk jao
     }
-    if(!f1 || !f2) { alert("Analysis ke liye upar 2 different families chahiye!"); return; }
 
-    // Shape Build (Last 5 Rows)
-    for(let i=Math.max(0, r-5); i<=r; i++){
+    // Agar 2 families nahi mili, toh 1 family se hi pattern bana dega (Zabardasti rukega nahi)
+    if(!f1) { 
+        alert("Bhai, upar kam se kam 1-2 jodi likhiye tabhi pattern banega!"); 
+        return; 
+    }
+
+    // 2. SHAPE BUILD: Pichle 6 hafte ka frame lega
+    let startRow = Math.max(0, r - 5);
+    for(let i = startRow; i <= r; i++) {
         let row = [];
-        for(let j=0; j<6; j++){
+        for(let j = 0; j < 6; j++) {
             let fam = getFam(data[i][j]);
-            row.push(fam === f1 ? 1 : (fam === f2 ? 2 : 0));
+            if(fam === f1) row.push(1);
+            else if(f2 && fam === f2) row.push(2);
+            else row.push(0);
         }
         shape.push(row);
     }
+
+    // 3. APPLY: Turant screen par dikhao
+    activePat = { start: startRow, shape: shape };
+    draw(); 
+    
+    // 4. SEARCH: Ab history mein check line dhoondho
     searchMatches(shape, f1, f2, r);
 }
 
