@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>PRADEEP DYNAMIC AI v9</title>
+<title>PRADEEP CROSS AI v10</title>
 <style>
 :root{--bg:#020617;--gold:#fbbf24;--red:#ef4444;--blue:#3b82f6;--text:#f8fafc;}
 body{background:var(--bg);color:var(--text);font-family:Segoe UI;margin:0;}
@@ -26,7 +26,7 @@ svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-
 <body>
 
 <div class="nav">
-<div style="font-size:1.4rem;font-weight:800;">PRADEEP <span style="color:var(--gold)">DYNAMIC AI v9</span></div>
+<div style="font-size:1.4rem;font-weight:800;">PRADEEP <span style="color:var(--gold)">CROSS AI v10</span></div>
 <div style="display:flex;gap:10px;">
 <input type="file" id="fileIn" style="display:none" onchange="importCSV(this)">
 <button class="btn btn-upload" onclick="fileIn.click()">📁 Upload CSV</button>
@@ -55,7 +55,7 @@ svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-
 
 <div id="pop" onclick="this.style.display='none'">
 <div style="background:white;padding:25px;border-radius:15px;color:black;" onclick="event.stopPropagation()">
-<h3>Historical Pattern</h3>
+<h3>Historical Cross Pattern</h3>
 <div style="position:relative">
 <svg id="popSvg"></svg>
 <table id="popTbl"></table>
@@ -64,6 +64,7 @@ svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-
 </div>
 
 <script>
+
 const FAMILY={
 "01":["01","06","10","15","51","56","60","65"],
 "02":["02","07","20","25","52","57","70","75"],
@@ -73,7 +74,7 @@ const FAMILY={
 "13":["13","18","31","36","63","68","81","86"]
 };
 
-let tableData=JSON.parse(localStorage.getItem("p_ai_v9"))||Array(15).fill().map(()=>Array(5).fill("**"));
+let tableData=JSON.parse(localStorage.getItem("p_cross_v10"))||Array(15).fill().map(()=>Array(5).fill("**"));
 let currentPat=null;
 
 const getFam=v=>{for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null;}
@@ -98,7 +99,7 @@ mainTbl.innerHTML=h;
 drawSVG("mainSvg","mainTbl",currentPat);
 }
 
-function updateCell(r,c,v){tableData[r][c]=formatVal(v);localStorage.setItem("p_ai_v9",JSON.stringify(tableData));render();}
+function updateCell(r,c,v){tableData[r][c]=formatVal(v);localStorage.setItem("p_cross_v10",JSON.stringify(tableData));render();}
 function addRow(){tableData.push(["**","**","**","**","**"]);render();}
 
 function importCSV(input){
@@ -112,61 +113,93 @@ if(tableData[r][c]!=="**")return;
 
 let p1=[],p2=[],f1=null,f2=null;
 
-for(let i=r-1;i>=0;i--){
-let val=tableData[i][c];
-if(val!=="**"){
-let fam=getFam(val);
-if(!f1){f1=fam;p1.push({r:i,c:c});}
-else if(fam===f1&&p1.length<2)p1.push({r:i,c:c});
-else if(!f2&&fam!==f1){f2=fam;p2.push({r:i,c:c});}
-else if(fam===f2&&p2.length<2)p2.push({r:i,c:c});
+for(let step=1;step<=10;step++){
+let rr=r-step;
+if(rr<0)break;
+
+let left=c-step;
+let right=c+step;
+
+// LEFT diagonal
+if(left>=0){
+let v1=tableData[rr][left];
+if(v1!=="**"){
+let fam=getFam(v1);
+if(!f1){f1=fam;p1.push({r:rr,c:left});}
+else if(fam===f1 && p1.length<2)p1.push({r:rr,c:left});
 }
-if(p1.length===2&&p2.length===2)break;
 }
 
-currentPat={p1,p2,f1,f2,targetCol:c};
+// RIGHT diagonal
+if(right<5){
+let v2=tableData[rr][right];
+if(v2!=="**"){
+let fam2=getFam(v2);
+if(!f2 && fam2!==f1){f2=fam2;p2.push({r:rr,c:right});}
+else if(fam2===f2 && p2.length<2)p2.push({r:rr,c:right});
+}
+}
+
+if(p1.length===2 && p2.length===2)break;
+}
+
+currentPat={p1,p2,f1,f2};
 render();
-findCheck(r,c);
+findCheck();
 futureAI(f1,f2);
 }
 
-function findCheck(r,c){
+function findCheck(){
 checkDisp.innerHTML="";
 let count=0;
 
-for(let i=0;i<r-3;i++){
-let fams=[];
-for(let j=0;j<4;j++){
-let v=tableData[i+j][c];
-if(v!=="**")fams.push(getFam(v));
+for(let i=2;i<tableData.length;i++){
+let fL=[],fR=[];
+for(let step=0;step<2;step++){
+let rr=i-step;
+if(rr<0)continue;
+
+let cL=currentPat.p1[0].c+step;
+let cR=currentPat.p2[0].c-step;
+
+if(cL>=0 && cL<5){
+let v=tableData[rr][cL];
+if(v!=="**")fL.push(getFam(v));
 }
-if(fams.length===4){
-let fcount1=fams.filter(x=>x===currentPat.f1).length;
-let fcount2=fams.filter(x=>x===currentPat.f2).length;
-if(fcount1===2&&fcount2===2){
+
+if(cR>=0 && cR<5){
+let v2=tableData[rr][cR];
+if(v2!=="**")fR.push(getFam(v2));
+}
+}
+
+if(fL.length===2 && fR.length===2){
+if(fL.every(f=>f===currentPat.f1) && fR.every(f=>f===currentPat.f2)){
 count++;
 let div=document.createElement("div");
 div.className="check-card";
-div.innerHTML=`Check Line ${count} (Row ${i+1})`;
-div.onclick=()=>showPop(i,c);
+div.innerHTML=`Check Line ${count}`;
+div.onclick=()=>showPop(i);
 checkDisp.appendChild(div);
 }
 }
 if(count===4)break;
 }
-if(count===0)checkDisp.innerHTML="No match found";
+
+if(count===0)checkDisp.innerHTML="No Cross Match Found";
 }
 
-function showPop(idx,col){
+function showPop(idx){
 pop.style.display="flex";
 let h="",pts1=[],pts2=[];
-for(let i=0;i<4;i++){
+for(let step=0;step<2;step++){
+let rr=idx-step;
 h+="<tr>";
-tableData[idx+i].forEach((v,ci)=>{
+tableData[rr].forEach((v,ci)=>{
 let fam=getFam(v);
 let cls="";
-if(fam===currentPat.f1){cls="circle-red";pts1.push({r:i,c:ci});}
-if(fam===currentPat.f2){cls="circle-blue";pts2.push({r:i,c:ci});}
+if(fam===currentPat.f1){cls="circle-red";pts1.push({r:step,c:ci});}
+if(fam===currentPat.f2){cls="circle-blue";pts2.push({r:step,c:ci});}
 h+=`<td><div class="${cls}">${v}</div></td>`;
 });
 h+="</tr>";
@@ -205,6 +238,7 @@ aiDisp.innerHTML=pairs.sort(()=>0.5-Math.random()).slice(0,3).map(n=>`<span clas
 }
 
 render();
+
 </script>
 </body>
 </html>
