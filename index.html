@@ -2,85 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Dual Family System v5</title>
+    <title>Kalyan Pro AI – 2.2 Cross System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --gold: #ffd700; --blue-c: #0084ff; --red-c: #ff4d4d; 
-            --green-l: #00ff88; --bg: #0f172a; --panel: #1e293b; 
-        }
+        :root { --gold: #ffd700; --blue-c: #0084ff; --red-c: #ff4d4d; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; }
-        #main-app { padding: 15px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; width: 45px; height: 45px; text-align: center; font-weight: bold; position: relative; cursor: pointer; }
-        th { background: #1e293b; color: white; font-size: 11px; }
-        .circle-f1 { border: 3px solid var(--blue-c) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.2); }
-        .circle-f2 { border: 3px solid var(--red-c) !important; border-radius: 50%; background: rgba(255, 77, 77, 0.2); }
+        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; display: inline-block; margin-top: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ccc; width: 50px; height: 50px; text-align: center; font-weight: bold; position: relative; cursor: pointer; }
+        th { background: #1e293b; color: white; }
+        .circle-f1 { border: 4px solid var(--blue-c) !important; border-radius: 50%; background: rgba(0, 132, 255, 0.15); width: 42px; height: 42px; display: inline-block; line-height: 34px; }
+        .circle-f2 { border: 4px solid var(--red-c) !important; border-radius: 50%; background: rgba(255, 77, 77, 0.15); width: 42px; height: 42px; display: inline-block; line-height: 34px; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .check-item { background: #0f172a; padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid var(--blue-c); cursor: pointer; font-size: 13px; }
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; box-shadow: 0 0 50px #000; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; transition: 0.2s; }
-        button:hover { opacity: 0.8; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-left: 5px solid var(--gold); }
+        .check-item { background: #0f172a; padding: 12px; margin-top: 8px; border-radius: 8px; cursor: pointer; border: 1px solid #334155; }
+        #popup { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="main-app">
-    <div class="toolbar">
-        <input type="file" id="csv" style="display:none">
-        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 IMPORT CSV</button>
-        <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
-        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
-        <button onclick="clearAll()" style="background:#ff4d4d; color:white;">🗑️ CLEAR</button>
+<div class="toolbar">
+    <input type="file" id="csv" style="display:none">
+    <button onclick="document.getElementById('csv').click()" style="background:#444; color:white; padding:10px 20px; border-radius:5px;">📂 IMPORT CSV</button>
+    <button onclick="addRow()" style="background:#444; color:white; padding:10px 20px; border-radius:5px;">➕ ADD ROW</button>
+    <button onclick="saveData()" style="background:#28a745; color:white; padding:10px 20px; border-radius:5px;">💾 SAVE</button>
+</div>
+
+<center>
+    <div class="table-container">
+        <canvas id="mainCanvas"></canvas>
+        <table id="tbl"></table>
     </div>
+</center>
 
-    <center>
-        <div class="table-container" id="chart-wrap">
-            <canvas id="mainCanvas"></canvas>
-            <table id="tbl"></table>
-        </div>
-    </center>
-
-    <div class="dashboard">
-        <div class="card">
-            <h3>✔ CHECK LINES</h3>
-            <div id="checks">Click any blank (**) cell...</div>
-        </div>
-        <div class="card">
-            <h3>🤖 AI INFO</h3>
-            <div id="ai-res">Ready for analysis.</div>
-        </div>
+<div class="dashboard">
+    <div class="card">
+        <h3>🎯 CROSS MATCH CHECK LINES</h3>
+        <div id="checks">Click a blank cell to find 2.2 Cross Pattern...</div>
+    </div>
+    <div class="card">
+        <h3>📊 PATTERN INFO</h3>
+        <div id="ai-info">Ready.</div>
     </div>
 </div>
 
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
-    <h3 style="margin:0 0 10px 0">Historical Match View</h3>
-    <div class="table-container" style="width:100%; overflow:auto;">
-        <canvas id="popCanvas"></canvas>
-        <div id="popData"></div>
+<div id="popup" onclick="this.style.display='none'">
+    <div style="background:white; padding:20px; border-radius:15px; color:black; position:relative;" onclick="event.stopPropagation()">
+        <h3>Historical Cross Pattern</h3>
+        <div class="table-container">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
     </div>
 </div>
 
 <script>
 const FAMILY = {
- "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
+ "01":["01","06","10","15","51","56","60","65"], "02":["02","07","20","25","52","57","70","75"],
+ "03":["03","08","30","35","53","58","80","85"], "04":["04","09","40","45","54","59","90","95"],
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"]
 };
 
-let data = JSON.parse(localStorage.getItem("pdata_dual_v5")) || Array(15).fill().map(()=>Array(6).fill("**"));
-let activePat = null;
+let data = JSON.parse(localStorage.getItem("pdata_cross_v6")) || Array(15).fill().map(()=>Array(6).fill("**"));
+let currentPat = null;
 
 function getFam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null;}
 
@@ -89,143 +76,122 @@ function draw(){
     data.forEach((r,ri)=>{
         h+="<tr>";
         r.forEach((c,ci)=>{
-            let cls = "";
-            if(activePat){
-                let i = ri - activePat.start;
-                if(i >= 0 && i < activePat.shape.length){
-                    let val = activePat.shape[i][ci];
-                    if(val === 1) cls = "circle-f1";
-                    if(val === 2) cls = "circle-f2";
-                }
+            let inner = c;
+            if(currentPat){
+                if(currentPat.p1.some(p=>p.r===ri && p.c===ci)) inner = `<span class="circle-f1">${c}</span>`;
+                if(currentPat.p2.some(p=>p.r===ri && p.c===ci)) inner = `<span class="circle-f2">${c}</span>`;
             }
-            h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'initAnalysis('+ri+','+ci+')':'' }">${c}</td>`;
+            h+=`<td contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'findCross('+ri+','+ci+')':'' }">${inner}</td>`;
         });
         h+="</tr>";
     });
     document.getElementById("tbl").innerHTML=h;
-    if(activePat) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+    if(currentPat) setTimeout(() => drawLines("mainCanvas", "tbl", currentPat), 50);
 }
 
-function initAnalysis(r, c) {
-    let f1 = null, f2 = null, shape = [];
+function findCross(r, c) {
+    let p1 = [], p2 = [], f1 = null, f2 = null;
     
-    // 1. Scan for families
-    for(let i = r - 1; i >= 0; i--) {
-        let v = data[i][c];
-        if(v !== "**" && v !== "") {
+    // Search in last 10 rows for 2.2 pattern
+    for(let i = r-1; i >= 0 && i >= r-10; i--){
+        for(let j = 0; j < 6; j++){
+            let v = data[i][j]; if(v=="**") continue;
             let fam = getFam(v);
-            if(fam) {
-                if(!f1) f1 = fam; 
-                else if(!f2 && fam !== f1) f2 = fam;
-            }
+            if(!f1) { f1 = fam; p1.push({r:i, c:j}); }
+            else if(fam === f1 && p1.length < 2) p1.push({r:i, c:j});
+            else if(!f2 && fam !== f1) { f2 = fam; p2.push({r:i, c:j}); }
+            else if(fam === f2 && p2.length < 2) p2.push({r:i, c:j});
         }
-        if(f1 && f2) break;
+        if(p1.length === 2 && p2.length === 2) break;
     }
 
-    if(!f1) { alert("Data kam hai! Kam se kam 1-2 jodi upar honi chahiye."); return; }
-
-    // 2. Build Shape
-    let startRow = Math.max(0, r - 5);
-    for(let i = startRow; i <= r; i++) {
-        let row = [];
-        for(let j = 0; j < 6; j++) {
-            let fam = getFam(data[i][j]);
-            row.push(fam === f1 ? 1 : (f2 && fam === f2 ? 2 : 0));
-        }
-        shape.push(row);
+    if(p1.length < 2 || p2.length < 2) {
+        alert("Pattern Error: 2 different family ki 2-2 jodi nahi mili!");
+        return;
     }
 
-    // 3. Set & Render
-    activePat = { start: startRow, shape: shape };
-    draw(); 
-    
-    // 4. Search Matches
-    searchMatches(shape, f1, f2, r);
+    currentPat = { p1, p2, f1, f2 };
+    draw();
+    searchHistory(f1, f2);
 }
 
-function searchMatches(shape, f1, f2, currentR) {
+function searchHistory(f1, f2) {
     let matches = [];
-    for(let i=0; i <= data.length - shape.length; i++){
-        let ok = true;
-        for(let k=0; k<shape.length; k++){
-            for(let j=0; j<6; j++){
-                if(shape[k][j]===1 && getFam(data[i+k][j])!==f1) ok=false;
-                if(shape[k][j]===2 && getFam(data[i+k][j])!==f2) ok=false;
-                if(!ok) break;
-            }
-            if(!ok) break;
+    for(let i=0; i < data.length - 3; i++) {
+        let h1 = [], h2 = [];
+        // Check if these two families exist in close proximity in history
+        for(let row=i; row < i+4; row++){
+            data[row].forEach((v, col) => {
+                let fam = getFam(v);
+                if(fam === f1) h1.push({r:row, c:col});
+                if(fam === f2) h2.push({r:row, c:col});
+            });
         }
-        if(ok && i < (currentR - shape.length + 1)) matches.push(i);
+        if(h1.length >= 2 && h2.length >= 2) matches.push({idx: i, p1: h1.slice(0,2), p2: h2.slice(0,2)});
     }
-    displayResults(shape, matches, f1, f2);
-}
-
-function displayResults(shape, matches, f1, f2) {
+    
     const box = document.getElementById("checks");
-    box.innerHTML = matches.length ? "" : "No history match found in records.";
-    matches.forEach((idx, i) => {
+    box.innerHTML = matches.length ? "" : "No 2.2 Cross match in history.";
+    matches.forEach((m, i) => {
         let d = document.createElement("div");
         d.className = "check-item";
-        d.innerHTML = `<b>MATCH FOUND #${i+1}</b><br>Historical Row: ${idx+1}`;
-        d.onclick = () => showPopupView(shape, idx);
+        d.innerHTML = `<b>CROSS MATCH #${i+1}</b> - Week ${m.idx+1}`;
+        d.onclick = () => showPop(m);
         box.appendChild(d);
     });
-    document.getElementById("ai-res").innerHTML = `<b>F1:</b> ${f1 || 'None'} | <b>F2:</b> ${f2 || 'None'}`;
 }
 
-function showPopupView(shape, idx) {
-    let html = "<table id='popTbl' style='width:100%'>";
-    for(let i=0; i<shape.length; i++){
+function showPop(m) {
+    let html = "<table>";
+    for(let i=0; i<4; i++){
         html += "<tr>";
-        data[idx+i].forEach((v, j) => {
-            let cls = shape[i][j]===1 ? "circle-f1" : (shape[i][j]===2 ? "circle-f2" : "");
-            html += `<td class="${cls}">${v}</td>`;
+        data[m.idx+i].forEach((v, j) => {
+            let cls = "";
+            if(m.p1.some(p=>p.r===m.idx+i && p.c===j)) cls="circle-f1";
+            if(m.p2.some(p=>p.r===m.idx+i && p.c===j)) cls="circle-f2";
+            html += `<td><span class="${cls}">${v}</span></td>`;
         });
         html += "</tr>";
     }
     document.getElementById("popData").innerHTML = html + "</table>";
-    document.getElementById("popup").style.display = "block";
-    document.getElementById("overlay").style.display = "block";
-    setTimeout(() => drawLines("popCanvas", document.getElementById("popTbl")), 100);
+    document.getElementById("popup").style.display = "flex";
+    
+    // Adjust relative points for popup canvas
+    let relPat = {
+        p1: m.p1.map(p => ({r: p.r - m.idx, c: p.c})),
+        p2: m.p2.map(p => ({r: p.r - m.idx, c: p.c}))
+    };
+    setTimeout(() => drawLines("popCanvas", "popData", relPat), 100);
 }
 
-function drawLines(cvsId, tblEl) {
+function drawLines(cvsId, parentId, pat) {
     const cvs = document.getElementById(cvsId);
+    const parent = document.getElementById(parentId);
+    const tbl = parent.tagName === "TABLE" ? parent : parent.querySelector("table");
+    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     const ctx = cvs.getContext("2d");
-    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    
-    const tRect = tblEl.getBoundingClientRect();
-    const dots = [...tblEl.querySelectorAll(".circle-f1, .circle-f2")];
-    if(dots.length < 2) return;
-
-    ctx.strokeStyle = "#00ff88"; 
     ctx.lineWidth = 3;
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    dots.forEach((d, i) => {
-        const r = d.getBoundingClientRect();
-        const x = r.left - tRect.left + r.width/2;
-        const y = r.top - tRect.top + r.height/2;
-        if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
+
+    const drawLine = (pts, color) => {
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+            let cell = tbl.rows[p.r].cells[p.c];
+            let x = cell.offsetLeft + cell.offsetWidth/2;
+            let y = cell.offsetTop + cell.offsetHeight/2;
+            if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    };
+
+    drawLine(pat.p1, "#0084ff");
+    drawLine(pat.p2, "#ff4d4d");
 }
 
 function edit(r,c,el){ data[r][c]=el.innerText.trim(); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("pdata_dual_v5", JSON.stringify(data)); alert("Data Saved Locally!"); }
-function clearAll(){ if(confirm("Clear all data?")){ localStorage.removeItem("pdata_dual_v5"); location.reload(); }}
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-
-document.getElementById("csv").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => v.trim()));
-        draw();
-    };
-    fr.readAsText(e.target.files[0]);
-};
+function saveData(){ localStorage.setItem("pdata_cross_v6", JSON.stringify(data)); alert("Saved!"); }
 
 draw();
 </script>
