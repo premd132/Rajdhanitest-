@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rajdhani Pro AI - Real Family DNA</title>
+<title>Rajdhani Pro AI - Pradeep Edition V100</title>
 <style>
 :root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
 body{margin:0; background:var(--bg); color:#fff; font-family: sans-serif; display:flex; flex-direction:column; align-items:center; padding:10px;}
@@ -12,10 +12,11 @@ button{background:#1e293b; color:white; border:1px solid var(--gold); padding:8p
 table{border-collapse:collapse; color:black; position:relative; z-index:5;}
 td, th{border:1px solid #ccc; width:45px; height:45px; text-align:center; font-weight:bold; font-size:18px; cursor:pointer;}
 th{background:#1e293b; color:white; font-size:10px;}
-.circle-match { border: 4px solid var(--red) !important; border-radius: 50%; background:rgba(255,71,87,0.2); }
+.circle-red { border: 4px solid var(--red) !important; border-radius: 50%; background:rgba(255,71,87,0.2); }
+.marked-origin { background: #9c27b0 !important; color: white !important; } 
 .marked-result { background: #facc15 !important; border: 2px solid #000 !important; }
 canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-#overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; justify-content:center; align-items:center; }
+#overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; justify-content:center; align-items:center; }
 .popup-box{ background:#fff; padding:15px; border-radius:10px; width:95%; max-width:550px; color: black; }
 .card{ background:var(--panel); padding:10px; border-radius:8px; border-top:3px solid var(--gold); margin-top:15px; width:100%; max-width:900px;}
 .check-item{ background:#2d3748; padding:10px; margin:5px 0; border-radius:5px; border-left:4px solid var(--gold); cursor:pointer; color:white;}
@@ -26,7 +27,7 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 <div class="toolbar">
     <button onclick="addRow()">➕ ADD ROW</button>
     <button onclick="exportCSV()">💾 SAVE CSV</button>
-    <button onclick="localStorage.clear(); location.reload();" style="background:red;">🗑️ CLEAR DATA</button>
+    <button onclick="localStorage.clear(); location.reload();" style="background:red;">🗑️ RESET</button>
 </div>
 
 <div class="table-box">
@@ -35,15 +36,15 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <div class="card">
-    <b>✔ FAMILY DNA MATCH (HISTORY)</b>
-    <div id="checkList">Click (**) to find DNA Family Patterns...</div>
+    <b>✔ DNA FAMILY MATCHING (LAST 10 WEEKS)</b>
+    <div id="checkList">Click (**) to identify family patterns...</div>
 </div>
 
 <div id="overlay">
     <div class="popup-box">
-        <button style="float:right; background:red; color:white; border:none; padding:5px; border-radius:5px;" onclick="closePopup()">CLOSE</button>
-        <h3>Real Family Record Match</h3>
-        <div style="position:relative; overflow:auto; max-height:400px;">
+        <button style="float:right; background:red; color:white; border:none; padding:5px 10px; border-radius:5px;" onclick="closePopup()">CLOSE</button>
+        <h3>Real Record Pattern Match</h3>
+        <div style="position:relative; overflow:auto; max-height:400px; border:1px solid #ccc;">
             <canvas id="popupCanvas"></canvas>
             <table id="tblPopup"></table>
         </div>
@@ -51,15 +52,15 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <script>
-// Family Logic: Returns the base family key (e.g., 12, 17, 62, 67 all return "12")
+// Matka Family Logic: DNA connection for all 100 jodis
 function getFamilyDNA(val) {
-    if(!val || val === "**") return null;
-    let n = val.split('').map(Number);
+    if(!val || val === "**" || val === "") return null;
+    let n = val.padStart(2, '0').split('').map(Number);
     let f = n.map(d => (d > 4 ? d - 5 : d)).sort();
-    return f.join('');
+    return f.join(''); // Example: 12, 17, 62, 67 all return "12"
 }
 
-let data = JSON.parse(localStorage.getItem('pData')) || Array(25).fill().map(()=>Array(5).fill("**"));
+let data = JSON.parse(localStorage.getItem('pData')) || Array(30).fill().map(()=>Array(5).fill("**"));
 
 function render(tid, tdata, p = null){
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
@@ -67,7 +68,8 @@ function render(tid, tdata, p = null){
         h += "<tr>";
         row.forEach((cell, c)=>{
             let cls = (p && p.yR===r && p.yC===c) ? "marked-result" : "";
-            if(p && p.matches.some(pt=>pt.r===r && pt.c===c)) cls += " circle-match";
+            if(p && p.matches.some(pt=>pt.r===r && pt.c===c)) cls += " circle-red";
+            if(p && p.origin && p.origin.r===r && p.origin.c===c) cls += " marked-origin";
             h += `<td class="${cls}" contenteditable onblur="upd(${r},${c},this.innerText)" onclick="cellClick(${r},${c})">${cell}</td>`;
         });
         h += "</tr>";
@@ -81,35 +83,40 @@ function upd(r,c,v){ data[r][c]=v.trim(); localStorage.setItem('pData', JSON.str
 function cellClick(r,c){
     if(data[r][c] !== "**") return;
     
-    // Find family matches in the last 10 weeks
+    // Scan up to 10 weeks above for Family DNA matching
     let matches = [];
-    // Hum sirf is cell ke upar ke area mein "family dna" scan karenge
+    let baseDNA = null;
+
+    // We assume the target family is based on the cell directly above or a recent cell
     for(let i=1; i<=10; i++){
-        for(let j=0; j<5; j++){
-            if(data[r-i]?.[j] && data[r-i][j] !== "**") {
-                // If we want to connect something, it should have a family context
-                // Let's assume we are looking for family matches of the cell 1 row above as a base
-                let baseDNA = getFamilyDNA(data[r-1]?.[c]);
-                if(getFamilyDNA(data[r-i][j]) === baseDNA) {
+        if(data[r-i]?.[c] && data[r-i][c] !== "**") {
+            baseDNA = getFamilyDNA(data[r-i][c]);
+            break;
+        }
+    }
+
+    if(baseDNA){
+        for(let i=1; i<=10; i++){
+            for(let j=0; j<5; j++){
+                if(data[r-i]?.[j] && getFamilyDNA(data[r-i][j]) === baseDNA){
                     matches.push({r: r-i, c: j});
                 }
             }
         }
     }
 
-    let p = { yR: r, yC: c, matches: matches.slice(0, 3) };
+    let p = { yR: r, yC: c, matches: matches.slice(0, 3), origin: matches[0] };
     render("tblMain", data, p);
 
     let list = document.getElementById('checkList');
     list.innerHTML = "";
     
-    // History Matching
-    for(let i=0; i<data.length; i++){
+    // History Check Lines
+    for(let i=10; i<data.length; i++){
         if(i !== r && data[i][c] !== "**"){
-            // Agar purane record mein bhi usi position par koi family match hai
             let div = document.createElement('div');
             div.className = "check-item";
-            div.innerText = `DNA Match Found: Week ${i+1}`;
+            div.innerText = `View Real Family Record: Week ${i+1}`;
             div.onclick = () => openPopup(i, c, p.matches.map(m=>({ro: r-m.r, co: m.c})));
             list.appendChild(div);
         }
@@ -120,13 +127,15 @@ function openPopup(mR, mC, offsets){
     document.getElementById('overlay').style.display = 'flex';
     let p = {
         yR: mR, yC: mC,
-        matches: offsets.map(o => ({r: mR-o.ro, c: o.co}))
+        matches: offsets.map(o => ({r: mR-o.ro, c: o.co})),
+        origin: offsets[0] ? {r: mR-offsets[0].ro, c: offsets[0].co} : null
     };
     let start = Math.max(0, mR - 10);
     let subData = data.slice(start, mR + 2);
     let adjP = {
         yR: mR - start, yC: mC,
-        matches: p.matches.map(pt => ({r: pt.r - start, c: pt.c}))
+        matches: p.matches.map(pt => ({r: pt.r - start, c: pt.c})),
+        origin: p.origin ? {r: p.origin.r - start, c: p.origin.c} : null
     };
     render("tblPopup", subData, adjP);
     setTimeout(() => drawLines("popupCanvas", "tblPopup", adjP), 100);
@@ -154,7 +163,7 @@ function drawLines(canId, tblId, p){
 
 function addRow(){ data.push(["**","**","**","**","**"]); render("tblMain", data); }
 function closePopup(){ document.getElementById('overlay').style.display='none'; }
-function exportCSV(){ let csv = data.map(r => r.join(",")).join("\n"); let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani_dna.csv"; a.click(); }
+function exportCSV(){ let csv = data.map(r => r.join(",")).join("\n"); let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani_v100.csv"; a.click(); }
 render("tblMain", data);
 </script>
 </body>
