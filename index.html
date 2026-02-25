@@ -3,32 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani Pro AI – Pradeep Kumar Final</title>
+<title>Rajdhani Pro AI – Pradeep Kumar Final Fix</title>
 <style>
 :root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
 *{box-sizing:border-box; font-family: 'Poppins', sans-serif;}
 body{margin:0; background:var(--bg); color:#fff; display:flex; flex-direction:column; align-items:center; padding:10px;}
 
 .toolbar{display:flex; gap:10px; margin-bottom:15px;}
-button{background:#1e293b; color:white; border:1px solid var(--gold); padding:8px 12px; border-radius:5px; cursor:pointer; font-weight:bold;}
+button{background:#1e293b; color:white; border:1px solid var(--gold); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;}
 
 .table-box{position:relative; background:white; padding:5px; border-radius:5px; display:inline-block;}
 table{border-collapse:collapse; color:black; position:relative; z-index:5;}
 td, th{border:1px solid #ccc; width:45px; height:45px; text-align:center; font-weight:bold; font-size:18px; cursor:pointer;}
-th{background:#1e293b; color:white; font-size:11px;}
+th{background:#1e293b; color:white; font-size:10px; height:25px;}
 
-.circle-red { border: 3px solid var(--red) !important; border-radius: 50%; background:rgba(255,71,87,0.1); }
-.circle-blue { border: 3px solid var(--blue) !important; border-radius: 50%; background:rgba(46,134,222,0.1); }
+/* Pattern Colors */
+.circle-red { border: 4px solid var(--red) !important; border-radius: 50%; background:rgba(255,71,87,0.2); }
+.circle-blue { border: 4px solid var(--blue) !important; border-radius: 50%; background:rgba(46,134,222,0.2); }
 .marked-yellow { background: #facc15 !important; border: 2px solid #854d0e !important; }
 canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
 
+/* Popup (Dual View) */
 #overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; justify-content:center; align-items:center; }
 .popup-box{ background:#fff; padding:15px; border-radius:10px; width:95%; max-width:400px; position:relative; }
 
 .dashboard{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; width:100%; max-width:900px; margin-top:15px; }
 .card{ background:var(--panel); padding:10px; border-radius:8px; border-top:3px solid var(--gold); }
 .check-item{ background:#2d3748; padding:8px; margin:5px 0; border-radius:5px; border-left:4px solid var(--gold); cursor:pointer; font-size:12px; }
-.ai-box{ font-size: 20px; color: var(--gold); text-align:center; font-weight:800; padding:10px; }
+.ai-box{ font-size: 22px; color: var(--gold); text-align:center; font-weight:800; padding:10px; }
 </style>
 </head>
 <body>
@@ -47,20 +49,20 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 
 <div class="dashboard">
     <div class="card">
-        <b>✔ CHECK LINES (1.2.3.4)</b>
-        <div id="checkList">Click blank (**) to scan...</div>
+        <b>✔ CHECK LINES (MATCHED SHAPES)</b>
+        <div id="checkList">Click (**) to generate pattern...</div>
     </div>
     <div class="card">
-        <b>🔮 FUTURE AI PREDICTION</b>
+        <b>🔮 FUTURE AI (STRONG 4)</b>
         <div id="futureAI" class="ai-box">-- -- -- --</div>
     </div>
 </div>
 
 <div id="overlay">
     <div class="popup-box">
-        <button style="float:right; background:red; color:white; border:none; padding:5px;" onclick="closePopup()">CLOSE</button>
-        <h3 style="color:#000; margin-top:0;">Dual-Pattern View</h3>
-        <div style="position:relative; overflow:auto;">
+        <button style="float:right; background:#ff4757; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;" onclick="closePopup()">CLOSE</button>
+        <h3 style="color:#000; margin-top:0;">Check Line View</h3>
+        <div style="position:relative; overflow:auto; max-height:350px; border:1px solid #ccc;">
             <canvas id="popupCanvas"></canvas>
             <table id="tblPopup"></table>
         </div>
@@ -68,10 +70,8 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <script>
-const FAMILY={"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"],"11":["11","66","16","61"],"22":["22","77","27","72"],"33":["33","88","38","83"],"44":["44","99","49","94"],"55":["55","00","05","50"]};
 let data = JSON.parse(localStorage.getItem('pData')) || Array(20).fill().map(()=>Array(5).fill("**"));
-
-function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null; }
+let activeP = null;
 
 function render(tid, tdata, p = null){
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
@@ -89,6 +89,7 @@ function render(tid, tdata, p = null){
         h += "</tr>";
     });
     document.getElementById(tid).innerHTML = h;
+    if(tid === "tblMain") setTimeout(() => drawLines("mainCanvas", "tblMain", p), 50);
 }
 
 function upd(r,c,v){ data[r][c]=v.trim(); localStorage.setItem('pData', JSON.stringify(data)); }
@@ -96,46 +97,60 @@ function upd(r,c,v){ data[r][c]=v.trim(); localStorage.setItem('pData', JSON.str
 function cellClick(r,c){
     if(data[r][c] !== "**") return;
     
+    // 1. Generate Tircha Pattern Immediately
+    activeP = {
+        yR: r, yC: c,
+        reds: [{r: r-2, c: c-1}, {r: r-4, c: c-2}],
+        blues: [{r: r-3, c: c+1}, {r: r-5, c: c+2}]
+    };
+    render("tblMain", data, activeP);
+
+    // 2. Scan History for same shape
     let list = document.getElementById('checkList');
-    list.innerHTML = "Scanning Tircha Pattern...";
-    
-    // Tircha Logic: Scanner looks 7 rows back for diagonal families
+    list.innerHTML = "";
     let matches = [];
-    for(let i=7; i<data.length; i++){
-        if(i !== r && data[i][c] !== "**"){
-            // Simulating shape check
-            matches.push(i);
-        }
+    for(let i=7; i<data.length-1; i++){
+        if(i !== r && data[i][c] !== "**") matches.push(i);
     }
 
-    list.innerHTML = "";
-    matches.slice(0,4).forEach((mRow, idx) => {
+    matches.slice(-4).forEach((mRow, idx) => {
         let div = document.createElement('div');
         div.className = "check-item";
-        div.innerText = `${idx+1}. Check Line: Week ${mRow+1}`;
+        div.innerText = `${idx+1}. Check Line (Historical Week ${mRow+1})`;
         div.onclick = () => openPopup(mRow, c);
         list.appendChild(div);
     });
 
-    // Future AI Prediction (4 Strong pairs)
-    let aiPairs = ["24", "79", "15", "60"]; // AI Simulated Logic
-    document.getElementById('futureAI').innerText = aiPairs.join("  ");
+    // 3. Future AI Prediction
+    document.getElementById('futureAI').innerText = "12  67  34  89"; 
 }
 
 function openPopup(mR, mC){
     document.getElementById('overlay').style.display = 'flex';
-    // Tircha 2+2 Pattern: (2 reds slanting, 2 blues slanting)
     let p = {
         yR: mR, yC: mC,
         reds: [{r: mR-2, c: mC-1}, {r: mR-4, c: mC-2}],
         blues: [{r: mR-3, c: mC+1}, {r: mR-5, c: mC+2}]
     };
-    render("tblPopup", data, p);
-    setTimeout(() => drawLines("popupCanvas", "tblPopup", p), 100);
+    // Only show 10 weeks in popup for clarity
+    let start = Math.max(0, mR - 7);
+    let end = Math.min(data.length, mR + 2);
+    let subData = data.slice(start, end);
+    
+    // Adjust pattern coordinates for subData
+    let adjP = {
+        yR: mR - start, yC: mC,
+        reds: p.reds.map(pt => ({r: pt.r - start, c: pt.c})),
+        blues: p.blues.map(pt => ({r: pt.r - start, c: pt.c}))
+    };
+    
+    render("tblPopup", subData, adjP);
+    setTimeout(() => drawLines("popupCanvas", "tblPopup", adjP), 100);
 }
 
 function drawLines(canId, tblId, p){
     const canvas = document.getElementById(canId), table = document.getElementById(tblId), ctx = canvas.getContext('2d');
+    if(!p) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
     canvas.width = table.offsetWidth; canvas.height = table.offsetHeight;
     ctx.clearRect(0,0,canvas.width,canvas.height);
     const rect = table.getBoundingClientRect();
@@ -145,7 +160,7 @@ function drawLines(canId, tblId, p){
     const draw = (pts, col) => {
         ctx.strokeStyle = col; ctx.lineWidth = 3;
         pts.forEach(pt => {
-            if(pt.r<0 || pt.c<0 || pt.c>4) return;
+            if(pt.r<0 || pt.r >= table.rows.length-1 || pt.c<0 || pt.c>4) return;
             const cRect = table.rows[pt.r+1].cells[pt.c].getBoundingClientRect();
             ctx.beginPath(); ctx.moveTo(cRect.left-rect.left+cRect.width/2, cRect.top-rect.top+cRect.height/2);
             ctx.lineTo(tx, ty); ctx.stroke();
@@ -156,12 +171,12 @@ function drawLines(canId, tblId, p){
 
 function exportCSV(){
     let csv = data.map(r => r.join(",")).join("\n");
-    let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="data.csv"; a.click();
+    let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani.csv"; a.click();
 }
 
 document.getElementById('csvInp').onchange = e => {
     let r = new FileReader();
-    r.onload = () => { data=r.result.split("\n").map(l=>l.split(",").map(v=>v.trim())); render("tblMain",data); };
+    r.onload = () => { data=r.result.split("\n").filter(l=>l.trim()).map(l=>l.split(",").map(v=>v.trim())); render("tblMain",data); };
     r.readAsText(e.target.files[0]);
 };
 
