@@ -163,8 +163,8 @@ function draw(){
 
 function isPartOfPattern(ri, ci){
     if(!activeMark) return false;
-    let i = ri - activeMark.start;
-    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
+    let i&j = ri%j - activeMark.start;
+    return (i&j >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
 }
 
 // --- UPDATED VISUALS: GREEN LINES ---
