@@ -1,243 +1,216 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Rajdhani Cross Pattern Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajdhani AI Pro – Ultimate</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
-body{font-family:Arial;margin:20px;background:#111;color:#fff}
-table{border-collapse:collapse;margin-top:10px}
-td{
-  border:1px solid #444;
-  width:60px;height:40px;
-  text-align:center;
-  cursor:pointer;
-  position:relative;
-}
-td:hover{background:#222}
-input{margin:5px}
-button{margin:5px;padding:6px 12px}
-#strengthPanel{margin-top:15px;font-size:18px;color:#0f0}
-canvas{
-  position:absolute;
-  top:0;left:0;
-  pointer-events:none;
-}
+:root { --gold:#ffd700; --blue:#3e84ff; --red:#ff3e3e; --bg:#121212; --panel:#1e1e1e; }
+body{font-family:Segoe UI,Arial;background:var(--bg);color:#fff;margin:0;padding:10px}
+h2{color:var(--gold);text-align:center;margin:5px 0}
+.toolbar{background:var(--panel);padding:10px;border-radius:8px;border:1px solid #444;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.table-container{position:relative;display:inline-block;background:#fff;padding:5px;border-radius:5px}
+table{border-collapse:collapse;font-size:12px;color:#000}
+td,th{border:1px solid #ccc;width:35px;height:35px;text-align:center;font-weight:bold}
+th{background:#800000;color:#fff}
+.f1{border:3px solid var(--blue)!important;border-radius:50%}
+.f2{border:3px solid var(--red)!important;border-radius:50%}
+.blank{background:#e0e0e0;cursor:pointer}
+.dashboard{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.card{background:var(--panel);padding:10px;border-radius:8px;border-left:4px solid var(--gold);flex:1;min-width:250px}
+canvas{position:absolute;top:0;left:0;pointer-events:none}
+button{background:var(--gold);border:none;padding:8px 12px;font-weight:bold;border-radius:4px;cursor:pointer}
+#popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;
+border:3px solid var(--gold);display:none;z-index:100;padding:15px;border-radius:8px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;z-index:90}
 </style>
 </head>
+
 <body>
 
-<h2>Rajdhani Cross Pattern System</h2>
+<h2>🏆 Rajdhani AI – CSV & Pattern Pro</h2>
 
-<input type="file" id="csvFile">
-<button onclick="downloadCSV()">Save CSV</button>
-<button onclick="addRow()">Add Row</button>
+<div class="toolbar">
+<input type="file" id="csvFile" accept=".csv" hidden>
+<button onclick="csvFile.click()" style="background:#6f42c1;color:#fff">📂 Upload CSV</button>
+<button onclick="addRow()">➕ Row</button>
+<button onclick="saveData()" style="background:#28a745;color:#fff">💾 Save</button>
+<button onclick="exportImage()" style="background:#17a2b8;color:#fff">📸 Screenshot</button>
+<button onclick="clearData()" style="background:#dc3545;color:#fff">🗑️ Reset</button>
+</div>
 
-<div id="strengthPanel"></div>
+<center>
+<div id="captureArea" class="table-container">
+<canvas id="mainCanvas"></canvas>
+<table id="tbl"></table>
+</div>
+</center>
 
-<div style="position:relative">
-<table id="dataTable"></table>
-<canvas id="canvas"></canvas>
+<div class="dashboard">
+<div class="card"><h3>🎯 Matches</h3><div id="checks"></div></div>
+<div class="card"><h3>🔮 Future AI</h3><div id="future">Select match</div></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+<button onclick="closePopup()" style="float:right;background:#800000;color:#fff">X</button>
+<h3>Connection Detail</h3>
+<div id="popData"></div>
 </div>
 
 <script>
-let data=[];
-let patterns={};
-let maxScan=7;
+const STORAGE_KEY="rajdhani_ai_final";
 
-const table=document.getElementById("dataTable");
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
+const families={
+"12":["12","17","21","26","62","67","71","76"],
+"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],
+"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],
+"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],
+"45":["04","09","40","45","54","59","90","95"]
+};
 
-function resizeCanvas(){
-  canvas.width=table.offsetWidth;
-  canvas.height=table.offsetHeight;
+function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function norm(v){if(!v||v=="**") return "**"; v=v.trim(); return v.length==1?"0"+v:v;}
+
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||[
+["51","91","41","57","19"],
+["05","90","74","06","19"],
+["90","34","82","09","28"],
+["11","17","86","44","00"],
+["**","**","**","**","**"]
+];
+
+let activeMark=null,lastTargetCol=0;
+
+function draw(){
+let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+data.forEach((r,ri)=>{
+h+="<tr>";
+r.forEach((c,ci)=>{
+let p=isPartOfPattern(ri,ci);
+let cls=p==1?"f1":p==2?"f2":"";
+if(c=="**") cls+=" blank";
+h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':''}">${c}</td>`;
+});
+h+="</tr>";
+});
+tbl.innerHTML=h;
 }
-window.onresize=resizeCanvas;
 
-document.getElementById("csvFile").addEventListener("change",function(e){
-  const reader=new FileReader();
-  reader.onload=function(){
-    let rows=reader.result.trim().split("\n");
-    data=rows.map(r=>r.split(","));
-    renderTable();
-  }
-  reader.readAsText(e.target.files[0]);
+function isPartOfPattern(r,c){
+if(!activeMark) return 0;
+let rr=r-activeMark.start;
+if(rr<0||rr>=activeMark.shape.length) return 0;
+return activeMark.shape[rr][c]||0;
+}
+
+csvFile.addEventListener("change",e=>{
+let file=e.target.files[0]; if(!file) return;
+let reader=new FileReader();
+reader.onload=ev=>{
+let rows=ev.target.result.split(/\r?\n/).filter(r=>r.trim());
+data=rows.map(r=>{
+let c=r.split(",").map(v=>norm(v));
+while(c.length<5) c.push("**");
+return c.slice(0,5);
+});
+activeMark=null; draw();
+alert("CSV Loaded ✅");
+};
+reader.readAsText(file);
 });
 
-function renderTable(){
-  table.innerHTML="";
-  data.forEach((row,r)=>{
-    let tr=document.createElement("tr");
-    row.forEach((cell,c)=>{
-      let td=document.createElement("td");
-      td.textContent=cell;
-      td.dataset.row=r;
-      td.dataset.col=c;
-      td.onclick=cellClick;
-      tr.appendChild(td);
-    });
-    table.appendChild(tr);
-  });
-  resizeCanvas();
+function makePattern(r,c){
+lastTargetCol=c;
+let famPos={},start=Math.max(0,r-5);
+for(let i=start;i<=r;i++){
+for(let j=0;j<5;j++){
+let v=data[i][j];
+if(v!="**"){
+let f=fam(v);
+famPos[f]=famPos[f]||[];
+if(famPos[f].length<2) famPos[f].push({i,j});
+}
+}
+}
+let fams=Object.keys(famPos).filter(f=>famPos[f].length==2).slice(0,2);
+if(fams.length<2){alert("Pattern nahi mila");return;}
+let shape=Array.from({length:r-start+1},()=>Array(5).fill(0));
+fams.forEach((f,idx)=>famPos[f].forEach(p=>shape[p.i-start][p.j]=idx+1));
+searchPattern(shape,fams);
 }
 
-function cellClick(e){
-  let r=parseInt(this.dataset.row);
-  let c=parseInt(this.dataset.col);
-
-  if(this.textContent==="**"){
-    let id=r+"_"+c;
-    let pattern=buildCrossPattern(r,c);
-    patterns[id]=pattern;
-    let matches=matchPattern(pattern);
-    drawMatches(matches);
-    showStrength(matches);
-  }else{
-    let val=prompt("Edit value:",this.textContent);
-    if(val!==null){
-      data[r][c]=val.padStart(2,"0");
-      renderTable();
-    }
-  }
+function searchPattern(shape,fams){
+let m=[];
+for(let i=0;i<=data.length-shape.length;i++){
+let ok=true;
+for(let r=0;r<shape.length;r++){
+for(let c=0;c<5;c++){
+if(shape[r][c]==1&&fam(data[i+r][c])!=fams[0]) ok=false;
+if(shape[r][c]==2&&fam(data[i+r][c])!=fams[1]) ok=false;
+}
+}
+if(ok) m.push({index:i});
+}
+showMatches(shape,m.slice(0,3));
 }
 
-function addRow(){
-  let cols=data[0]?.length||7;
-  let newRow=new Array(cols).fill("**");
-  data.push(newRow);
-  renderTable();
+function showMatches(shape,m){
+checks.innerHTML="";
+m.forEach((x,i)=>{
+let b=document.createElement("button");
+b.textContent=`Match ${i+1} (Row ${x.index+1})`;
+b.style="width:100%;margin-bottom:5px";
+b.onclick=()=>{activeMark={start:x.index,shape};draw();predictFuture(m);openPopup(x.index,shape);}
+checks.appendChild(b);
+});
 }
 
-function downloadCSV(){
-  let csv=data.map(r=>r.join(",")).join("\n");
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="updated.csv";
-  a.click();
+function predictFuture(m){
+let p=[];
+m.forEach(x=>{
+let nr=x.index+activeMark.shape.length;
+if(nr<data.length&&data[nr][lastTargetCol]!="**") p.push(data[nr][lastTargetCol]);
+});
+future.innerHTML=p.length?`<b>AI:</b> ${[...new Set(p)].join(", ")}`:"No data";
 }
 
-function fam(num){
-  if(num==="**")return null;
-  const map={
-    "12":["12","17","21","26","62","67","71","76"],
-    "13":["13","18","31","36","63","68","81","86"],
-    "14":["14","19","41","46","64","69","91","96"],
-    "15":["01","06","10","15","51","56","60","65"],
-    "23":["23","28","32","37","73","78","82","87"],
-    "24":["24","29","42","47","74","79","92","97"],
-    "25":["02","07","20","25","52","57","70","75"],
-    "34":["34","39","43","48","84","89","93","98"],
-    "35":["03","08","30","35","53","58","80","85"],
-    "45":["04","09","40","45","54","59","90","95"],
-    "HR":["05","16","27","38","49","50","61","72","83","94"],
-    "FR":["00","11","22","33","44","55","66","77","88","99"]
-  };
-  for(let k in map){
-    if(map[k].includes(num))return k;
-  }
-  return null;
+function openPopup(i,shape){
+let h="<table>";
+for(let r=0;r<shape.length;r++){
+h+="<tr>";
+for(let c=0;c<5;c++){
+let cls=shape[r][c]==1?"f1":shape[r][c]==2?"f2":"";
+h+=`<td class="${cls}">${data[i+r][c]}</td>`;
+}
+h+="</tr>";
+}
+popData.innerHTML=h+"</table>";
+popup.style.display=overlay.style.display="block";
 }
 
-function buildCrossPattern(r,c){
-  let collected=[];
-  for(let i=r-1;i>=Math.max(0,r-maxScan);i--){
-    let val=data[i][c];
-    if(val!=="**")collected.push(val);
-  }
-
-  let familyCount={};
-  collected.forEach(v=>{
-    let f=fam(v);
-    if(!familyCount[f])familyCount[f]=[];
-    if(familyCount[f].length<2)
-      familyCount[f].push(v);
-  });
-
-  let sorted=Object.keys(familyCount)
-    .sort((a,b)=>familyCount[b].length-familyCount[a].length)
-    .slice(0,2);
-
-  return{
-    base:[r,c],
-    families:sorted,
-    leftUp:fam(data[r-1]?.[c-1]),
-    rightUp:fam(data[r-1]?.[c+1]),
-    topMid:fam(data[r-2]?.[c])
-  };
+function exportImage(){
+html2canvas(captureArea).then(c=>{
+let a=document.createElement("a");
+a.download="rajdhani_ai.png";
+a.href=c.toDataURL(); a.click();
+});
 }
 
-function matchPattern(current){
-  let matches=[];
-  for(let r=2;r<data.length;r++){
-    for(let c=1;c<data[0].length-1;c++){
-      let test=buildCrossPattern(r,c);
-      let score=0;
+function edit(r,c,e){data[r][c]=norm(e.innerText);}
+function addRow(){data.push(["**","**","**","**","**"]);draw();}
+function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
+function clearData(){if(confirm("Clear?")){localStorage.clear();location.reload();}}
+function closePopup(){popup.style.display=overlay.style.display="none";}
 
-      if(JSON.stringify(test.families)===JSON.stringify(current.families))
-        score+=50;
-
-      if(test.leftUp===current.leftUp &&
-         test.rightUp===current.rightUp)
-        score+=30;
-
-      if(test.topMid===current.topMid)
-        score+=20;
-
-      if(score>=80)
-        matches.push({r,c,score});
-    }
-  }
-  return matches;
-}
-
-function center(td){
-  let rect=td.getBoundingClientRect();
-  let parent=table.getBoundingClientRect();
-  return{
-    x:rect.left-parent.left+rect.width/2,
-    y:rect.top-parent.top+rect.height/2
-  };
-}
-
-function drawMatches(matches){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  matches.forEach(m=>{
-    let r=m.r,c=m.c;
-    let base=table.rows[r].cells[c];
-    let l=table.rows[r-1].cells[c-1];
-    let ri=table.rows[r-1].cells[c+1];
-    let t=table.rows[r-2].cells[c];
-
-    let b=center(base);
-    let cl=center(l);
-    let cr=center(ri);
-    let ct=center(t);
-
-    ctx.beginPath();
-    ctx.moveTo(b.x,b.y);
-    ctx.lineTo(cl.x,cl.y);
-    ctx.moveTo(b.x,b.y);
-    ctx.lineTo(cr.x,cr.y);
-    ctx.moveTo(cl.x,cl.y);
-    ctx.lineTo(ct.x,ct.y);
-    ctx.moveTo(cr.x,cr.y);
-    ctx.lineTo(ct.x,ct.y);
-    ctx.strokeStyle="lime";
-    ctx.stroke();
-  });
-}
-
-function showStrength(matches){
-  if(matches.length===0){
-    document.getElementById("strengthPanel").innerText="No Strong Match";
-  }else{
-    let max=Math.max(...matches.map(m=>m.score));
-    document.getElementById("strengthPanel").innerText=
-      "Strongest Pattern: "+max+"%  | Matches: "+matches.length;
-  }
-}
+draw();
 </script>
-
 </body>
 </html>
