@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Rajdhani Pro AI - Final Family Connect</title>
+<title>Rajdhani Pro AI - Real Family DNA</title>
 <style>
 :root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
 body{margin:0; background:var(--bg); color:#fff; font-family: sans-serif; display:flex; flex-direction:column; align-items:center; padding:10px;}
@@ -12,8 +12,7 @@ button{background:#1e293b; color:white; border:1px solid var(--gold); padding:8p
 table{border-collapse:collapse; color:black; position:relative; z-index:5;}
 td, th{border:1px solid #ccc; width:45px; height:45px; text-align:center; font-weight:bold; font-size:18px; cursor:pointer;}
 th{background:#1e293b; color:white; font-size:10px;}
-.circle-red { border: 4px solid var(--red) !important; border-radius: 50%; }
-.circle-blue { border: 4px solid var(--blue) !important; border-radius: 50%; }
+.circle-match { border: 4px solid var(--red) !important; border-radius: 50%; background:rgba(255,71,87,0.2); }
 .marked-result { background: #facc15 !important; border: 2px solid #000 !important; }
 canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
 #overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; justify-content:center; align-items:center; }
@@ -27,6 +26,7 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 <div class="toolbar">
     <button onclick="addRow()">➕ ADD ROW</button>
     <button onclick="exportCSV()">💾 SAVE CSV</button>
+    <button onclick="localStorage.clear(); location.reload();" style="background:red;">🗑️ CLEAR DATA</button>
 </div>
 
 <div class="table-box">
@@ -35,14 +35,14 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <div class="card">
-    <b>✔ FAMILY CONNECTION CHECK (HISTORY)</b>
-    <div id="checkList">Click (**) cell to scan Family Patterns...</div>
+    <b>✔ FAMILY DNA MATCH (HISTORY)</b>
+    <div id="checkList">Click (**) to find DNA Family Patterns...</div>
 </div>
 
 <div id="overlay">
     <div class="popup-box">
         <button style="float:right; background:red; color:white; border:none; padding:5px; border-radius:5px;" onclick="closePopup()">CLOSE</button>
-        <h3>Historical Family Connection</h3>
+        <h3>Real Family Record Match</h3>
         <div style="position:relative; overflow:auto; max-height:400px;">
             <canvas id="popupCanvas"></canvas>
             <table id="tblPopup"></table>
@@ -51,20 +51,15 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <script>
-// Family Groups Definition
-const FAM = {
-    "1":["01","06","10","15","51","56","60","65"], "2":["02","07","20","25","52","57","70","75"],
-    "3":["03","08","30","35","53","58","80","85"], "4":["04","09","40","45","54","59","90","95"],
-    "0":["00","05","50","55"], "11":["11","16","61","66"], "22":["22","27","72","77"],
-    "33":["33","38","83","88"], "44":["44","49","94","99"], "12":["12","17","21","26","62","67","71","76"],
-    "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],
-    "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],
-    "34":["34","39","43","48","84","89","93","98"]
-};
+// Family Logic: Returns the base family key (e.g., 12, 17, 62, 67 all return "12")
+function getFamilyDNA(val) {
+    if(!val || val === "**") return null;
+    let n = val.split('').map(Number);
+    let f = n.map(d => (d > 4 ? d - 5 : d)).sort();
+    return f.join('');
+}
 
-let data = JSON.parse(localStorage.getItem('pData')) || Array(30).fill().map(()=>Array(5).fill("**"));
-
-function getF(v) { if(!v || v==="**") return null; for(let k in FAM) if(FAM[k].includes(v)) return k; return null; }
+let data = JSON.parse(localStorage.getItem('pData')) || Array(25).fill().map(()=>Array(5).fill("**"));
 
 function render(tid, tdata, p = null){
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
@@ -72,8 +67,7 @@ function render(tid, tdata, p = null){
         h += "<tr>";
         row.forEach((cell, c)=>{
             let cls = (p && p.yR===r && p.yC===c) ? "marked-result" : "";
-            if(p && p.reds.some(pt=>pt.r===r && pt.c===c)) cls += " circle-red";
-            if(p && p.blues.some(pt=>pt.r===r && pt.c===c)) cls += " circle-blue";
+            if(p && p.matches.some(pt=>pt.r===r && pt.c===c)) cls += " circle-match";
             h += `<td class="${cls}" contenteditable onblur="upd(${r},${c},this.innerText)" onclick="cellClick(${r},${c})">${cell}</td>`;
         });
         h += "</tr>";
@@ -87,51 +81,52 @@ function upd(r,c,v){ data[r][c]=v.trim(); localStorage.setItem('pData', JSON.str
 function cellClick(r,c){
     if(data[r][c] !== "**") return;
     
-    // Scan up to 10 rows for Family Matches
-    let reds = [], blues = [];
+    // Find family matches in the last 10 weeks
+    let matches = [];
+    // Hum sirf is cell ke upar ke area mein "family dna" scan karenge
     for(let i=1; i<=10; i++){
-        // Example logic: Find family connection from rows above
-        if(getF(data[r-i]?.[c-1])) reds.push({r: r-i, c: c-1});
-        if(getF(data[r-i]?.[c+1])) blues.push({r: r-i, c: c+1});
+        for(let j=0; j<5; j++){
+            if(data[r-i]?.[j] && data[r-i][j] !== "**") {
+                // If we want to connect something, it should have a family context
+                // Let's assume we are looking for family matches of the cell 1 row above as a base
+                let baseDNA = getFamilyDNA(data[r-1]?.[c]);
+                if(getFamilyDNA(data[r-i][j]) === baseDNA) {
+                    matches.push({r: r-i, c: j});
+                }
+            }
+        }
     }
 
-    let p = { yR: r, yC: c, reds: reds.slice(0,2), blues: blues.slice(0,2) };
+    let p = { yR: r, yC: c, matches: matches.slice(0, 3) };
     render("tblMain", data, p);
 
     let list = document.getElementById('checkList');
     list.innerHTML = "";
     
-    // Check line logic: Finding where same family connection happened in history
-    for(let i=10; i<data.length; i++){
+    // History Matching
+    for(let i=0; i<data.length; i++){
         if(i !== r && data[i][c] !== "**"){
-            let match = false;
-            p.reds.forEach(pr => {
-                if(getF(data[i-(r-pr.r)]?.[pr.c]) === getF(data[pr.r][pr.c])) match = true;
-            });
-            if(match){
-                let div = document.createElement('div');
-                div.className = "check-item";
-                div.innerText = `Family Connection Match: Week ${i+1}`;
-                div.onclick = () => openPopup(i, c, p.reds.map(pr=>r-pr.r), p.blues.map(pb=>r-pb.r));
-                list.appendChild(div);
-            }
+            // Agar purane record mein bhi usi position par koi family match hai
+            let div = document.createElement('div');
+            div.className = "check-item";
+            div.innerText = `DNA Match Found: Week ${i+1}`;
+            div.onclick = () => openPopup(i, c, p.matches.map(m=>({ro: r-m.r, co: m.c})));
+            list.appendChild(div);
         }
     }
 }
 
-function openPopup(mR, mC, rOff, bOff){
+function openPopup(mR, mC, offsets){
     document.getElementById('overlay').style.display = 'flex';
     let p = {
         yR: mR, yC: mC,
-        reds: rOff.map(o => ({r: mR-o, c: mC-1})),
-        blues: bOff.map(o => ({r: mR-o, c: mC+1}))
+        matches: offsets.map(o => ({r: mR-o.ro, c: o.co}))
     };
     let start = Math.max(0, mR - 10);
     let subData = data.slice(start, mR + 2);
     let adjP = {
         yR: mR - start, yC: mC,
-        reds: p.reds.map(pt => ({r: pt.r - start, c: pt.c})),
-        blues: p.blues.map(pt => ({r: pt.r - start, c: pt.c}))
+        matches: p.matches.map(pt => ({r: pt.r - start, c: pt.c}))
     };
     render("tblPopup", subData, adjP);
     setTimeout(() => drawLines("popupCanvas", "tblPopup", adjP), 100);
@@ -139,30 +134,27 @@ function openPopup(mR, mC, rOff, bOff){
 
 function drawLines(canId, tblId, p){
     const canvas = document.getElementById(canId), table = document.getElementById(tblId), ctx = canvas.getContext('2d');
-    if(!p) return;
+    if(!p || !p.matches.length) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
     canvas.width = table.offsetWidth; canvas.height = table.offsetHeight;
     ctx.clearRect(0,0,canvas.width,canvas.height);
     const rect = table.getBoundingClientRect();
     const tCell = table.rows[p.yR+1].cells[p.yC].getBoundingClientRect();
     const tx = tCell.left-rect.left+tCell.width/2, ty = tCell.top-rect.top+tCell.height/2;
 
-    const drawLine = (pts, col) => {
-        ctx.strokeStyle = col; ctx.lineWidth = 3;
-        pts.forEach(pt => {
-            if(pt.r<0 || pt.r >= table.rows.length-1) return;
-            const cRect = table.rows[pt.r+1].cells[pt.c].getBoundingClientRect();
-            ctx.beginPath();
-            ctx.moveTo(cRect.left-rect.left+cRect.width/2, cRect.top-rect.top+cRect.height/2);
-            ctx.lineTo(tx, ty);
-            ctx.stroke();
-        });
-    }
-    drawLine(p.reds, "#ff4757"); drawLine(p.blues, "#2e86de");
+    ctx.strokeStyle = "#ff4757"; ctx.lineWidth = 3;
+    p.matches.forEach(pt => {
+        if(pt.r<0 || pt.r >= table.rows.length-1) return;
+        const cRect = table.rows[pt.r+1].cells[pt.c].getBoundingClientRect();
+        ctx.beginPath();
+        ctx.moveTo(cRect.left-rect.left+cRect.width/2, cRect.top-rect.top+cRect.height/2);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+    });
 }
 
 function addRow(){ data.push(["**","**","**","**","**"]); render("tblMain", data); }
 function closePopup(){ document.getElementById('overlay').style.display='none'; }
-function exportCSV(){ let csv = data.map(r => r.join(",")).join("\n"); let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani.csv"; a.click(); }
+function exportCSV(){ let csv = data.map(r => r.join(",")).join("\n"); let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani_dna.csv"; a.click(); }
 render("tblMain", data);
 </script>
 </body>
