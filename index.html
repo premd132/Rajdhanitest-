@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan Pro AI – Ultimate v10</title>
+<title>Kalyan Pro AI – Flow Match v11</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#ffd700;--blue:#0084ff;--red:#ff4d4d;--bg:#0f172a;--panel:#1e293b;}
@@ -19,23 +19,8 @@ th{background:#1e293b;color:white;font-size:12px;}
 .card{background:var(--panel);margin:15px;padding:15px;border-radius:12px;border-left:5px solid var(--gold);}
 .check-item{background:#0f172a;padding:10px;margin-top:6px;border-radius:6px;cursor:pointer;}
 button{cursor:pointer;border:none;font-weight:bold;padding:10px 20px;border-radius:5px;}
-#popup{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.8);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:999;
-}
-#popupContent{
-background:white;
-color:black;
-padding:20px;
-border-radius:10px;
-max-height:80vh;
-overflow:auto;
-}
+#popup{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;}
+#popupContent{background:white;color:black;padding:20px;border-radius:10px;max-height:80vh;overflow:auto;}
 </style>
 </head>
 <body>
@@ -55,19 +40,18 @@ overflow:auto;
 </div>
 
 <div class="card">
-<h3 style="margin:0;color:var(--gold)">✔ CHECK LINES (2.2 Pattern)</h3>
+<h3 style="margin:0;color:var(--gold)">✔ CHECK LINES (Exact Flow Match)</h3>
 <div id="checks">Upload CSV and click a blank cell...</div>
 <div id="futureAI" style="margin-top:10px;color:gold;font-weight:bold;"></div>
 </div>
 
-<!-- Popup -->
 <div id="popup" onclick="this.style.display='none'">
 <div id="popupContent" onclick="event.stopPropagation()"></div>
 </div>
 
 <script>
 
-const STORAGE_KEY="kalyan_pro_v10";
+const STORAGE_KEY="kalyan_flow_v11";
 
 const FAMILY={
 "01":["01","06","10","15","51","56","60","65"],
@@ -84,7 +68,7 @@ let currentPat=null;
 
 function getFam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null;}
 
-/* CSV Upload */
+/* CSV */
 csvFile.addEventListener("change",function(e){
 const file=e.target.files[0];
 if(!file)return;
@@ -102,12 +86,11 @@ return v.length===1?"0"+v:v;
 });
 localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
 draw();
-alert("CSV Loaded: "+data.length+" rows");
 };
 reader.readAsText(file);
 });
 
-/* Draw Table */
+/* Draw */
 function draw(){
 let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
 data.forEach((row,ri)=>{
@@ -127,19 +110,18 @@ tbl.innerHTML=h;
 document.querySelectorAll("#tbl td").forEach(td=>{
 let r=parseInt(td.dataset.r);
 let c=parseInt(td.dataset.c);
-
 td.addEventListener("click",function(){
 if(data[r][c]=="**") analyze(r,c);
 });
-
 td.addEventListener("blur",function(){
 data[r][c]=td.innerText.trim();
 });
 });
 }
 
-/* Analyze Pattern */
+/* Analyze */
 function analyze(r,c){
+
 let p1=[],p2=[],f1=null,f2=null;
 
 for(let i=r-1;i>=0;i--){
@@ -169,45 +151,68 @@ findChecks();
 showFutureAI();
 }
 
-/* Find Check Lines */
+/* Exact Flow Match */
 function findChecks(){
+
 checks.innerHTML="";
 let count=0;
 
-for(let i=0;i<data.length-3;i++){
-let fams=[], pts1=[], pts2=[];
-for(let k=0;k<4;k++){
+let f1=currentPat.f1;
+let f2=currentPat.f2;
+
+let d1r=currentPat.p1[1].r-currentPat.p1[0].r;
+let d1c=currentPat.p1[1].c-currentPat.p1[0].c;
+
+let d2r=currentPat.p2[1].r-currentPat.p2[0].r;
+let d2c=currentPat.p2[1].c-currentPat.p2[0].c;
+
+for(let i=0;i<data.length;i++){
 for(let j=0;j<6;j++){
-let v=data[i+k][j];
-if(v!="**"){
-let fam=getFam(v);
-fams.push(fam);
-if(fam===currentPat.f1)pts1.push({r:i+k,c:j});
-if(fam===currentPat.f2)pts2.push({r:i+k,c:j});
-}
-}
-}
 
-let c1=fams.filter(x=>x===currentPat.f1).length;
-let c2=fams.filter(x=>x===currentPat.f2).length;
+if(getFam(data[i][j])===f1){
 
-if(c1>=2 && c2>=2){
+let r2=i+d1r;
+let c2=j+d1c;
+
+if(data[r2] && data[r2][c2] && getFam(data[r2][c2])===f1){
+
+for(let x=0;x<data.length;x++){
+for(let y=0;y<6;y++){
+
+if(getFam(data[x][y])===f2){
+
+let r4=x+d2r;
+let c4=y+d2c;
+
+if(data[r4] && data[r4][c4] && getFam(data[r4][c4])===f2){
+
 count++;
+
+let pts1=[{r:i,c:j},{r:r2,c:c2}];
+let pts2=[{r:x,c:y},{r:r4,c:c4}];
+
 let div=document.createElement("div");
 div.className="check-item";
-div.innerText="Check Line "+count+" (Row "+(i+1)+")";
+div.innerText="Check Line "+count;
 div.onclick=function(){showPopup(pts1,pts2);};
 checks.appendChild(div);
+
+if(count===4) return;
+
 }
-if(count===4)break;
+}
+}
+}
+}
+}
 }
 
-if(count===0)checks.innerHTML="No matching pattern found.";
+if(count===0) checks.innerHTML="No exact flow match found.";
 }
 
 /* Popup */
 function showPopup(p1,p2){
-let html="<h3>Pattern Match</h3><table border='1' style='border-collapse:collapse'>";
+let html="<h3>Exact Flow Match</h3><table border='1' style='border-collapse:collapse'>";
 data.forEach((row,ri)=>{
 html+="<tr>";
 row.forEach((cell,ci)=>{
