@@ -1,142 +1,243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Kalyan Pro AI – v8 Final</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --gold: #ffd700; --blue-c: #0084ff; --red-c: #ff4d4d; --bg: #0f172a; --panel: #1e293b; }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; }
-        .toolbar { background: var(--panel); padding: 15px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; }
-        .table-outer { padding: 20px; display: flex; justify-content: center; overflow-x: auto; }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; width: 50px; height: 50px; text-align: center; font-weight: bold; position: relative; cursor: pointer; }
-        th { background: #1e293b; color: white; }
-        .circle-f1 { border: 3px solid var(--blue-c) !important; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: rgba(0, 132, 255, 0.1); }
-        .circle-f2 { border: 3px solid var(--red-c) !important; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 77, 77, 0.1); }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-        .card { background: var(--panel); margin: 20px; padding: 15px; border-radius: 12px; border-left: 5px solid var(--gold); }
-        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 20px; border-radius: 5px; }
-    </style>
+<meta charset="UTF-8">
+<title>Rajdhani Cross Pattern Pro</title>
+<style>
+body{font-family:Arial;margin:20px;background:#111;color:#fff}
+table{border-collapse:collapse;margin-top:10px}
+td{
+  border:1px solid #444;
+  width:60px;height:40px;
+  text-align:center;
+  cursor:pointer;
+  position:relative;
+}
+td:hover{background:#222}
+input{margin:5px}
+button{margin:5px;padding:6px 12px}
+#strengthPanel{margin-top:15px;font-size:18px;color:#0f0}
+canvas{
+  position:absolute;
+  top:0;left:0;
+  pointer-events:none;
+}
+</style>
 </head>
 <body>
 
-<div class="toolbar">
-    <input type="file" id="csvFile" accept=".csv" style="display:none">
-    <button onclick="document.getElementById('csvFile').click()" style="background: var(--gold); color: #000;">📂 UPLOAD CSV</button>
-    <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
-    <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
-</div>
+<h2>Rajdhani Cross Pattern System</h2>
 
-<div class="table-outer">
-    <div class="table-container">
-        <canvas id="mainCanvas"></canvas>
-        <table id="tbl"></table>
-    </div>
-</div>
+<input type="file" id="csvFile">
+<button onclick="downloadCSV()">Save CSV</button>
+<button onclick="addRow()">Add Row</button>
 
-<div class="card">
-    <h3 style="margin:0; color:var(--gold);">✔ PATTERN STATUS</h3>
-    <div id="status">Upload file and click a blank (**) cell...</div>
+<div id="strengthPanel"></div>
+
+<div style="position:relative">
+<table id="dataTable"></table>
+<canvas id="canvas"></canvas>
 </div>
 
 <script>
-const FAMILY = {
- "01":["01","06","10","15","51","56","60","65"], "02":["02","07","20","25","52","57","70","75"],
- "03":["03","08","30","35","53","58","80","85"], "04":["04","09","40","45","54","59","90","95"],
- "11":["11","16","61","66"], "22":["22","27","72","77"], "33":["33","38","83","88"]
-};
+let data=[];
+let patterns={};
+let maxScan=7;
 
-let data = JSON.parse(localStorage.getItem("kalyan_v8")) || Array(10).fill().map(()=>Array(6).fill("**"));
-let currentPat = null;
+const table=document.getElementById("dataTable");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
 
-function getFam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return null;}
+function resizeCanvas(){
+  canvas.width=table.offsetWidth;
+  canvas.height=table.offsetHeight;
+}
+window.onresize=resizeCanvas;
 
-// CSV Fix:
-document.getElementById('csvFile').onchange = function(e) {
-    const reader = new FileReader();
-    reader.onload = function() {
-        const rows = reader.result.split('\n').filter(r => r.trim());
-        data = rows.map(r => r.split(',').map(c => {
-            let v = c.trim();
-            return v === "" ? "**" : (v.length === 1 ? "0"+v : v);
-        }));
-        currentPat = null; // Reset pattern on new upload
-        draw();
-    };
-    reader.readAsText(e.target.files[0]);
-};
+document.getElementById("csvFile").addEventListener("change",function(e){
+  const reader=new FileReader();
+  reader.onload=function(){
+    let rows=reader.result.trim().split("\n");
+    data=rows.map(r=>r.split(","));
+    renderTable();
+  }
+  reader.readAsText(e.target.files[0]);
+});
 
-function draw(){
-    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((r, ri) => {
-        h += "<tr>";
-        r.forEach((c, ci) => {
-            let content = c;
-            if(currentPat){
-                if(currentPat.p1.some(p => p.r === ri && p.c === ci)) content = `<span class="circle-f1">${c}</span>`;
-                if(currentPat.p2.some(p => p.r === ri && p.c === ci)) content = `<span class="circle-f2">${c}</span>`;
-            }
-            h += `<td onclick="cellClick(${ri},${ci})">${content}</td>`;
-        });
-        h += "</tr>";
+function renderTable(){
+  table.innerHTML="";
+  data.forEach((row,r)=>{
+    let tr=document.createElement("tr");
+    row.forEach((cell,c)=>{
+      let td=document.createElement("td");
+      td.textContent=cell;
+      td.dataset.row=r;
+      td.dataset.col=c;
+      td.onclick=cellClick;
+      tr.appendChild(td);
     });
-    document.getElementById("tbl").innerHTML = h;
-    if(currentPat) setTimeout(drawLines, 50);
+    table.appendChild(tr);
+  });
+  resizeCanvas();
 }
 
-function cellClick(r, c) {
-    if(data[r][c] !== "**") return; // Only work on blank cells
-    
-    let p1 = [], p2 = [], f1 = null, f2 = null;
-    // Scan up to 10 rows for 2 families (2.2)
-    for(let i = r-1; i >= 0 && i >= r-10; i--){
-        for(let j = 0; j < 6; j++){
-            let v = data[i][j]; if(v=="**") continue;
-            let fam = getFam(v);
-            if(!f1) { f1 = fam; p1.push({r:i, c:j}); }
-            else if(fam === f1 && p1.length < 2) p1.push({r:i, c:j});
-            else if(!f2 && fam !== f1) { f2 = fam; p2.push({r:i, c:j}); }
-            else if(fam === f2 && p2.length < 2) p2.push({r:i, c:j});
-        }
+function cellClick(e){
+  let r=parseInt(this.dataset.row);
+  let c=parseInt(this.dataset.col);
+
+  if(this.textContent==="**"){
+    let id=r+"_"+c;
+    let pattern=buildCrossPattern(r,c);
+    patterns[id]=pattern;
+    let matches=matchPattern(pattern);
+    drawMatches(matches);
+    showStrength(matches);
+  }else{
+    let val=prompt("Edit value:",this.textContent);
+    if(val!==null){
+      data[r][c]=val.padStart(2,"0");
+      renderTable();
     }
+  }
+}
 
-    if(p1.length < 2 || p2.length < 2) {
-        document.getElementById("status").innerText = "Error: Need 2 different families above!";
-        return;
+function addRow(){
+  let cols=data[0]?.length||7;
+  let newRow=new Array(cols).fill("**");
+  data.push(newRow);
+  renderTable();
+}
+
+function downloadCSV(){
+  let csv=data.map(r=>r.join(",")).join("\n");
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="updated.csv";
+  a.click();
+}
+
+function fam(num){
+  if(num==="**")return null;
+  const map={
+    "12":["12","17","21","26","62","67","71","76"],
+    "13":["13","18","31","36","63","68","81","86"],
+    "14":["14","19","41","46","64","69","91","96"],
+    "15":["01","06","10","15","51","56","60","65"],
+    "23":["23","28","32","37","73","78","82","87"],
+    "24":["24","29","42","47","74","79","92","97"],
+    "25":["02","07","20","25","52","57","70","75"],
+    "34":["34","39","43","48","84","89","93","98"],
+    "35":["03","08","30","35","53","58","80","85"],
+    "45":["04","09","40","45","54","59","90","95"],
+    "HR":["05","16","27","38","49","50","61","72","83","94"],
+    "FR":["00","11","22","33","44","55","66","77","88","99"]
+  };
+  for(let k in map){
+    if(map[k].includes(num))return k;
+  }
+  return null;
+}
+
+function buildCrossPattern(r,c){
+  let collected=[];
+  for(let i=r-1;i>=Math.max(0,r-maxScan);i--){
+    let val=data[i][c];
+    if(val!=="**")collected.push(val);
+  }
+
+  let familyCount={};
+  collected.forEach(v=>{
+    let f=fam(v);
+    if(!familyCount[f])familyCount[f]=[];
+    if(familyCount[f].length<2)
+      familyCount[f].push(v);
+  });
+
+  let sorted=Object.keys(familyCount)
+    .sort((a,b)=>familyCount[b].length-familyCount[a].length)
+    .slice(0,2);
+
+  return{
+    base:[r,c],
+    families:sorted,
+    leftUp:fam(data[r-1]?.[c-1]),
+    rightUp:fam(data[r-1]?.[c+1]),
+    topMid:fam(data[r-2]?.[c])
+  };
+}
+
+function matchPattern(current){
+  let matches=[];
+  for(let r=2;r<data.length;r++){
+    for(let c=1;c<data[0].length-1;c++){
+      let test=buildCrossPattern(r,c);
+      let score=0;
+
+      if(JSON.stringify(test.families)===JSON.stringify(current.families))
+        score+=50;
+
+      if(test.leftUp===current.leftUp &&
+         test.rightUp===current.rightUp)
+        score+=30;
+
+      if(test.topMid===current.topMid)
+        score+=20;
+
+      if(score>=80)
+        matches.push({r,c,score});
     }
-    currentPat = { p1, p2 };
-    document.getElementById("status").innerHTML = `Match Found! <b style='color:var(--blue-c)'>Family ${f1}</b> & <b style='color:var(--red-c)'>Family ${f2}</b>`;
-    draw();
+  }
+  return matches;
 }
 
-function drawLines() {
-    const cvs = document.getElementById("mainCanvas");
-    const tbl = document.getElementById("tbl");
-    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-    const ctx = cvs.getContext("2d");
-    ctx.lineWidth = 3;
-
-    const connect = (pts, col) => {
-        ctx.strokeStyle = col; ctx.beginPath();
-        pts.forEach((p, i) => {
-            let cell = tbl.rows[p.r + 1].cells[p.c]; // +1 because of header row
-            let x = cell.offsetLeft + cell.offsetWidth/2;
-            let y = cell.offsetTop + cell.offsetHeight/2;
-            if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-    };
-    connect(currentPat.p1, "#0084ff");
-    connect(currentPat.p2, "#ff4d4d");
+function center(td){
+  let rect=td.getBoundingClientRect();
+  let parent=table.getBoundingClientRect();
+  return{
+    x:rect.left-parent.left+rect.width/2,
+    y:rect.top-parent.top+rect.height/2
+  };
 }
 
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem("kalyan_v8", JSON.stringify(data)); alert("Data Saved!"); }
+function drawMatches(matches){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  matches.forEach(m=>{
+    let r=m.r,c=m.c;
+    let base=table.rows[r].cells[c];
+    let l=table.rows[r-1].cells[c-1];
+    let ri=table.rows[r-1].cells[c+1];
+    let t=table.rows[r-2].cells[c];
 
-draw();
+    let b=center(base);
+    let cl=center(l);
+    let cr=center(ri);
+    let ct=center(t);
+
+    ctx.beginPath();
+    ctx.moveTo(b.x,b.y);
+    ctx.lineTo(cl.x,cl.y);
+    ctx.moveTo(b.x,b.y);
+    ctx.lineTo(cr.x,cr.y);
+    ctx.moveTo(cl.x,cl.y);
+    ctx.lineTo(ct.x,ct.y);
+    ctx.moveTo(cr.x,cr.y);
+    ctx.lineTo(ct.x,ct.y);
+    ctx.strokeStyle="lime";
+    ctx.stroke();
+  });
+}
+
+function showStrength(matches){
+  if(matches.length===0){
+    document.getElementById("strengthPanel").innerText="No Strong Match";
+  }else{
+    let max=Math.max(...matches.map(m=>m.score));
+    document.getElementById("strengthPanel").innerText=
+      "Strongest Pattern: "+max+"%  | Matches: "+matches.length;
+  }
+}
 </script>
+
 </body>
 </html>
