@@ -1,283 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Kalyan Pro AI – Flow Match v11</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root{--gold:#ffd700;--blue:#0084ff;--red:#ff4d4d;--bg:#0f172a;--panel:#1e293b;}
-*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{margin:0;background:var(--bg);color:#fff;}
-.toolbar{background:var(--panel);padding:15px;display:flex;gap:10px;justify-content:center;border-bottom:2px solid var(--gold);}
-.table-outer{padding:20px;display:flex;justify-content:center;}
-.table-container{background:#fff;border-radius:10px;padding:10px;overflow:auto;}
-table{border-collapse:collapse;color:#000;}
-td,th{border:1px solid #ddd;width:50px;height:50px;text-align:center;font-weight:bold;}
-th{background:#1e293b;color:white;font-size:12px;}
-.circle-f1{border:3px solid var(--blue);border-radius:50%;padding:4px;}
-.circle-f2{border:3px solid var(--red);border-radius:50%;padding:4px;}
-.card{background:var(--panel);margin:15px;padding:15px;border-radius:12px;border-left:5px solid var(--gold);}
-.check-item{background:#0f172a;padding:10px;margin-top:6px;border-radius:6px;cursor:pointer;}
-button{cursor:pointer;border:none;font-weight:bold;padding:10px 20px;border-radius:5px;}
-#popup{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;}
-#popupContent{background:white;color:black;padding:20px;border-radius:10px;max-height:80vh;overflow:auto;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalyan Pro AI – Premium System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; /* Blue Circle */
+            --green-line: #00ff88; /* Green Connection Line */
+            --bg: #0f172a; 
+            --panel: #1e293b; 
+        }
+
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
+
+        /* --- Home Page Styling --- */
+        #home-screen {
+            height: 100vh; width: 100vw; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
+        .enter-btn {
+            background: var(--gold); color: #000; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .enter-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255,215,0,0.2); }
+
+        /* --- Dashboard Styling --- */
+        #main-app { display: none; padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Table Styling */
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
+        
+        /* --- NEW MARKING STYLE --- */
+        .circle { 
+            border: 3px solid var(--blue-circle) !important; 
+            border-radius: 50% !important; 
+            background: rgba(0, 132, 255, 0.15); 
+            z-index: 10;
+        }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
+
+        .Kalyan { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
+
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-<div class="toolbar">
-<input type="file" id="csvFile" accept=".csv" style="display:none">
-<button onclick="csvFile.click()" style="background:var(--gold);color:#000;">📂 UPLOAD CSV</button>
-<button onclick="addRow()" style="background:#444;color:white;">➕ ADD ROW</button>
-<button onclick="saveData()" style="background:#28a745;color:white;">💾 SAVE</button>
-<button onclick="clearData()" style="background:#dc3545;color:white;">🗑️ RESET</button>
+<div id="home-screen">
+    <h1 class="hero-title">Kalyan PRO AI</h1>
+    <p class="hero-sub">ADVANCED PATTERN RECOGNITION</p>
+    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
 </div>
 
-<div class="table-outer">
-<div class="table-container">
-<table id="tbl"></table>
-</div>
+<div id="main-app">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h2 style="color:var(--gold); margin:0;">Kalyan</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
+    </div>
+
+    <div class="toolbar">
+        <input type="file" id="csv" style="display:none">
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
+    </div>
+
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>✔ Matches Found</h3>
+            <div id="checks"></div>
+        </div>
+        <div class="card">
+            <h3>🤖 AI Analysis</h3>
+            <div id="ai">Wait for input...</div>
+        </div>
+        <div class="card">
+            <h3>🔮 Future Prediction</h3>
+            <div id="future">Select a match...</div>
+        </div>
+    </div>
 </div>
 
-<div class="card">
-<h3 style="margin:0;color:var(--gold)">✔ CHECK LINES (Exact Flow Match)</h3>
-<div id="checks">Upload CSV and click a blank cell...</div>
-<div id="futureAI" style="margin-top:10px;color:gold;font-weight:bold;"></div>
-</div>
-
-<div id="popup" onclick="this.style.display='none'">
-<div id="popupContent" onclick="event.stopPropagation()"></div>
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #ddd;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
 </div>
 
 <script>
-
-const STORAGE_KEY="kalyan_flow_v11";
-
-const FAMILY={
-"01":["01","06","10","15","51","56","60","65"],
-"02":["02","07","20","25","52","57","70","75"],
-"03":["03","08","30","35","53","58","80","85"],
-"04":["04","09","40","45","54","59","90","95"],
-"11":["11","16","61","66"],
-"22":["22","27","72","77"],
-"33":["33","38","83","88"]
+// --- CORE LOGIC (UNTOUCHED) ---
+const STORAGE_KEY="pdata_Kalyan_v2";
+let targetCol=null;
+    
+// Aapka original FAMILY object
+const FAMILY = {
+ "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
 };
+    
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50"],["**","**","**","**","**"]];
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||Array(12).fill().map(()=>Array(6).fill("**"));
-let currentPat=null;
+function startApp() {
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    draw();
+}
 
-function getFam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null;}
+function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
+function palti(v){return v[1]+v[0];}
+function norm(v){if(v==""||v=="**")return "**"; v=String(v); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; return a===b || palti(a)===b || fam(a)===fam(b); }
 
-/* CSV */
-document.getElementById("csvFile").addEventListener("change", function(e){
+let activeMark=null;
 
-    const file = e.target.files[0];
-    if(!file){
-        alert("File select nahi hui.");
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function(evt){
-
-        const text = evt.target.result;
-        if(!text){
-            alert("CSV empty hai.");
-            return;
-        }
-
-        const rows = text.split(/\r?\n/);
-
-        data = rows
-        .filter(r => r.trim() !== "")
-        .map(row => {
-
-            let cols = row.split(",");
-
-            while(cols.length < 6) cols.push("**");
-
-            return cols.slice(0,6).map(c => {
-
-                let v = c.trim();
-
-                if(v === "" || v === "null") return "**";
-
-                if(v.length === 1) return "0" + v;
-
-                return v;
-            });
-        });
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-        draw();
-
-        alert("✅ CSV Loaded Successfully: " + data.length + " rows");
-    };
-
-    reader.onerror = function(){
-        alert("❌ CSV Read Error.");
-    };
-
-    reader.readAsText(file);
-});
-
-/* Draw */
 function draw(){
-let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-data.forEach((row,ri)=>{
-h+="<tr>";
-row.forEach((cell,ci)=>{
-let val=cell;
-if(currentPat){
-if(currentPat.p1.some(p=>p.r===ri&&p.c===ci))val=`<span class='circle-f1'>${cell}</span>`;
-if(currentPat.p2.some(p=>p.r===ri&&p.c===ci))val=`<span class='circle-f2'>${cell}</span>`;
-}
-h+=`<td data-r="${ri}" data-c="${ci}" contenteditable>${val}</td>`;
-});
-h+="</tr>";
-});
-tbl.innerHTML=h;
-
-document.querySelectorAll("#tbl td").forEach(td=>{
-let r=parseInt(td.dataset.r);
-let c=parseInt(td.dataset.c);
-td.addEventListener("click",function(){
-if(data[r][c]=="**") analyze(r,c);
-});
-td.addEventListener("blur",function(){
-data[r][c]=td.innerText.trim();
-});
-});
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-/* Analyze */
-function analyze(r,c){
-
-let p1=[],p2=[],f1=null,f2=null;
-
-for(let i=r-1;i>=0;i--){
-for(let j=0;j<6;j++){
-let v=data[i][j];
-if(v=="**")continue;
-let fam=getFam(v);
-
-if(!f1){f1=fam;p1.push({r:i,c:j});}
-else if(fam===f1 && p1.length<2)p1.push({r:i,c:j});
-else if(!f2 && fam!==f1){f2=fam;p2.push({r:i,c:j});}
-else if(fam===f2 && p2.length<2)p2.push({r:i,c:j});
-
-if(p1.length===2 && p2.length===2)break;
-}
-if(p1.length===2 && p2.length===2)break;
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
 }
 
-if(p1.length<2||p2.length<2){
-alert("2-2 family pattern nahi mila.");
-return;
+// --- UPDATED VISUALS: GREEN LINES ---
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const cells = tblEl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
+    
+    const tRect = tblEl.getBoundingClientRect();
+    ctx.strokeStyle = "#00ff88"; // GREEN LINE
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    
+    ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
 }
 
-currentPat={p1,p2,f1,f2};
-draw();
-findChecks();
-showFutureAI();
+function edit(r,c,el){ data[r][c]=norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved Successfully!"); }
+function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
+
+function makePattern(r,c){
+ targetCol=c; let base="**";
+ for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
+ if(base=="**") return;
+ let shape=[];
+ for(let i=Math.max(0,r-4);i<=r;i++){
+  let row=[];
+  for(let j=0;j<6;j++){ row.push(data[i][j]!="**" && smartMatch(data[i][j],base)?1:0); }
+  shape.push(row);
+ }
+ searchPattern(shape,base);
 }
 
-/* Exact Flow Match */
-function findChecks(){
-
-checks.innerHTML="";
-let count=0;
-
-let f1=currentPat.f1;
-let f2=currentPat.f2;
-
-let d1r=currentPat.p1[1].r-currentPat.p1[0].r;
-let d1c=currentPat.p1[1].c-currentPat.p1[0].c;
-
-let d2r=currentPat.p2[1].r-currentPat.p2[0].r;
-let d2c=currentPat.p2[1].c-currentPat.p2[0].c;
-
-for(let i=0;i<data.length;i++){
-for(let j=0;j<6;j++){
-
-if(getFam(data[i][j])===f1){
-
-let r2=i+d1r;
-let c2=j+d1c;
-
-if(data[r2] && data[r2][c2] && getFam(data[r2][c2])===f1){
-
-for(let x=0;x<data.length;x++){
-for(let y=0;y<6;y++){
-
-if(getFam(data[x][y])===f2){
-
-let r4=x+d2r;
-let c4=y+d2c;
-
-if(data[r4] && data[r4][c4] && getFam(data[r4][c4])===f2){
-
-count++;
-
-let pts1=[{r:i,c:j},{r:r2,c:c2}];
-let pts2=[{r:x,c:y},{r:r4,c:c4}];
-
-let div=document.createElement("div");
-div.className="check-item";
-div.innerText="Check Line "+count;
-div.onclick=function(){showPopup(pts1,pts2);};
-checks.appendChild(div);
-
-if(count===4) return;
-
-}
-}
-}
-}
-}
-}
+function searchPattern(shape,base){
+ let lastMatches=[];
+ for(let i=0; i<=data.length-shape.length; i++){
+  let ok=true;
+  for(let k=0; k<shape.length; k++){
+   for(let j=0; j<6; j++){ if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}}
+   if(!ok) break;
+  }
+  if(ok) lastMatches.push({index:i});
+ }
+ showChecks(shape, lastMatches);
 }
 
-if(count===0) checks.innerHTML="No exact flow match found.";
+function showChecks(shape, matches){
+ document.getElementById("checks").innerHTML="";
+ matches.forEach((m,i)=>{
+  let d = document.createElement("div");
+  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
+  d.innerText = `Pattern Match Found at Row ${m.index + 1}`;
+  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
+  document.getElementById("checks").appendChild(d);
+ });
+ updateAI(shape, matches);
 }
 
-/* Popup */
-function showPopup(p1,p2){
-let html="<h3>Exact Flow Match</h3><table border='1' style='border-collapse:collapse'>";
-data.forEach((row,ri)=>{
-html+="<tr>";
-row.forEach((cell,ci)=>{
-let style="";
-if(p1.some(p=>p.r===ri&&p.c===ci))style="style='border:3px solid blue'";
-if(p2.some(p=>p.r===ri&&p.c===ci))style="style='border:3px solid red'";
-html+=`<td ${style} style='padding:5px'>${cell}</td>`;
-});
-html+="</tr>";
-});
-html+="</table>";
-popupContent.innerHTML=html;
-popup.style.display="flex";
+function showOne(shape, idx){
+ let html="<table id='popTbl' style='color:#000'>";
+ for(let i=0; i<shape.length; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   html+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=html+"</table>";
+ document.getElementById("popup").style.display="block";
+ document.getElementById("overlay").style.display="block";
+ setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
 }
 
-/* Future AI */
-function showFutureAI(){
-let pool=[...(FAMILY[currentPat.f1]||[]),...(FAMILY[currentPat.f2]||[])];
-let picks=[];
-while(picks.length<3 && pool.length){
-let r=Math.floor(Math.random()*pool.length);
-picks.push(pool.splice(r,1)[0]);
+function updateAI(shape, matches){
+ let jc={}, dc={};
+ matches.forEach(m=>{
+  for(let i=0; i<shape.length; i++){
+   for(let j=0; j<6; j++){
+    if(shape[i][j]){
+     let v = data[m.index+i][j];
+     jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
+    }
+   }
+  }
+ });
+ document.getElementById("ai").innerHTML = `<b>Top Jodi:</b> ${Object.keys(jc).slice(0,3).join(", ")}<br><b>Common Ank:</b> ${Object.keys(dc).slice(0,3).join(", ")}`;
+ 
+ let pool = [];
+ matches.forEach(m => {
+  let nextR = m.index + shape.length;
+  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
+ });
+ document.getElementById("future").innerHTML = pool.length ? `<b>Probable Next:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing patterns...";
 }
-futureAI.innerText="Future AI: "+picks.join(" , ");
-}
 
-function addRow(){data.push(["**","**","**","**","**","**"]);draw();}
-function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
-function clearData(){localStorage.clear();location.reload();}
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
-draw();
-
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v.trim())));
+        draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
 </script>
 </body>
 </html>
