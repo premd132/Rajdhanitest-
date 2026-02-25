@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kalyan Pro AI – Stable v9</title>
+<title>Kalyan Pro AI – Ultimate v10</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#ffd700;--blue:#0084ff;--red:#ff4d4d;--bg:#0f172a;--panel:#1e293b;}
@@ -10,16 +10,32 @@
 body{margin:0;background:var(--bg);color:#fff;}
 .toolbar{background:var(--panel);padding:15px;display:flex;gap:10px;justify-content:center;border-bottom:2px solid var(--gold);}
 .table-outer{padding:20px;display:flex;justify-content:center;}
-.table-container{position:relative;background:#fff;border-radius:10px;padding:10px;}
+.table-container{background:#fff;border-radius:10px;padding:10px;overflow:auto;}
 table{border-collapse:collapse;color:#000;}
 td,th{border:1px solid #ddd;width:50px;height:50px;text-align:center;font-weight:bold;}
 th{background:#1e293b;color:white;font-size:12px;}
-.circle-f1{border:4px solid var(--blue);border-radius:50%;padding:5px;}
-.circle-f2{border:4px solid var(--red);border-radius:50%;padding:5px;}
+.circle-f1{border:3px solid var(--blue);border-radius:50%;padding:4px;}
+.circle-f2{border:3px solid var(--red);border-radius:50%;padding:4px;}
 .card{background:var(--panel);margin:15px;padding:15px;border-radius:12px;border-left:5px solid var(--gold);}
 .check-item{background:#0f172a;padding:10px;margin-top:6px;border-radius:6px;cursor:pointer;}
-.ai-box{margin-top:10px;color:gold;font-weight:bold;}
 button{cursor:pointer;border:none;font-weight:bold;padding:10px 20px;border-radius:5px;}
+#popup{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.8);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:999;
+}
+#popupContent{
+background:white;
+color:black;
+padding:20px;
+border-radius:10px;
+max-height:80vh;
+overflow:auto;
+}
 </style>
 </head>
 <body>
@@ -41,12 +57,17 @@ button{cursor:pointer;border:none;font-weight:bold;padding:10px 20px;border-radi
 <div class="card">
 <h3 style="margin:0;color:var(--gold)">✔ CHECK LINES (2.2 Pattern)</h3>
 <div id="checks">Upload CSV and click a blank cell...</div>
-<div id="futureAI" class="ai-box"></div>
+<div id="futureAI" style="margin-top:10px;color:gold;font-weight:bold;"></div>
+</div>
+
+<!-- Popup -->
+<div id="popup" onclick="this.style.display='none'">
+<div id="popupContent" onclick="event.stopPropagation()"></div>
 </div>
 
 <script>
 
-const STORAGE_KEY="kalyan_pro_v9";
+const STORAGE_KEY="kalyan_pro_v10";
 
 const FAMILY={
 "01":["01","06","10","15","51","56","60","65"],
@@ -63,13 +84,14 @@ let currentPat=null;
 
 function getFam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k;return null;}
 
-document.getElementById('csvFile').addEventListener('change',function(e){
+/* CSV Upload */
+csvFile.addEventListener("change",function(e){
 const file=e.target.files[0];
 if(!file)return;
 const reader=new FileReader();
 reader.onload=function(evt){
 const rows=evt.target.result.split(/\r?\n/);
-data=rows.filter(r=>r.trim()!=="").map(row=>{
+data=rows.filter(r=>r.trim()!="").map(row=>{
 let cols=row.split(",");
 while(cols.length<6)cols.push("**");
 return cols.slice(0,6).map(c=>{
@@ -85,28 +107,42 @@ alert("CSV Loaded: "+data.length+" rows");
 reader.readAsText(file);
 });
 
+/* Draw Table */
 function draw(){
 let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-data.forEach((r,ri)=>{
+data.forEach((row,ri)=>{
 h+="<tr>";
-r.forEach((c,ci)=>{
-let val=c;
+row.forEach((cell,ci)=>{
+let val=cell;
 if(currentPat){
-if(currentPat.p1.some(p=>p.r===ri&&p.c===ci))val=`<span class="circle-f1">${c}</span>`;
-if(currentPat.p2.some(p=>p.r===ri&&p.c===ci))val=`<span class="circle-f2">${c}</span>`;
+if(currentPat.p1.some(p=>p.r===ri&&p.c===ci))val=`<span class='circle-f1'>${cell}</span>`;
+if(currentPat.p2.some(p=>p.r===ri&&p.c===ci))val=`<span class='circle-f2'>${cell}</span>`;
 }
-h+=`<td onclick="${c=='**'?'analyze('+ri+','+ci+')':''}" contenteditable onblur="edit(${ri},${ci},this)">${val}</td>`;
+h+=`<td data-r="${ri}" data-c="${ci}" contenteditable>${val}</td>`;
 });
 h+="</tr>";
 });
 tbl.innerHTML=h;
+
+document.querySelectorAll("#tbl td").forEach(td=>{
+let r=parseInt(td.dataset.r);
+let c=parseInt(td.dataset.c);
+
+td.addEventListener("click",function(){
+if(data[r][c]=="**") analyze(r,c);
+});
+
+td.addEventListener("blur",function(){
+data[r][c]=td.innerText.trim();
+});
+});
 }
 
+/* Analyze Pattern */
 function analyze(r,c){
-
 let p1=[],p2=[],f1=null,f2=null;
 
-for(let i=r-1;i>=0 && i>=r-15;i--){
+for(let i=r-1;i>=0;i--){
 for(let j=0;j<6;j++){
 let v=data[i][j];
 if(v=="**")continue;
@@ -133,18 +169,25 @@ findChecks();
 showFutureAI();
 }
 
+/* Find Check Lines */
 function findChecks(){
 checks.innerHTML="";
 let count=0;
 
 for(let i=0;i<data.length-3;i++){
-let fams=[];
+let fams=[], pts1=[], pts2=[];
 for(let k=0;k<4;k++){
 for(let j=0;j<6;j++){
 let v=data[i+k][j];
-if(v!="**")fams.push(getFam(v));
+if(v!="**"){
+let fam=getFam(v);
+fams.push(fam);
+if(fam===currentPat.f1)pts1.push({r:i+k,c:j});
+if(fam===currentPat.f2)pts2.push({r:i+k,c:j});
 }
 }
+}
+
 let c1=fams.filter(x=>x===currentPat.f1).length;
 let c2=fams.filter(x=>x===currentPat.f2).length;
 
@@ -153,6 +196,7 @@ count++;
 let div=document.createElement("div");
 div.className="check-item";
 div.innerText="Check Line "+count+" (Row "+(i+1)+")";
+div.onclick=function(){showPopup(pts1,pts2);};
 checks.appendChild(div);
 }
 if(count===4)break;
@@ -161,6 +205,25 @@ if(count===4)break;
 if(count===0)checks.innerHTML="No matching pattern found.";
 }
 
+/* Popup */
+function showPopup(p1,p2){
+let html="<h3>Pattern Match</h3><table border='1' style='border-collapse:collapse'>";
+data.forEach((row,ri)=>{
+html+="<tr>";
+row.forEach((cell,ci)=>{
+let style="";
+if(p1.some(p=>p.r===ri&&p.c===ci))style="style='border:3px solid blue'";
+if(p2.some(p=>p.r===ri&&p.c===ci))style="style='border:3px solid red'";
+html+=`<td ${style} style='padding:5px'>${cell}</td>`;
+});
+html+="</tr>";
+});
+html+="</table>";
+popupContent.innerHTML=html;
+popup.style.display="flex";
+}
+
+/* Future AI */
 function showFutureAI(){
 let pool=[...(FAMILY[currentPat.f1]||[]),...(FAMILY[currentPat.f2]||[])];
 let picks=[];
@@ -171,7 +234,6 @@ picks.push(pool.splice(r,1)[0]);
 futureAI.innerText="Future AI: "+picks.join(" , ");
 }
 
-function edit(r,c,el){data[r][c]=el.innerText.trim();}
 function addRow(){data.push(["**","**","**","**","**","**"]);draw();}
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
 function clearData(){localStorage.clear();location.reload();}
