@@ -3,42 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI Pro – Ultimate</title>
+<title>Rajdhani AI Pro – Ultimate v9</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-:root { --gold:#ffd700; --blue:#3e84ff; --red:#ff3e3e; --bg:#121212; --panel:#1e1e1e; }
-body{font-family:Segoe UI,Arial;background:var(--bg);color:#fff;margin:0;padding:10px}
-h2{color:var(--gold);text-align:center;margin:5px 0}
-.toolbar{background:var(--panel);padding:10px;border-radius:8px;border:1px solid #444;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.table-container{position:relative;display:inline-block;background:#fff;padding:5px;border-radius:5px}
-table{border-collapse:collapse;font-size:12px;color:#000}
-td,th{border:1px solid #ccc;width:35px;height:35px;text-align:center;font-weight:bold}
-th{background:#800000;color:#fff}
-.f1{border:3px solid var(--blue)!important;border-radius:50%}
-.f2{border:3px solid var(--red)!important;border-radius:50%}
-.blank{background:#e0e0e0;cursor:pointer}
-.dashboard{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
-.card{background:var(--panel);padding:10px;border-radius:8px;border-left:4px solid var(--gold);flex:1;min-width:250px}
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-button{background:var(--gold);border:none;padding:8px 12px;font-weight:bold;border-radius:4px;cursor:pointer}
-#popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;
-border:3px solid var(--gold);display:none;z-index:100;padding:15px;border-radius:8px}
-.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;z-index:90}
+:root { --gold:#ffd700; --blue:#00c3ff; --red:#ff4d4d; --bg:#0f172a; --panel:#1e293b; --green:#00ff88; }
+body{font-family:'Poppins',Segoe UI;background:var(--bg);color:#fff;margin:0;padding:10px}
+h2{color:var(--gold);text-align:center;text-shadow: 0 0 10px rgba(255,215,0,0.5);margin:10px 0}
+.toolbar{background:var(--panel);padding:12px;border-radius:12px;border:1px solid #334155;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;box-shadow: 0 4px 15px rgba(0,0,0,0.3)}
+.table-container{position:relative;display:inline-block;background:#fff;padding:8px;border-radius:8px;margin-top:15px;box-shadow: 0 0 30px rgba(0,0,0,0.5)}
+table{border-collapse:collapse;font-size:14px;color:#333;position:relative;z-index:5}
+td,th{border:1px solid #cbd5e1;width:42px;height:42px;text-align:center;font-weight:bold;position:relative}
+th{background:#1e293b;color:#fff;font-size:11px}
+.f1{border:3px solid var(--blue)!important;border-radius:50%;background:rgba(0,195,255,0.15)}
+.f2{border:3px solid var(--red)!important;border-radius:50%;background:rgba(255,77,77,0.15)}
+.blank{background:#f1f5f9;cursor:pointer;color:#94a3b8}
+.dashboard{display:grid;grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap:15px;margin-top:20px}
+.card{background:var(--panel);padding:15px;border-radius:12px;border-top:4px solid var(--gold);box-shadow: 0 4px 10px rgba(0,0,0,0.2)}
+canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:4}
+button{background:var(--gold);border:none;padding:10px 15px;font-weight:800;border-radius:6px;cursor:pointer;transition:0.2s}
+button:hover{transform:translateY(-2px);filter:brightness(1.1)}
+#popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;width:90%;max-width:450px;
+border:4px solid var(--gold);display:none;z-index:1000;padding:20px;border-radius:15px;box-shadow:0 0 100px #000}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);display:none;z-index:900}
+.match-btn{background:#334155;color:#fff;display:block;width:100%;text-align:left;margin-bottom:8px;border-left:5px solid var(--blue);padding:12px}
+.future-badge{background:var(--green);color:#000;padding:5px 10px;border-radius:20px;font-size:18px}
 </style>
 </head>
 
 <body>
 
-<h2>🏆 Rajdhani AI – CSV & Pattern Pro</h2>
+<h2>🏆 RAJDHANI AI ULTIMATE PRO</h2>
 
 <div class="toolbar">
 <input type="file" id="csvFile" accept=".csv" hidden>
-<button onclick="csvFile.click()" style="background:#6f42c1;color:#fff">📂 Upload CSV</button>
-<button onclick="addRow()">➕ Row</button>
-<button onclick="saveData()" style="background:#28a745;color:#fff">💾 Save</button>
-<button onclick="exportImage()" style="background:#17a2b8;color:#fff">📸 Screenshot</button>
-<button onclick="clearData()" style="background:#dc3545;color:#fff">🗑️ Reset</button>
+<button onclick="csvFile.click()" style="background:#6366f1;color:#fff">📂 IMPORT CSV</button>
+<button onclick="addRow()" style="background:#475569;color:#fff">➕ ADD ROW</button>
+<button onclick="saveData()" style="background:#10b981;color:#fff">💾 SAVE</button>
+<button onclick="exportImage()" style="background:#06b6d4;color:#fff">📸 CAPTURE</button>
+<button onclick="clearData()" style="background:#ef4444;color:#fff">🗑️ RESET</button>
 </div>
 
 <center>
@@ -49,166 +52,222 @@ border:3px solid var(--gold);display:none;z-index:100;padding:15px;border-radius
 </center>
 
 <div class="dashboard">
-<div class="card"><h3>🎯 Matches</h3><div id="checks"></div></div>
-<div class="card"><h3>🔮 Future AI</h3><div id="future">Select match</div></div>
+<div class="card">
+    <h3>🎯 1.2.3.4 CHECK LINES</h3>
+    <div id="checks">Blank cell (**) par click karein...</div>
+</div>
+<div class="card">
+    <h3>🔮 FUTURE PREDICTION</h3>
+    <div id="future" style="text-align:center;padding:20px">Awaiting Pattern Selection</div>
+</div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-<button onclick="closePopup()" style="float:right;background:#800000;color:#fff">X</button>
-<h3>Connection Detail</h3>
-<div id="popData"></div>
+<button onclick="closePopup()" style="float:right;background:#ef4444;color:#fff;border-radius:50%;width:30px;height:30px">X</button>
+<h3 style="margin-top:0">Historical Pattern View</h3>
+<div id="popContent" style="display:flex;justify-content:center;position:relative">
+    <canvas id="popCanvas"></canvas>
+    <div id="popTable"></div>
+</div>
+<div id="popInfo" style="margin-top:15px;font-weight:bold;color:#334155"></div>
 </div>
 
 <script>
-const STORAGE_KEY="rajdhani_ai_final";
+const STORAGE_KEY="rajdhani_v9_ultimate";
 
 const families={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"]
+"11":["11","16","61","66"],"22":["22","27","72","77"],"33":["33","38","83","88"],"44":["44","49","94","99"],"55":["00","05","50","55"],
+"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]
 };
 
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
+function getFam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
 function norm(v){if(!v||v=="**") return "**"; v=v.trim(); return v.length==1?"0"+v:v;}
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||[
-["51","91","41","57","19"],
-["05","90","74","06","19"],
-["90","34","82","09","28"],
-["11","17","86","44","00"],
-["**","**","**","**","**"]
-];
-
-let activeMark=null,lastTargetCol=0;
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||Array(15).fill().map(()=>Array(5).fill("**"));
+let activeMark=null, targetCol=0;
 
 function draw(){
 let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
 data.forEach((r,ri)=>{
 h+="<tr>";
 r.forEach((c,ci)=>{
-let p=isPartOfPattern(ri,ci);
+let p=getShapeVal(ri,ci);
 let cls=p==1?"f1":p==2?"f2":"";
 if(c=="**") cls+=" blank";
-h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':''}">${c}</td>`;
+h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'initAI('+ri+','+ci+')':''}">${c}</td>`;
 });
 h+="</tr>";
 });
 tbl.innerHTML=h;
+if(activeMark) setTimeout(()=>drawLine("mainCanvas","tbl",activeMark.p1,activeMark.p2),50);
 }
 
-function isPartOfPattern(r,c){
+function getShapeVal(r,c){
 if(!activeMark) return 0;
-let rr=r-activeMark.start;
-if(rr<0||rr>=activeMark.shape.length) return 0;
-return activeMark.shape[rr][c]||0;
+if(activeMark.p1.some(p=>p.r==r&&p.c==c)) return 1;
+if(activeMark.p2.some(p=>p.r==r&&p.c==c)) return 2;
+return 0;
 }
 
-csvFile.addEventListener("change",e=>{
-let file=e.target.files[0]; if(!file) return;
-let reader=new FileReader();
-reader.onload=ev=>{
-let rows=ev.target.result.split(/\r?\n/).filter(r=>r.trim());
-data=rows.map(r=>{
-let c=r.split(",").map(v=>norm(v));
-while(c.length<5) c.push("**");
-return c.slice(0,5);
+function initAI(r,c){
+targetCol=c;
+let p1=[], p2=[], f1=null, f2=null;
+let scanStart = Math.max(0, r-7);
+
+// 7-Row Scan Logic for 2.2
+for(let i=r-1; i>=scanStart; i--){
+    for(let j=0; j<5; j++){
+        let v=data[i][j]; if(v=="**") continue;
+        let fam = getFam(v);
+        if(!f1) { f1=fam; p1.push({r:i,c:j}); }
+        else if(fam==f1 && p1.length<2) p1.push({r:i,c:j});
+        else if(!f2 && fam!=f1) { f2=fam; p2.push({r:i,c:j}); }
+        else if(fam==f2 && p2.length<2) p2.push({r:i,c:j});
+    }
+    if(p1.length==2 && p2.length==2) break;
+}
+
+if(p1.length<2 || p2.length<2){ alert("7 rows mein 2.2 jodi pattern nahi mila!"); return; }
+
+activeMark = {p1, p2, f1, f2, r};
+draw();
+searchHistory(f1, f2, r);
+}
+
+function searchHistory(f1, f2, currentR){
+let matches = [];
+for(let i=0; i < data.length - 7; i++){
+    if(i >= currentR - 7) break;
+    let h1=[], h2=[];
+    for(let row=i; row<i+7; row++){
+        for(let col=0; col<5; col++){
+            let f = getFam(data[row][col]);
+            if(f==f1 && h1.length<2) h1.push({r:row, c:col});
+            if(f==f2 && h2.length<2) h2.push({r:row, c:col});
+        }
+    }
+    if(h1.length==2 && h2.length==2) matches.push({index:i, p1:h1, p2:h2});
+}
+
+checks.innerHTML = "";
+if(matches.length==0) checks.innerHTML="No historical match found.";
+
+matches.slice(0,4).forEach((m,idx)=>{
+    let btn = document.createElement("button");
+    btn.className="match-btn";
+    btn.innerHTML=`<b>CHECK LINE ${idx+1}</b><br><small>Found at Row: ${m.index+1}</small>`;
+    btn.onclick=()=>showPopup(m);
+    checks.appendChild(btn);
 });
-activeMark=null; draw();
-alert("CSV Loaded ✅");
-};
-reader.readAsText(file);
-});
 
-function makePattern(r,c){
-lastTargetCol=c;
-let famPos={},start=Math.max(0,r-5);
-for(let i=start;i<=r;i++){
-for(let j=0;j<5;j++){
-let v=data[i][j];
-if(v!="**"){
-let f=fam(v);
-famPos[f]=famPos[f]||[];
-if(famPos[f].length<2) famPos[f].push({i,j});
+// Future AI Prediction
+if(matches.length > 0){
+    let predictions = matches.map(m => {
+        let gap = activeMark.r - activeMark.p1[0].r;
+        let targetRow = m.index + gap + 1;
+        return data[targetRow] ? data[targetRow][targetCol] : null;
+    }).filter(v => v && v!="**");
+    
+    future.innerHTML = predictions.length ? `<h3>Strong Prediction</h3><span class="future-badge">${[...new Set(predictions)].join(", ")}</span>` : "Prediction: No Data";
 }
-}
-}
-let fams=Object.keys(famPos).filter(f=>famPos[f].length==2).slice(0,2);
-if(fams.length<2){alert("Pattern nahi mila");return;}
-let shape=Array.from({length:r-start+1},()=>Array(5).fill(0));
-fams.forEach((f,idx)=>famPos[f].forEach(p=>shape[p.i-start][p.j]=idx+1));
-searchPattern(shape,fams);
 }
 
-function searchPattern(shape,fams){
-let m=[];
-for(let i=0;i<=data.length-shape.length;i++){
-let ok=true;
-for(let r=0;r<shape.length;r++){
-for(let c=0;c<5;c++){
-if(shape[r][c]==1&&fam(data[i+r][c])!=fams[0]) ok=false;
-if(shape[r][c]==2&&fam(data[i+r][c])!=fams[1]) ok=false;
+function showPopup(m){
+let html="<table id='popT'>";
+let start = m.index, end = m.index + 7;
+for(let i=start; i<=end; i++){
+    if(!data[i]) break;
+    html+="<tr>";
+    data[i].forEach((v,j)=>{
+        let cls="";
+        if(m.p1.some(p=>p.r==i&&p.c==j)) cls="f1";
+        if(m.p2.some(p=>p.r==i&&p.c==j)) cls="f2";
+        html+=`<td class="${cls}">${v}</td>`;
+    });
+    html+="</tr>";
 }
-}
-if(ok) m.push({index:i});
-}
-showMatches(shape,m.slice(0,3));
-}
-
-function showMatches(shape,m){
-checks.innerHTML="";
-m.forEach((x,i)=>{
-let b=document.createElement("button");
-b.textContent=`Match ${i+1} (Row ${x.index+1})`;
-b.style="width:100%;margin-bottom:5px";
-b.onclick=()=>{activeMark={start:x.index,shape};draw();predictFuture(m);openPopup(x.index,shape);}
-checks.appendChild(b);
-});
-}
-
-function predictFuture(m){
-let p=[];
-m.forEach(x=>{
-let nr=x.index+activeMark.shape.length;
-if(nr<data.length&&data[nr][lastTargetCol]!="**") p.push(data[nr][lastTargetCol]);
-});
-future.innerHTML=p.length?`<b>AI:</b> ${[...new Set(p)].join(", ")}`:"No data";
-}
-
-function openPopup(i,shape){
-let h="<table>";
-for(let r=0;r<shape.length;r++){
-h+="<tr>";
-for(let c=0;c<5;c++){
-let cls=shape[r][c]==1?"f1":shape[r][c]==2?"f2":"";
-h+=`<td class="${cls}">${data[i+r][c]}</td>`;
-}
-h+="</tr>";
-}
-popData.innerHTML=h+"</table>";
+popTable.innerHTML = html+"</table>";
+popInfo.innerText = `Line Match from Row ${m.index+1} to ${end+1}`;
 popup.style.display=overlay.style.display="block";
+setTimeout(()=>drawLine("popCanvas","popT",m.p1,m.p2),100);
 }
 
-function exportImage(){
-html2canvas(captureArea).then(c=>{
-let a=document.createElement("a");
-a.download="rajdhani_ai.png";
-a.href=c.toDataURL(); a.click();
-});
+function drawLine(cvsId, tblId, p1, p2){
+let cvs=document.getElementById(cvsId), tbl=document.getElementById(tblId);
+cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
+let ctx=cvs.getContext("2d"); ctx.lineWidth=3; ctx.lineCap="round";
+
+const drawGroup=(pts,col)=>{
+    ctx.strokeStyle=col; ctx.beginPath();
+    pts.forEach((p,i)=>{
+        let tr = p.r - (cvsId=="popCanvas" ? activeMark.start : 0); // Logic fix for popup
+        let cell = tbl.rows[pts==p1?p.r-(cvsId=="popCanvas"?p1[0].r:0)+1 : p.r-(cvsId=="popCanvas"?p1[0].r:0)+1 ];
+        // Simplified Coordinate targeting for dynamic tables
+        let targetCell = findCellInTable(tbl, p.r, p.c, cvsId=="popCanvas");
+        if(targetCell){
+            let x=targetCell.offsetLeft+targetCell.offsetWidth/2;
+            let y=targetCell.offsetTop+targetCell.offsetHeight/2;
+            if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+    });
+    ctx.stroke();
+};
+// Redraw simple logic
+ctx.clearRect(0,0,cvs.width,cvs.height);
+drawSpecificLines(ctx, tbl, p1, varColor('--blue'));
+drawSpecificLines(ctx, tbl, p2, varColor('--red'));
 }
 
-function edit(r,c,e){data[r][c]=norm(e.innerText);}
-function addRow(){data.push(["**","**","**","**","**"]);draw();}
-function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
-function clearData(){if(confirm("Clear?")){localStorage.clear();location.reload();}}
-function closePopup(){popup.style.display=overlay.style.display="none";}
+function findCellInTable(t, r, c, isPop){
+    if(!isPop) return t.rows[r+1].cells[c];
+    // For popup we scan cells that have classes
+    for(let i=0; i<t.rows.length; i++){
+        for(let j=0; j<t.rows[i].cells.length; j++){
+            let cell = t.rows[i].cells[j];
+            if(cell.innerText == data[r][c] && (cell.className.includes('f1') || cell.className.includes('f2'))) return cell;
+        }
+    }
+}
+
+function drawSpecificLines(ctx, tbl, pts, col){
+    ctx.strokeStyle=col; ctx.beginPath();
+    pts.forEach((p,i)=>{
+        let cell;
+        try{
+            // Direct mapping for Main, Class mapping for Pop
+            if(tbl.id=="tbl") cell = tbl.rows[p.r+1].cells[p.c];
+            else cell = Array.from(tbl.querySelectorAll(pts[0]==p1[0]?'.f1':'.f2')).find(el => el.innerText == data[p.r][p.c]);
+            
+            if(cell){
+                let x=cell.offsetLeft+cell.offsetWidth/2;
+                let y=cell.offsetTop+cell.offsetHeight/2;
+                if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            }
+        }catch(e){}
+    });
+    ctx.stroke();
+}
+
+function varColor(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+csvFile.onchange=e=>{
+    let fr=new FileReader();
+    fr.onload=()=>{
+        data=fr.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>norm(v)));
+        activeMark=null; draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
+
+function exportImage(){ html2canvas(captureArea).then(c=>{ let a=document.createElement("a"); a.download="rajdhani_pattern.png"; a.href=c.toDataURL(); a.click(); }); }
+function edit(r,c,e){ data[r][c]=norm(e.innerText); }
+function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved to Local Storage!"); }
+function clearData(){ if(confirm("Clear everything?")){ localStorage.clear(); location.reload(); }}
+function closePopup(){ popup.style.display=overlay.style.display="none"; }
 
 draw();
 </script>
