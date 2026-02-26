@@ -2,129 +2,79 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI - CSV Fixed System</title>
+    <title>Pradeep AI - Dpboss Style Pro</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
-        .menu { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; }
+        :root { --bg: #f4f4f4; --header: #2c3e50; --win: #d35400; --line: #2980b9; }
+        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
         
-        /* Buttons */
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-upload { background: #ff9800; color: #000; }
-        .btn-scan { background: #00ffcc; color: #000; }
-        .btn-save { background: #4caf50; color: #fff; }
+        /* Dpboss Style Header */
+        .header { background: var(--header); color: white; padding: 15px; text-align: center; border-radius: 8px 8px 0 0; }
+        .controls { background: #ecf0f1; padding: 10px; display: flex; gap: 10px; justify-content: center; border: 1px solid #bdc3c7; }
+        
+        /* Professional Chart Style */
+        .chart-wrapper { position: relative; overflow-x: auto; margin-top: 10px; background: white; }
+        table { border-collapse: collapse; width: 100%; min-width: 600px; table-layout: fixed; }
+        th { background: #eee; border: 1px solid #ccc; padding: 10px; color: #333; font-size: 14px; }
+        td { border: 1px solid #ccc; height: 70px; text-align: center; vertical-align: middle; cursor: pointer; position: relative; }
+        
+        /* Jodi & Panel Design */
+        .panel-text { font-size: 11px; color: #666; display: block; }
+        .jodi-text { font-size: 20px; font-weight: bold; color: #000; }
+        .red-jodi { color: #e74c3c !important; } /* Red jodi for family matches */
 
-        .chart-area { position: relative; border: 1px solid #444; margin-top: 20px; background: #111; }
-        table { border-collapse: collapse; width: 100%; position: relative; z-index: 2; }
-        td { border: 1px solid #333; height: 50px; text-align: center; font-size: 1.2em; cursor: pointer; width: 20%; }
-        
         /* Visual Patterns */
-        .source-circle { border: 2px solid #00ffcc !important; background: rgba(0, 255, 204, 0.2); border-radius: 50%; }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-        
-        .input-box { margin-top: 20px; background: #222; padding: 15px; border-radius: 10px; }
-        input { width: 60px; padding: 8px; text-align: center; background: #000; color: #00ffcc; border: 1px solid #444; }
+        .selected-cell { background: rgba(52, 152, 219, 0.2); outline: 2px solid var(--line); }
+        .pattern-circle { border: 3px solid var(--win) !important; border-radius: 50%; width: 45px; height: 45px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+
+        /* Input Styles */
+        .input-panel { margin-top: 20px; background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        input { width: 80px; padding: 8px; margin: 5px; border: 1px solid #bdc3c7; text-align: center; }
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-import { background: #27ae60; color: white; }
+        .btn-scan { background: #2980b9; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="menu">
-        <button class="btn btn-upload" onclick="document.getElementById('csvHelper').click()">UPLOAD CSV</button>
-        <input type="file" id="csvHelper" style="display:none" accept=".csv" onchange="readCSV(this)">
-        
-        <button class="btn btn-scan" onclick="autoScan()">SCAN PATTERNS</button>
-        <button class="btn btn-save" onclick="downloadCSV()">SAVE CSV</button>
-    </div>
+<div class="header">
+    <h1>RAJDHANI NIGHT - PROFESSIONAL CHART</h1>
+    <p>AI Pattern & Check Line System (Pradeep Kumar)</p>
+</div>
 
-    <div class="chart-area" id="chartContainer">
-        <canvas id="lineCanvas"></canvas>
-        <table id="mainTable">
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+<div class="controls">
+    <button class="btn-import" onclick="document.getElementById('csvIn').click()">IMPORT CSV</button>
+    <input type="file" id="csvIn" style="display:none" accept=".csv" onchange="loadCSV(this)">
+    <button class="btn-scan" onclick="autoScan()">AUTO SCAN PATTERNS</button>
+    <button style="background:#34495e; color:white;" onclick="exportCSV()">DOWNLOAD CSV</button>
+</div>
 
-    <div class="input-box">
-        <h3>Nayi Jodi Add Karein (Mon-Fri)</h3>
-        <input type="text" id="d1" placeholder="Mon">
-        <input type="text" id="d2" placeholder="Tue">
-        <input type="text" id="d3" placeholder="Wed">
-        <input type="text" id="d4" placeholder="Thu">
-        <input type="text" id="d5" placeholder="Fri">
-        <button class="btn" onclick="addNewRow()" style="background:#2196f3; color:#fff;">ADD ROW</button>
-        <button class="btn" onclick="clearAll()" style="background:red; color:#fff; float:right;">DELETE ALL</button>
-    </div>
+<div class="chart-wrapper" id="chartArea">
+    <canvas id="lineCanvas"></canvas>
+    <table id="mainTable">
+        <thead>
+            <tr>
+                <th>MONDAY</th><th>TUESDAY</th><th>WEDNESDAY</th><th>THURSDAY</th><th>FRIDAY</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<div class="input-panel">
+    <h3>Add New Record (Panel-Jodi-Panel)</h3>
+    <small>Format: 123-45-678</small><br>
+    <input type="text" id="m1" placeholder="Mon">
+    <input type="text" id="m2" placeholder="Tue">
+    <input type="text" id="m3" placeholder="Wed">
+    <input type="text" id="m4" placeholder="Thu">
+    <input type="text" id="m5" placeholder="Fri">
+    <button onclick="addRow()" style="background:#8e44ad; color:white;">ADD TO CHART</button>
+</div>
 
 <script>
-let matkaData = JSON.parse(localStorage.getItem('pradeep_matka_v5')) || [];
+let matkaData = JSON.parse(localStorage.getItem('dpboss_v1')) || [];
 
-// 1. CSV Padhne ka tarika (Fixed)
-function readCSV(input) {
-    let file = input.files[0];
-    let reader = new FileReader();
-    reader.onload = function(e) {
-        let text = e.target.result;
-        let rows = text.trim().split("\n");
-        matkaData = rows.map(r => r.split(",").map(c => c.trim()));
-        saveData();
-        render();
-        alert("CSV Load Ho Gaya!");
-    };
-    reader.readAsText(file);
-}
-
-// 2. CSV Save karne ka tarika
-function downloadCSV() {
-    let csvContent = matkaData.map(r => r.join(",")).join("\n");
-    let blob = new Blob([csvContent], { type: 'text/csv' });
-    let url = URL.createObjectURL(blob);
-    let a = document.createElement('a');
-    a.href = url;
-    a.download = 'Pradeep_Records.csv';
-    a.click();
-}
-
-// 3. Patterns & Check Lines
-function showPattern(r, c) {
-    resetLines();
-    let current = matkaData[r][c];
-    if(!current || current == "**") return;
-
-    for(let i = r-1; i >= Math.max(0, r-10); i--) {
-        for(let j=0; j<5; j++) {
-            let old = matkaData[i][j];
-            // 01-02-03 sequence ya single digit logic
-            if(isMatch(current, old)) {
-                drawCheckLine(i, j, r, c);
-            }
-        }
-    }
-}
-
-function isMatch(v1, v2) {
-    if(!v2 || v2 == "**") return false;
-    let diff = Math.abs(parseInt(v1) - parseInt(v2));
-    return (diff <= 3) || (v1[0] == v2[0]) || (v1[1] == v2[1]);
-}
-
-function drawCheckLine(r1, c1, r2, c2) {
-    const s = document.getElementById(`td-${r1}-${c1}`);
-    const e = document.getElementById(`td-${r2}-${c2}`);
-    const canvas = document.getElementById('lineCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    canvas.width = document.getElementById('chartContainer').offsetWidth;
-    canvas.height = document.getElementById('chartContainer').offsetHeight;
-
-    s.classList.add('source-circle');
-    
-    ctx.beginPath();
-    ctx.strokeStyle = "#00ffcc";
-    ctx.lineWidth = 2;
-    ctx.moveTo(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2));
-    ctx.lineTo(e.offsetLeft + (e.offsetWidth/2), e.offsetTop + (e.offsetHeight/2));
-    ctx.stroke();
-}
-
-// Helpers
 function render() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
@@ -132,28 +82,115 @@ function render() {
         let tr = document.createElement('tr');
         row.forEach((cell, c) => {
             let td = document.createElement('td');
-            td.id = `td-${r}-${c}`;
-            td.innerText = cell || "**";
-            td.onclick = () => showPattern(r, c);
+            td.id = `cell-${r}-${c}`;
+            
+            // Dpboss Style Splitting (Panel-Jodi-Panel)
+            let parts = cell.split('-');
+            if(parts.length === 3) {
+                td.innerHTML = `<span class="panel-text">${parts[0]}</span>
+                                <span class="jodi-text ${isRed(parts[1])?'red-jodi':''}">${parts[1]}</span>
+                                <span class="panel-text">${parts[2]}</span>`;
+            } else {
+                td.innerHTML = `<span class="jodi-text">${cell}</span>`;
+            }
+
+            td.onclick = () => findConnections(r, c);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
     });
 }
 
-function addNewRow() {
-    matkaData.push([document.getElementById('d1').value, document.getElementById('d2').value, document.getElementById('d3').value, document.getElementById('d4').value, document.getElementById('d5').value]);
-    saveData(); render();
+function isRed(jodi) {
+    if(!jodi) return false;
+    let d = jodi.split('');
+    return d[0] === d[1] || Math.abs(d[0]-d[1]) === 5; // Same digit or Cut digit
 }
 
-function saveData() { localStorage.setItem('pradeep_matka_v5', JSON.stringify(matkaData)); }
-function resetLines() {
+// --- CSV LOGIC ---
+function loadCSV(input) {
+    let reader = new FileReader();
+    reader.onload = (e) => {
+        let rows = e.target.result.trim().split("\n");
+        matkaData = rows.map(r => r.split(","));
+        save(); render();
+        alert("Dpboss Records Loaded!");
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function exportCSV() {
+    let content = matkaData.map(r => r.join(",")).join("\n");
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], {type:'text/csv'}));
+    a.download = 'Rajdhani_Pro_Chart.csv';
+    a.click();
+}
+
+// --- PATTERN & CHECK LINE LOGIC ---
+function findConnections(r, c) {
+    resetCanvas();
+    document.getElementById(`cell-${r}-${c}`).classList.add('selected-cell');
+    
+    let currentCell = matkaData[r][c];
+    let currentJodi = currentCell.includes('-') ? currentCell.split('-')[1] : currentCell;
+
+    // Scan last 10 weeks
+    for(let i = r-1; i >= Math.max(0, r-10); i--) {
+        for(let j=0; j<5; j++) {
+            let oldCell = matkaData[i][j];
+            let oldJodi = oldCell.includes('-') ? oldCell.split('-')[1] : oldCell;
+
+            if(isMatch(currentJodi, oldJodi)) {
+                drawDpbossLine(i, j, r, c);
+            }
+        }
+    }
+}
+
+function isMatch(j1, j2) {
+    if(!j1 || !j2 || j2=="**") return false;
+    // 01-02-03 sequence logic or family
+    let diff = Math.abs(parseInt(j1) - parseInt(j2));
+    return (diff <= 3) || (j1[0] == j2[0]);
+}
+
+function drawDpbossLine(r1, c1, r2, c2) {
+    const s = document.getElementById(`cell-${r1}-${c1}`);
+    const e = document.getElementById(`cell-${r2}-${c2}`);
+    const cvs = document.getElementById('lineCanvas');
+    const ctx = cvs.getContext('2d');
+    
+    cvs.width = document.getElementById('chartArea').scrollWidth;
+    cvs.height = document.getElementById('chartArea').scrollHeight;
+
+    // Source Circle
+    let circle = document.createElement('div');
+    circle.className = 'pattern-circle';
+    s.appendChild(circle);
+
+    // Connecting Line
+    ctx.beginPath();
+    ctx.strokeStyle = "#2980b9";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.moveTo(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2));
+    ctx.lineTo(e.offsetLeft + (e.offsetWidth/2), e.offsetTop + (e.offsetHeight/2));
+    ctx.stroke();
+}
+
+function addRow() {
+    matkaData.push([document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value]);
+    save(); render();
+}
+
+function save() { localStorage.setItem('dpboss_v1', JSON.stringify(matkaData)); }
+function resetCanvas() {
     const cvs = document.getElementById('lineCanvas');
     cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle'));
+    document.querySelectorAll('.pattern-circle').forEach(c => c.remove());
+    document.querySelectorAll('td').forEach(t => t.classList.remove('selected-cell'));
 }
-function autoScan() { if(matkaData.length > 0) showPattern(matkaData.length-1, 0); }
-function clearAll() { if(confirm("Data delete karein?")) { matkaData=[]; saveData(); render(); } }
 
 render();
 </script>
