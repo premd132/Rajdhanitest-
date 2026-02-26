@@ -2,200 +2,165 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>DP-King Logic - Pradeep Advanced System</title>
+    <title>Pradeep AI - 0-Sequence Master</title>
     <style>
-        :root { --main-red: #d32f2f; --main-blue: #1976d2; --bg-gray: #f8f9fa; --border-clr: #bbb; }
-        body { font-family: 'Roboto', Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 10px; }
+        :root { --line: #00e5ff; --circle: #ffd700; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; padding: 20px; }
         
-        /* Header Style Like Dpboss */
-        .top-bar { background: #333; color: gold; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 3px solid var(--main-red); }
-        .action-area { background: #fff; padding: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid #ccc; }
+        /* Master Chart Style */
+        .chart-frame { position: relative; background: #111; border: 2px solid #333; display: inline-block; box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+        table { border-collapse: collapse; position: relative; z-index: 10; }
+        td { border: 1px solid #222; width: 75px; height: 65px; text-align: center; cursor: pointer; font-size: 1.6em; font-weight: bold; transition: 0.3s; }
+        td:hover { background: #1a1a1a; color: var(--line); }
         
-        /* Chart Design */
-        .chart-box { position: relative; background: #fff; margin: auto; max-width: 900px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
-        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-        th { background: #444; color: #fff; border: 1px solid #222; padding: 8px; font-size: 13px; }
-        td { border: 1px solid var(--border-clr); height: 85px; text-align: center; cursor: pointer; position: relative; transition: 0.2s; background: #fff; }
-        td:hover { background: #ffffcc; }
-
-        /* Jodi & Panel Elements */
-        .p-top, .p-bot { font-size: 12px; color: #555; height: 18px; }
-        .jodi-val { font-size: 24px; font-weight: bold; display: block; color: #000; line-height: 30px; }
-        .red-digit { color: var(--main-red) !important; }
+        /* Check Line & Circle */
+        .source-circle { position: relative; color: var(--circle) !important; }
+        .source-circle::after { content: ''; position: absolute; width: 50px; height: 50px; border: 3px solid var(--circle); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         
-        /* Logic Symbols */
-        .source-mark { border: 3px solid var(--main-red) !important; background: rgba(211, 47, 47, 0.1); }
-        .target-mark { border: 3px solid var(--main-blue) !important; background: rgba(25, 118, 210, 0.1); }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 9; }
-
-        /* Tools */
-        .tool-box { margin: 20px auto; max-width: 900px; background: #fff; padding: 20px; border-radius: 8px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; font-weight: bold; border-radius: 4px; }
-        .btn-green { background: #2e7d32; color: white; }
-        .btn-blue { background: var(--main-blue); color: white; }
-        input { padding: 10px; width: 100px; border: 1px solid #ccc; text-align: center; font-weight: bold; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
+        
+        /* Controls */
+        .header-panel { background: #111; padding: 20px; border-radius: 10px; border-bottom: 4px solid var(--line); margin-bottom: 20px; }
+        button { padding: 12px 24px; cursor: pointer; background: var(--line); color: black; border: none; font-weight: bold; border-radius: 5px; margin-right: 10px; }
+        .btn-predict { background: var(--circle); }
+        input { padding: 10px; width: 80px; text-align: center; background: #000; color: var(--line); border: 1px solid #444; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-<div class="top-bar">RAJDHANI NIGHT - ADVANCED LINE TRICK SYSTEM</div>
-
-<div class="action-area">
-    <button class="btn-green" onclick="document.getElementById('csvPicker').click()">IMPORT OLD CSV</button>
-    <input type="file" id="csvPicker" style="display:none" accept=".csv" onchange="processCSV(this)">
-    <button class="btn-blue" onclick="runAutoPredict()">SCAN ALL PATTERNS</button>
-    <button style="background:#555; color:white;" onclick="downloadData()">EXPORT CSV</button>
-    <button style="background:red; color:white;" onclick="localStorage.clear(); location.reload();">RESET</button>
+<div class="header-panel">
+    <h1 style="margin:0; color:var(--line);">01-02-03 SEQUENCE ANALYZER</h1>
+    <p>Pradeep ji, yahan aapke <b>0-prefix patterns</b> ki automatic <b>Check Lines</b> banegi.</p>
+    <button onclick="document.getElementById('csvIn').click()">IMPORT CSV DATA</button>
+    <input type="file" id="csvIn" style="display:none" onchange="importData(this)">
+    <button class="btn-predict" onclick="scanZeroPatterns()">SCAN 0-SEQUENCE LINES</button>
 </div>
 
-<div class="chart-box" id="chartFrame">
+<div class="chart-frame" id="chartBox">
     <canvas id="patternCanvas"></canvas>
-    <table id="matkaGrid">
-        <thead>
-            <tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>
-        </thead>
+    <table id="mainTable">
         <tbody id="gridBody"></tbody>
     </table>
 </div>
 
-<div class="tool-box">
-    <h3>Quick Add (Format: 123-45-678)</h3>
-    <input type="text" id="i1" placeholder="Mon">
-    <input type="text" id="i2" placeholder="Tue">
-    <input type="text" id="i3" placeholder="Wed">
-    <input type="text" id="i4" placeholder="Thu">
-    <input type="text" id="i5" placeholder="Fri">
-    <button class="btn-blue" onclick="manualAdd()">ADD RECORD</button>
+<div class="header-panel" style="margin-top:20px;">
+    <h3>Add Fresh Row (01, 02, 03...)</h3>
+    <input type="text" id="m1" placeholder="Mon">
+    <input type="text" id="m2" placeholder="Tue">
+    <input type="text" id="m3" placeholder="Wed">
+    <input type="text" id="m4" placeholder="Thu">
+    <input type="text" id="m5" placeholder="Fri">
+    <button onclick="addRow()">Add Row</button>
+    <button onclick="exportCSV()" style="background:#555; color:white;">Download CSV</button>
 </div>
 
 <script>
-let database = JSON.parse(localStorage.getItem('pradeep_pro_db')) || [];
-const rashi = {'0':5,'1':6,'2':7,'3':8,'4':9,'5':0,'6':1,'7':2,'8':3,'9':4};
+let records = JSON.parse(localStorage.getItem('pradeep_zero_db')) || [];
 
-function refreshChart() {
+function render() {
     const body = document.getElementById('gridBody');
     body.innerHTML = "";
-    database.forEach((row, rIdx) => {
+    records.forEach((row, r) => {
         let tr = document.createElement('tr');
-        row.forEach((item, cIdx) => {
+        row.forEach((cell, c) => {
             let td = document.createElement('td');
-            td.id = `cell-${rIdx}-${cIdx}`;
-            
-            // Dpboss Style Rendering
-            let parts = item.split('-');
-            if(parts.length === 3) {
-                let jodi = parts[1];
-                let isRed = jodi[0]===jodi[1] || rashi[jodi[0]] == jodi[1];
-                td.innerHTML = `<div class="p-top">${parts[0]}</div>
-                                <div class="jodi-val ${isRed?'red-digit':''}">${jodi}</div>
-                                <div class="p-bot">${parts[2]}</div>`;
-            } else {
-                td.innerHTML = `<div class="jodi-val">${item}</div>`;
-            }
-
-            td.onclick = () => analyzeFullPattern(rIdx, cIdx);
+            td.id = `cell-${r}-${c}`;
+            // Automating 0 prefix if only single digit is entered
+            let displayVal = cell.length === 1 ? '0' + cell : cell;
+            td.innerText = displayVal || "**";
+            td.onclick = () => findZeroLine(r, c);
             tr.appendChild(td);
         });
         body.appendChild(tr);
     });
 }
 
-// --- CSV Engine ---
-function processCSV(input) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        let content = e.target.result.trim();
-        database = content.split("\n").map(line => line.split(",").map(cell => cell.trim()));
-        save(); refreshChart();
-        alert("System Updated With Old Records!");
-    };
-    reader.readAsText(input.files[0]);
-}
-
-function downloadData() {
-    let content = database.map(r => r.join(",")).join("\n");
-    let blob = new Blob([content], {type: 'text/csv'});
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Pradeep_Master_Records.csv';
-    a.click();
-}
-
-// --- Dpboss Deep Logic ---
-function analyzeFullPattern(r, c) {
-    clearLines();
-    const cell = document.getElementById(`cell-${r}-${c}`);
-    cell.classList.add('target-mark');
-
-    let currentJodi = database[r][c].includes('-') ? database[r][c].split('-')[1] : database[r][c];
-    if(!currentJodi || currentJodi == "**") return;
-
-    // Search Logic: Vertical, Horizontal, Diagonal
-    for(let i = r - 1; i >= Math.max(0, r - 12); i--) {
+// 1. Zero-Sequence Check Line Logic
+function findZeroLine(r, c) {
+    clearUI();
+    let current = records[r][c];
+    if(!current || current == "**") return;
+    
+    // Scan last 10 weeks specifically for 01-09 patterns
+    for(let i = r - 1; i >= Math.max(0, r - 10); i--) {
         for(let j = 0; j < 5; j++) {
-            let oldCell = database[i][j];
-            let oldJodi = oldCell.includes('-') ? oldCell.split('-')[1] : oldCell;
-            
-            if(checkDpbossMatch(currentJodi, oldJodi)) {
-                drawProLine(i, j, r, c);
+            let old = records[i][j];
+            if(isZeroPattern(current, old)) {
+                drawCheckLine(i, j, r, c);
             }
         }
     }
 }
 
-function checkDpbossMatch(j1, j2) {
-    if(!j1 || !j2 || j2=="**") return false;
-    // 1. Total Match
-    let t1 = (parseInt(j1[0]) + parseInt(j1[1])) % 10;
-    let t2 = (parseInt(j2[0]) + parseInt(j2[1])) % 10;
-    // 2. Family Match
-    let isFam = getFamily(j1).includes(j2);
-    // 3. 01-02-03 sequence
-    let diff = Math.abs(parseInt(j1) - parseInt(j2));
+function isZeroPattern(val1, val2) {
+    if(!val2 || val2 == "**") return false;
+    // Check if it's a sequence: 01->02, 02->03, etc.
+    let n1 = parseInt(val1);
+    let n2 = parseInt(val2);
+    let diff = Math.abs(n1 - n2);
     
-    return (t1 === t2) || isFam || (diff <= 3);
+    // Strong Pattern: Difference of 1, 2, or 3 in the 0-prefix series
+    return (diff >= 1 && diff <= 3);
 }
 
-function getFamily(j) {
-    let d = j.split('').map(Number);
-    let f1 = [d[0], rashi[d[0]]], f2 = [d[1], rashi[d[1]]];
-    let fam = [];
-    f1.forEach(a => f2.forEach(b => fam.push(`${a}${b}`, `${b}${a}`)));
-    return fam;
-}
-
-function drawProLine(r1, c1, r2, c2) {
+// 2. Professional Check Line Visuals
+function drawCheckLine(r1, c1, r2, c2) {
     const s = document.getElementById(`cell-${r1}-${c1}`);
     const e = document.getElementById(`cell-${r2}-${c2}`);
     const canvas = document.getElementById('patternCanvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = document.getElementById('chartFrame').scrollWidth;
-    canvas.height = document.getElementById('chartFrame').scrollHeight;
+    canvas.width = document.getElementById('chartBox').offsetWidth;
+    canvas.height = document.getElementById('chartBox').offsetHeight;
 
-    s.classList.add('source-mark');
+    s.classList.add('source-circle'); // Highlight with Circle
 
     ctx.beginPath();
-    ctx.strokeStyle = (r1 === r2 - 1) ? "#d32f2f" : "#1976d2"; // Red for direct row above, Blue for old
-    ctx.lineWidth = 2;
-    ctx.moveTo(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2));
-    ctx.lineTo(e.offsetLeft + (e.offsetWidth/2), e.offsetTop + (e.offsetHeight/2));
+    ctx.strokeStyle = "#00e5ff"; // Cyan Check Line
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10, 5]); // Dashed line for professional look
+    ctx.moveTo(s.offsetLeft + 37, s.offsetTop + 32);
+    ctx.lineTo(e.offsetLeft + 37, e.offsetTop + 32);
     ctx.stroke();
 }
 
-function manualAdd() {
-    database.push([document.getElementById('i1').value, document.getElementById('i2').value, document.getElementById('i3').value, document.getElementById('i4').value, document.getElementById('i5').value]);
-    save(); refreshChart();
+// --- CSV & Data Management ---
+function importData(input) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        records = e.target.result.trim().split("\n").map(l => l.split(","));
+        localStorage.setItem('pradeep_zero_db', JSON.stringify(records));
+        render();
+        alert("0-Sequence Data Loaded!");
+    };
+    reader.readAsText(input.files[0]);
 }
 
-function save() { localStorage.setItem('pradeep_pro_db', JSON.stringify(database)); }
-function clearLines() {
-    const canvas = document.getElementById('patternCanvas');
-    canvas.getContext('2d').clearRect(0,0,canvas.width, canvas.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('source-mark', 'target-mark'));
+function exportCSV() {
+    let csv = records.map(r => r.join(",")).join("\n");
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'Pradeep_Zero_Patterns.csv';
+    a.click();
 }
 
-refreshChart();
+function addRow() {
+    records.push([document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value]);
+    localStorage.setItem('pradeep_zero_db', JSON.stringify(records));
+    render();
+}
+
+function clearUI() {
+    const cvs = document.getElementById('patternCanvas');
+    cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
+    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle'));
+}
+
+function scanZeroPatterns() {
+    if(records.length > 0) findZeroLine(records.length-1, 0);
+}
+
+render();
 </script>
 </body>
 </html>
