@@ -2,195 +2,153 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI - Pro Pattern Master</title>
+    <title>Pradeep AI - Strong Single Pattern</title>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --accent: #58a6ff; --predict: #ff7b72; --gold: #f2cc60; }
-        body { font-family: 'Segoe UI', Tahoma; background: var(--bg); color: #c9d1d9; margin: 0; padding: 20px; }
+        :root { --bg: #050505; --card: #111; --border: #333; --accent: #00ffcc; --predict: #ff3366; --gold: #ffd700; --single: #00ff00; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         
-        /* Layout */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; }
-        .controls { display: flex; gap: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: var(--card); border-bottom: 2px solid var(--accent); margin-bottom: 15px; }
+        .btn-strong { background: var(--single); color: #000; font-weight: bold; border: none; padding: 12px 25px; cursor: pointer; border-radius: 5px; box-shadow: 0 0 15px var(--single); }
         
-        /* Table Styling */
-        .chart-container { position: relative; overflow-x: auto; background: #010409; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
-        table { border-collapse: collapse; width: 100%; min-width: 500px; z-index: 2; position: relative; }
-        th { background: var(--card); color: var(--accent); padding: 10px; border: 1px solid var(--border); }
-        td { border: 1px solid var(--border); width: 20%; height: 55px; text-align: center; font-size: 1.3em; cursor: cell; transition: 0.2s; font-weight: bold; }
-        td:focus { outline: 2px solid var(--accent); background: #1f2937; }
+        .chart-container { position: relative; background: #000; border: 1px solid var(--border); overflow: hidden; }
+        table { border-collapse: collapse; width: 100%; z-index: 5; position: relative; background: transparent; }
+        td { border: 1px solid #222; width: 20%; height: 60px; text-align: center; font-size: 1.5em; cursor: pointer; transition: 0.3s; }
         
-        /* Pattern Visuals */
-        .source-circle { background: rgba(88, 166, 255, 0.25) !important; color: var(--accent); border: 2px solid var(--accent) !important; border-radius: 4px; }
-        .target-box { background: rgba(255, 123, 114, 0.25) !important; color: var(--predict); border: 2px solid var(--predict) !important; }
+        /* Clear Marking */
+        .source-circle { position: relative; color: var(--accent) !important; font-weight: 900; }
+        .source-circle::after { content: ''; position: absolute; width: 45px; height: 45px; border: 3px solid var(--accent); border-radius: 50%; top: 5px; left: 50%; transform: translateX(-50%); }
+        .prediction-box { border: 2px solid var(--predict) !important; background: rgba(255, 51, 102, 0.2); }
+        
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-
-        /* Buttons */
-        button { padding: 10px 18px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-weight: 600; background: #21262d; color: #c9d1d9; }
-        button:hover { background: #30363d; border-color: #8b949e; }
-        .btn-ai { background: var(--predict); color: white; border: none; }
-        .btn-ai:hover { background: #da3633; }
-
-        .form-box { margin-top: 20px; padding: 20px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
-        input { background: #0d1117; border: 1px solid var(--border); color: var(--gold); padding: 12px; width: 80px; text-align: center; font-size: 1.1em; border-radius: 4px; }
+        .input-row { margin-top: 20px; background: #111; padding: 20px; border-radius: 10px; border: 1px solid var(--accent); }
+        input { background: #000; border: 1px solid var(--accent); color: var(--gold); padding: 10px; width: 85px; text-align: center; font-size: 1.2em; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div><h2 style="margin:0; color:var(--accent);">Rajdhani Night Pro</h2><span>Pradeep Kumar Dehariya System</span></div>
+    <div><h2>PRO PATTERN: 01-02-03 SEQUENCE</h2><span>User: Pradeep Kumar</span></div>
     <div class="controls">
-        <button onclick="runAIScanner()" class="btn-ai">Scan 1-2-3 Patterns</button>
-        <button onclick="downloadCSV()" style="background:#238636; color:white;">Save CSV</button>
-        <button onclick="document.getElementById('fileIn').click()">Import CSV</button>
-        <input type="file" id="fileIn" style="display:none" onchange="importCSV(this)">
+        <button onclick="scanStrongPatterns()" class="btn-strong">SCAN STRONG SINGLE</button>
+        <button onclick="downloadCSV()" style="background:#444; color:white;">SAVE CSV</button>
     </div>
 </div>
 
-<div class="chart-container" id="chartWrapper">
+<div class="chart-container" id="wrapper">
     <canvas id="lineCanvas"></canvas>
     <table id="mainTable">
-        <thead>
-            <tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
-        </thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<div class="form-box">
-    <h3>Add New Week Records</h3>
-    <input type="text" id="m1" placeholder="00">
-    <input type="text" id="m2" placeholder="00">
-    <input type="text" id="m3" placeholder="00">
-    <input type="text" id="m4" placeholder="00">
-    <input type="text" id="m5" placeholder="00">
-    <button onclick="addNewRow()" style="background:var(--accent); color:white; margin-left:10px;">Add New Row</button>
-    <button onclick="clearHistory()" style="background:#da3633; color:white; float:right;">Clear All</button>
+<div class="input-row">
+    <h3>Add Fresh Records (Jodi)</h3>
+    <input type="text" id="i1" placeholder="Mon">
+    <input type="text" id="i2" placeholder="Tue">
+    <input type="text" id="i3" placeholder="Wed">
+    <input type="text" id="i4" placeholder="Thu">
+    <input type="text" id="i5" placeholder="Fri">
+    <button onclick="addNewRow()" style="padding: 10px 20px; cursor: pointer;">Add Row</button>
 </div>
 
 <script>
-let matkaData = JSON.parse(localStorage.getItem('pradeep_pro_v3')) || [];
-const rashi = { '0':5, '1':6, '2':7, '3':8, '4':9, '5':0, '6':1, '7':2, '8':3, '9':4 };
+let data = JSON.parse(localStorage.getItem('pradeep_v4_strong')) || [];
+const rashi = {'0':5,'1':6,'2':7,'3':8,'4':9,'5':0,'6':1,'7':2,'8':3,'9':4};
 
-function renderTable() {
+function render() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
-    matkaData.forEach((row, r) => {
+    data.forEach((row, r) => {
         let tr = document.createElement('tr');
         row.forEach((cell, c) => {
             let td = document.createElement('td');
             td.innerText = cell || "**";
-            td.contentEditable = true; // DIRECT EDITING ENABLED
-            td.id = `cell-${r}-${c}`;
-            td.onblur = () => updateCell(r, c, td.innerText);
-            td.onclick = () => showConnection(r, c);
+            td.id = `c-${r}-${c}`;
+            td.onclick = () => checkSingleDigitPattern(r, c);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
     });
-    resetCanvas();
 }
 
-// 1. IMPROVED CSV DOWNLOAD (Direct Blob method)
-function downloadCSV() {
-    if (matkaData.length === 0) return alert("No data to save!");
-    let csvStr = matkaData.map(r => r.join(",")).join("\n");
-    let blob = new Blob([csvStr], { type: 'text/csv' });
-    let url = URL.createObjectURL(blob);
-    let a = document.createElement('a');
-    a.href = url;
-    a.download = `Rajdhani_Night_Pradeep_1986.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-function importCSV(input) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        matkaData = reader.result.trim().split("\n").map(line => line.split(","));
-        saveAndRender();
-    };
-    reader.readAsText(input.files[0]);
-}
-
-// 2. PATTERN LOGIC: Fam-to-Fam & 1-2-3
-function getFam(j) {
-    if(!j || j.length < 2) return [];
-    let d = j.split('').map(Number);
-    let f1 = [d[0], rashi[d[0]]], f2 = [d[1], rashi[d[1]]];
-    let res = [];
-    f1.forEach(a => f2.forEach(b => { res.push(`${a}${b}`); res.push(`${b}${a}`); }));
-    return [...new Set(res)];
-}
-
-function showConnection(r, c) {
-    resetCanvas();
-    const current = matkaData[r][c];
+// 1. Strong Single Digit & Sequence Logic (01-02-03)
+function checkSingleDigitPattern(r, c) {
+    resetAll();
+    const current = data[r][c];
     if(!current || current == "**") return;
 
-    const currentFam = getFam(current);
-    
-    // Scan previous 10 weeks
+    let op = current[0]; // Open Digit
+    let cl = current[1]; // Close Digit
+
     for(let i = r - 1; i >= Math.max(0, r - 10); i--) {
         for(let j = 0; j < 5; j++) {
-            let old = matkaData[i][j];
-            if(currentFam.includes(old) || Math.abs(parseInt(current) - parseInt(old)) <= 3) {
-                drawLink(i, j, r, c);
+            let old = data[i][j];
+            if(!old || old == "**") continue;
+
+            // Pattern 1: Single Digit Repeat/Cut (Strong)
+            if(old.includes(op) || old.includes(rashi[op]) || old.includes(cl)) {
+                drawStrongLine(i, j, r, c, "single");
+            }
+            
+            // Pattern 2: 01-02-03 Difference Pattern
+            let diff = Math.abs(parseInt(current) - parseInt(old));
+            if(diff === 1 || diff === 2 || diff === 3) {
+                drawStrongLine(i, j, r, c, "sequence");
             }
         }
     }
 }
 
-function drawLink(r1, c1, r2, c2) {
-    const s = document.getElementById(`cell-${r1}-${c1}`);
-    const e = document.getElementById(`cell-${r2}-${c2}`);
-    const canvas = document.getElementById('lineCanvas');
-    const ctx = canvas.getContext('2d');
+function drawStrongLine(r1, c1, r2, c2, type) {
+    const s = document.getElementById(`c-${r1}-${c1}`);
+    const e = document.getElementById(`c-${r2}-${c2}`);
+    const cvs = document.getElementById('lineCanvas');
+    const ctx = cvs.getContext('2d');
     
-    const wrapper = document.getElementById('chartWrapper');
-    canvas.width = wrapper.scrollWidth;
-    canvas.height = wrapper.scrollHeight;
+    cvs.width = document.getElementById('wrapper').scrollWidth;
+    cvs.height = document.getElementById('wrapper').scrollHeight;
 
     s.classList.add('source-circle');
-    e.classList.add('target-box');
+    e.classList.add('prediction-box');
 
     ctx.beginPath();
-    ctx.strokeStyle = '#58a6ff';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = (type === "sequence") ? 3 : 1.5;
+    ctx.strokeStyle = (type === "sequence") ? "#ffd700" : "#00ffcc";
+    if(type === "single") ctx.setLineDash([10, 5]); else ctx.setLineDash([]);
+    
     ctx.moveTo(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2));
     ctx.lineTo(e.offsetLeft + (e.offsetWidth/2), e.offsetTop + (e.offsetHeight/2));
     ctx.stroke();
-    
-    // Draw Circle on Source
-    ctx.setLineDash([]);
-    ctx.beginPath();
-    ctx.arc(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2), 22, 0, Math.PI*2);
-    ctx.stroke();
 }
 
-// 3. AI SCANNER
-function runAIScanner() {
-    alert("Scanning 100+ patterns... Check the chart for lines!");
-    let lastRow = matkaData.length - 1;
-    for(let i=0; i<5; i++) showConnection(lastRow, i);
+function scanStrongPatterns() {
+    if(data.length < 1) return;
+    let lastRow = data.length - 1;
+    for(let i=0; i<5; i++) checkSingleDigitPattern(lastRow, i);
 }
 
 // Helpers
-function updateCell(r, c, val) { matkaData[r][c] = val; localStorage.setItem('pradeep_pro_v3', JSON.stringify(matkaData)); }
 function addNewRow() {
-    let row = [document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value];
-    matkaData.push(row);
-    saveAndRender();
+    data.push([document.getElementById('i1').value, document.getElementById('i2').value, document.getElementById('i3').value, document.getElementById('i4').value, document.getElementById('i5').value]);
+    localStorage.setItem('pradeep_v4_strong', JSON.stringify(data));
+    render();
 }
-function saveAndRender() { localStorage.setItem('pradeep_pro_v3', JSON.stringify(matkaData)); renderTable(); }
-function resetCanvas() {
-    const canvas = document.getElementById('lineCanvas');
-    canvas.getContext('2d').clearRect(0,0,canvas.width, canvas.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle', 'target-box'));
-}
-function clearHistory() { if(confirm("Data delete karein?")) { matkaData = []; saveAndRender(); } }
 
-renderTable();
+function downloadCSV() {
+    let csv = data.map(r => r.join(",")).join("\n");
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'Pradeep_Strong_Pattern.csv';
+    a.click();
+}
+
+function resetAll() {
+    const cvs = document.getElementById('lineCanvas');
+    cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
+    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle', 'prediction-box'));
+}
+
+render();
 </script>
 </body>
 </html>
