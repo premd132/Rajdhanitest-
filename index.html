@@ -142,10 +142,31 @@ function downloadCSV() {
     a.click();
 }
 
-function resetAll() {
-    const cvs = document.getElementById('lineCanvas');
-    cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle', 'prediction-box'));
+// Is function ko "engine.js" ya <script> tag ke andar purane wale se replace karein
+function importCSV(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            // CSV lines ko array mein convert karna
+            const rows = text.trim().split("\n");
+            const newData = rows.map(row => {
+                return row.split(",").map(cell => cell.trim());
+            });
+
+            // Data ko local storage mein save karna
+            if (newData.length > 0) {
+                data = newData; // 'data' aapke main array ka naam hai
+                localStorage.setItem('pradeep_v4_strong', JSON.stringify(data));
+                render(); // Table ko dobara banane ke liye
+                alert("CSV successfully load ho gayi hai! Ab patterns check karein.");
+            }
+        };
+        reader.readAsText(file);
+    } else {
+        alert("File select nahi hui!");
+    }
 }
 
 render();
