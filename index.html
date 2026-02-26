@@ -2,197 +2,200 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI - Dpboss Style Pro</title>
+    <title>DP-King Logic - Pradeep Advanced System</title>
     <style>
-        :root { --bg: #f4f4f4; --header: #2c3e50; --win: #d35400; --line: #2980b9; }
-        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        :root { --main-red: #d32f2f; --main-blue: #1976d2; --bg-gray: #f8f9fa; --border-clr: #bbb; }
+        body { font-family: 'Roboto', Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 10px; }
         
-        /* Dpboss Style Header */
-        .header { background: var(--header); color: white; padding: 15px; text-align: center; border-radius: 8px 8px 0 0; }
-        .controls { background: #ecf0f1; padding: 10px; display: flex; gap: 10px; justify-content: center; border: 1px solid #bdc3c7; }
+        /* Header Style Like Dpboss */
+        .top-bar { background: #333; color: gold; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 3px solid var(--main-red); }
+        .action-area { background: #fff; padding: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid #ccc; }
         
-        /* Professional Chart Style */
-        .chart-wrapper { position: relative; overflow-x: auto; margin-top: 10px; background: white; }
-        table { border-collapse: collapse; width: 100%; min-width: 600px; table-layout: fixed; }
-        th { background: #eee; border: 1px solid #ccc; padding: 10px; color: #333; font-size: 14px; }
-        td { border: 1px solid #ccc; height: 70px; text-align: center; vertical-align: middle; cursor: pointer; position: relative; }
-        
-        /* Jodi & Panel Design */
-        .panel-text { font-size: 11px; color: #666; display: block; }
-        .jodi-text { font-size: 20px; font-weight: bold; color: #000; }
-        .red-jodi { color: #e74c3c !important; } /* Red jodi for family matches */
+        /* Chart Design */
+        .chart-box { position: relative; background: #fff; margin: auto; max-width: 900px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        th { background: #444; color: #fff; border: 1px solid #222; padding: 8px; font-size: 13px; }
+        td { border: 1px solid var(--border-clr); height: 85px; text-align: center; cursor: pointer; position: relative; transition: 0.2s; background: #fff; }
+        td:hover { background: #ffffcc; }
 
-        /* Visual Patterns */
-        .selected-cell { background: rgba(52, 152, 219, 0.2); outline: 2px solid var(--line); }
-        .pattern-circle { border: 3px solid var(--win) !important; border-radius: 50%; width: 45px; height: 45px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0; }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+        /* Jodi & Panel Elements */
+        .p-top, .p-bot { font-size: 12px; color: #555; height: 18px; }
+        .jodi-val { font-size: 24px; font-weight: bold; display: block; color: #000; line-height: 30px; }
+        .red-digit { color: var(--main-red) !important; }
+        
+        /* Logic Symbols */
+        .source-mark { border: 3px solid var(--main-red) !important; background: rgba(211, 47, 47, 0.1); }
+        .target-mark { border: 3px solid var(--main-blue) !important; background: rgba(25, 118, 210, 0.1); }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 9; }
 
-        /* Input Styles */
-        .input-panel { margin-top: 20px; background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        input { width: 80px; padding: 8px; margin: 5px; border: 1px solid #bdc3c7; text-align: center; }
-        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-import { background: #27ae60; color: white; }
-        .btn-scan { background: #2980b9; color: white; }
+        /* Tools */
+        .tool-box { margin: 20px auto; max-width: 900px; background: #fff; padding: 20px; border-radius: 8px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; font-weight: bold; border-radius: 4px; }
+        .btn-green { background: #2e7d32; color: white; }
+        .btn-blue { background: var(--main-blue); color: white; }
+        input { padding: 10px; width: 100px; border: 1px solid #ccc; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>RAJDHANI NIGHT - PROFESSIONAL CHART</h1>
-    <p>AI Pattern & Check Line System (Pradeep Kumar)</p>
+<div class="top-bar">RAJDHANI NIGHT - ADVANCED LINE TRICK SYSTEM</div>
+
+<div class="action-area">
+    <button class="btn-green" onclick="document.getElementById('csvPicker').click()">IMPORT OLD CSV</button>
+    <input type="file" id="csvPicker" style="display:none" accept=".csv" onchange="processCSV(this)">
+    <button class="btn-blue" onclick="runAutoPredict()">SCAN ALL PATTERNS</button>
+    <button style="background:#555; color:white;" onclick="downloadData()">EXPORT CSV</button>
+    <button style="background:red; color:white;" onclick="localStorage.clear(); location.reload();">RESET</button>
 </div>
 
-<div class="controls">
-    <button class="btn-import" onclick="document.getElementById('csvIn').click()">IMPORT CSV</button>
-    <input type="file" id="csvIn" style="display:none" accept=".csv" onchange="loadCSV(this)">
-    <button class="btn-scan" onclick="autoScan()">AUTO SCAN PATTERNS</button>
-    <button style="background:#34495e; color:white;" onclick="exportCSV()">DOWNLOAD CSV</button>
-</div>
-
-<div class="chart-wrapper" id="chartArea">
-    <canvas id="lineCanvas"></canvas>
-    <table id="mainTable">
+<div class="chart-box" id="chartFrame">
+    <canvas id="patternCanvas"></canvas>
+    <table id="matkaGrid">
         <thead>
-            <tr>
-                <th>MONDAY</th><th>TUESDAY</th><th>WEDNESDAY</th><th>THURSDAY</th><th>FRIDAY</th>
-            </tr>
+            <tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="gridBody"></tbody>
     </table>
 </div>
 
-<div class="input-panel">
-    <h3>Add New Record (Panel-Jodi-Panel)</h3>
-    <small>Format: 123-45-678</small><br>
-    <input type="text" id="m1" placeholder="Mon">
-    <input type="text" id="m2" placeholder="Tue">
-    <input type="text" id="m3" placeholder="Wed">
-    <input type="text" id="m4" placeholder="Thu">
-    <input type="text" id="m5" placeholder="Fri">
-    <button onclick="addRow()" style="background:#8e44ad; color:white;">ADD TO CHART</button>
+<div class="tool-box">
+    <h3>Quick Add (Format: 123-45-678)</h3>
+    <input type="text" id="i1" placeholder="Mon">
+    <input type="text" id="i2" placeholder="Tue">
+    <input type="text" id="i3" placeholder="Wed">
+    <input type="text" id="i4" placeholder="Thu">
+    <input type="text" id="i5" placeholder="Fri">
+    <button class="btn-blue" onclick="manualAdd()">ADD RECORD</button>
 </div>
 
 <script>
-let matkaData = JSON.parse(localStorage.getItem('dpboss_v1')) || [];
+let database = JSON.parse(localStorage.getItem('pradeep_pro_db')) || [];
+const rashi = {'0':5,'1':6,'2':7,'3':8,'4':9,'5':0,'6':1,'7':2,'8':3,'9':4};
 
-function render() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = "";
-    matkaData.forEach((row, r) => {
+function refreshChart() {
+    const body = document.getElementById('gridBody');
+    body.innerHTML = "";
+    database.forEach((row, rIdx) => {
         let tr = document.createElement('tr');
-        row.forEach((cell, c) => {
+        row.forEach((item, cIdx) => {
             let td = document.createElement('td');
-            td.id = `cell-${r}-${c}`;
+            td.id = `cell-${rIdx}-${cIdx}`;
             
-            // Dpboss Style Splitting (Panel-Jodi-Panel)
-            let parts = cell.split('-');
+            // Dpboss Style Rendering
+            let parts = item.split('-');
             if(parts.length === 3) {
-                td.innerHTML = `<span class="panel-text">${parts[0]}</span>
-                                <span class="jodi-text ${isRed(parts[1])?'red-jodi':''}">${parts[1]}</span>
-                                <span class="panel-text">${parts[2]}</span>`;
+                let jodi = parts[1];
+                let isRed = jodi[0]===jodi[1] || rashi[jodi[0]] == jodi[1];
+                td.innerHTML = `<div class="p-top">${parts[0]}</div>
+                                <div class="jodi-val ${isRed?'red-digit':''}">${jodi}</div>
+                                <div class="p-bot">${parts[2]}</div>`;
             } else {
-                td.innerHTML = `<span class="jodi-text">${cell}</span>`;
+                td.innerHTML = `<div class="jodi-val">${item}</div>`;
             }
 
-            td.onclick = () => findConnections(r, c);
+            td.onclick = () => analyzeFullPattern(rIdx, cIdx);
             tr.appendChild(td);
         });
-        tbody.appendChild(tr);
+        body.appendChild(tr);
     });
 }
 
-function isRed(jodi) {
-    if(!jodi) return false;
-    let d = jodi.split('');
-    return d[0] === d[1] || Math.abs(d[0]-d[1]) === 5; // Same digit or Cut digit
-}
-
-// --- CSV LOGIC ---
-function loadCSV(input) {
-    let reader = new FileReader();
+// --- CSV Engine ---
+function processCSV(input) {
+    const reader = new FileReader();
     reader.onload = (e) => {
-        let rows = e.target.result.trim().split("\n");
-        matkaData = rows.map(r => r.split(","));
-        save(); render();
-        alert("Dpboss Records Loaded!");
+        let content = e.target.result.trim();
+        database = content.split("\n").map(line => line.split(",").map(cell => cell.trim()));
+        save(); refreshChart();
+        alert("System Updated With Old Records!");
     };
     reader.readAsText(input.files[0]);
 }
 
-function exportCSV() {
-    let content = matkaData.map(r => r.join(",")).join("\n");
+function downloadData() {
+    let content = database.map(r => r.join(",")).join("\n");
+    let blob = new Blob([content], {type: 'text/csv'});
     let a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([content], {type:'text/csv'}));
-    a.download = 'Rajdhani_Pro_Chart.csv';
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Pradeep_Master_Records.csv';
     a.click();
 }
 
-// --- PATTERN & CHECK LINE LOGIC ---
-function findConnections(r, c) {
-    resetCanvas();
-    document.getElementById(`cell-${r}-${c}`).classList.add('selected-cell');
-    
-    let currentCell = matkaData[r][c];
-    let currentJodi = currentCell.includes('-') ? currentCell.split('-')[1] : currentCell;
+// --- Dpboss Deep Logic ---
+function analyzeFullPattern(r, c) {
+    clearLines();
+    const cell = document.getElementById(`cell-${r}-${c}`);
+    cell.classList.add('target-mark');
 
-    // Scan last 10 weeks
-    for(let i = r-1; i >= Math.max(0, r-10); i--) {
-        for(let j=0; j<5; j++) {
-            let oldCell = matkaData[i][j];
+    let currentJodi = database[r][c].includes('-') ? database[r][c].split('-')[1] : database[r][c];
+    if(!currentJodi || currentJodi == "**") return;
+
+    // Search Logic: Vertical, Horizontal, Diagonal
+    for(let i = r - 1; i >= Math.max(0, r - 12); i--) {
+        for(let j = 0; j < 5; j++) {
+            let oldCell = database[i][j];
             let oldJodi = oldCell.includes('-') ? oldCell.split('-')[1] : oldCell;
-
-            if(isMatch(currentJodi, oldJodi)) {
-                drawDpbossLine(i, j, r, c);
+            
+            if(checkDpbossMatch(currentJodi, oldJodi)) {
+                drawProLine(i, j, r, c);
             }
         }
     }
 }
 
-function isMatch(j1, j2) {
+function checkDpbossMatch(j1, j2) {
     if(!j1 || !j2 || j2=="**") return false;
-    // 01-02-03 sequence logic or family
+    // 1. Total Match
+    let t1 = (parseInt(j1[0]) + parseInt(j1[1])) % 10;
+    let t2 = (parseInt(j2[0]) + parseInt(j2[1])) % 10;
+    // 2. Family Match
+    let isFam = getFamily(j1).includes(j2);
+    // 3. 01-02-03 sequence
     let diff = Math.abs(parseInt(j1) - parseInt(j2));
-    return (diff <= 3) || (j1[0] == j2[0]);
+    
+    return (t1 === t2) || isFam || (diff <= 3);
 }
 
-function drawDpbossLine(r1, c1, r2, c2) {
+function getFamily(j) {
+    let d = j.split('').map(Number);
+    let f1 = [d[0], rashi[d[0]]], f2 = [d[1], rashi[d[1]]];
+    let fam = [];
+    f1.forEach(a => f2.forEach(b => fam.push(`${a}${b}`, `${b}${a}`)));
+    return fam;
+}
+
+function drawProLine(r1, c1, r2, c2) {
     const s = document.getElementById(`cell-${r1}-${c1}`);
     const e = document.getElementById(`cell-${r2}-${c2}`);
-    const cvs = document.getElementById('lineCanvas');
-    const ctx = cvs.getContext('2d');
+    const canvas = document.getElementById('patternCanvas');
+    const ctx = canvas.getContext('2d');
     
-    cvs.width = document.getElementById('chartArea').scrollWidth;
-    cvs.height = document.getElementById('chartArea').scrollHeight;
+    canvas.width = document.getElementById('chartFrame').scrollWidth;
+    canvas.height = document.getElementById('chartFrame').scrollHeight;
 
-    // Source Circle
-    let circle = document.createElement('div');
-    circle.className = 'pattern-circle';
-    s.appendChild(circle);
+    s.classList.add('source-mark');
 
-    // Connecting Line
     ctx.beginPath();
-    ctx.strokeStyle = "#2980b9";
+    ctx.strokeStyle = (r1 === r2 - 1) ? "#d32f2f" : "#1976d2"; // Red for direct row above, Blue for old
     ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
     ctx.moveTo(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2));
     ctx.lineTo(e.offsetLeft + (e.offsetWidth/2), e.offsetTop + (e.offsetHeight/2));
     ctx.stroke();
 }
 
-function addRow() {
-    matkaData.push([document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value]);
-    save(); render();
+function manualAdd() {
+    database.push([document.getElementById('i1').value, document.getElementById('i2').value, document.getElementById('i3').value, document.getElementById('i4').value, document.getElementById('i5').value]);
+    save(); refreshChart();
 }
 
-function save() { localStorage.setItem('dpboss_v1', JSON.stringify(matkaData)); }
-function resetCanvas() {
-    const cvs = document.getElementById('lineCanvas');
-    cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
-    document.querySelectorAll('.pattern-circle').forEach(c => c.remove());
-    document.querySelectorAll('td').forEach(t => t.classList.remove('selected-cell'));
+function save() { localStorage.setItem('pradeep_pro_db', JSON.stringify(database)); }
+function clearLines() {
+    const canvas = document.getElementById('patternCanvas');
+    canvas.getContext('2d').clearRect(0,0,canvas.width, canvas.height);
+    document.querySelectorAll('td').forEach(t => t.classList.remove('source-mark', 'target-mark'));
 }
 
-render();
+refreshChart();
 </script>
 </body>
 </html>
