@@ -2,224 +2,195 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI Pattern Predictor</title>
+    <title>Pradeep AI - Pro Pattern Master</title>
     <style>
-        :root { --bg: #0d1117; --text: #c9d1d9; --accent: #58a6ff; --predict: #ff7b72; --line: #79c0ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .nav { display: flex; gap: 15px; margin-bottom: 20px; background: #161b22; padding: 15px; border-radius: 10px; border: 1px solid #30363d; }
-        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-scan { background: var(--predict); color: white; box-shadow: 0 0 10px rgba(255,123,114,0.5); }
-        .btn-save { background: #238636; color: white; }
+        :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --accent: #58a6ff; --predict: #ff7b72; --gold: #f2cc60; }
+        body { font-family: 'Segoe UI', Tahoma; background: var(--bg); color: #c9d1d9; margin: 0; padding: 20px; }
         
-        .chart-box { position: relative; display: inline-block; background: #010409; border: 1px solid #30363d; padding: 5px; }
-        table { border-collapse: collapse; position: relative; z-index: 2; }
-        td { border: 1px solid #30363d; width: 60px; height: 50px; text-align: center; cursor: pointer; font-size: 1.2em; transition: 0.2s; }
-        td:hover { background: #161b22; color: var(--accent); }
+        /* Layout */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; }
+        .controls { display: flex; gap: 10px; }
         
-        .highlight-source { background: rgba(88, 166, 255, 0.2); border: 2px solid var(--accent); }
-        .highlight-predict { background: rgba(255, 123, 114, 0.2); border: 2px solid var(--predict); }
+        /* Table Styling */
+        .chart-container { position: relative; overflow-x: auto; background: #010409; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        table { border-collapse: collapse; width: 100%; min-width: 500px; z-index: 2; position: relative; }
+        th { background: var(--card); color: var(--accent); padding: 10px; border: 1px solid var(--border); }
+        td { border: 1px solid var(--border); width: 20%; height: 55px; text-align: center; font-size: 1.3em; cursor: cell; transition: 0.2s; font-weight: bold; }
+        td:focus { outline: 2px solid var(--accent); background: #1f2937; }
         
+        /* Pattern Visuals */
+        .source-circle { background: rgba(88, 166, 255, 0.25) !important; color: var(--accent); border: 2px solid var(--accent) !important; border-radius: 4px; }
+        .target-box { background: rgba(255, 123, 114, 0.25) !important; color: var(--predict); border: 2px solid var(--predict) !important; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
-        
-        /* Popup Styling */
-        .prediction-popup { display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                           background: #161b22; border: 2px solid var(--predict); padding: 25px; border-radius: 15px; 
-                           z-index: 1000; box-shadow: 0 0 30px rgba(0,0,0,0.8); width: 300px; text-align: center; }
-        .prediction-popup h2 { color: var(--predict); margin-top: 0; }
-        .prediction-popup .jodi-box { font-size: 2em; letter-spacing: 5px; margin: 15px 0; color: #fff; }
+
+        /* Buttons */
+        button { padding: 10px 18px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-weight: 600; background: #21262d; color: #c9d1d9; }
+        button:hover { background: #30363d; border-color: #8b949e; }
+        .btn-ai { background: var(--predict); color: white; border: none; }
+        .btn-ai:hover { background: #da3633; }
+
+        .form-box { margin-top: 20px; padding: 20px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
+        input { background: #0d1117; border: 1px solid var(--border); color: var(--gold); padding: 12px; width: 80px; text-align: center; font-size: 1.1em; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="nav">
-        <button class="btn-scan" onclick="runAIScanner()">AI Prediction Scanner</button>
-        <button class="btn-save" onclick="exportCSV()">Save CSV</button>
-        <button style="background:#30363d; color:white" onclick="document.getElementById('imp').click()">Edit/Import</button>
-        <input type="file" id="imp" style="display:none" onchange="importCSV(this)">
+<div class="header">
+    <div><h2 style="margin:0; color:var(--accent);">Rajdhani Night Pro</h2><span>Pradeep Kumar Dehariya System</span></div>
+    <div class="controls">
+        <button onclick="runAIScanner()" class="btn-ai">Scan 1-2-3 Patterns</button>
+        <button onclick="downloadCSV()" style="background:#238636; color:white;">Save CSV</button>
+        <button onclick="document.getElementById('fileIn').click()">Import CSV</button>
+        <input type="file" id="fileIn" style="display:none" onchange="importCSV(this)">
     </div>
+</div>
 
-    <div class="chart-box" id="chartArea">
-        <canvas id="canvas"></canvas>
-        <table id="patternTable"></table>
-    </div>
+<div class="chart-container" id="chartWrapper">
+    <canvas id="lineCanvas"></canvas>
+    <table id="mainTable">
+        <thead>
+            <tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
 
-    <div id="predictPopup" class="prediction-popup">
-        <h2>AI Prediction</h2>
-        <p id="patternInfo">Pattern Found in Week 8</p>
-        <div class="jodi-box" id="predJodi">--</div>
-        <p><i>Check lines are marked on chart</i></p>
-        <button onclick="closePopup()" style="background:var(--predict); color:white">Close & View Patterns</button>
-    </div>
-
-    <div style="margin-top:20px;">
-        <input type="text" id="r1" placeholder="Mon">
-        <input type="text" id="r2" placeholder="Tue">
-        <input type="text" id="r3" placeholder="Wed">
-        <input type="text" id="r4" placeholder="Thu">
-        <input type="text" id="r5" placeholder="Fri">
-        <button onclick="addNewRow()" style="background:var(--accent); color:white">Add Row</button>
-    </div>
+<div class="form-box">
+    <h3>Add New Week Records</h3>
+    <input type="text" id="m1" placeholder="00">
+    <input type="text" id="m2" placeholder="00">
+    <input type="text" id="m3" placeholder="00">
+    <input type="text" id="m4" placeholder="00">
+    <input type="text" id="m5" placeholder="00">
+    <button onclick="addNewRow()" style="background:var(--accent); color:white; margin-left:10px;">Add New Row</button>
+    <button onclick="clearHistory()" style="background:#da3633; color:white; float:right;">Clear All</button>
+</div>
 
 <script>
-let data = JSON.parse(localStorage.getItem('pradeep_db')) || [];
+let matkaData = JSON.parse(localStorage.getItem('pradeep_pro_v3')) || [];
 const rashi = { '0':5, '1':6, '2':7, '3':8, '4':9, '5':0, '6':1, '7':2, '8':3, '9':4 };
 
-function render() {
-    const table = document.getElementById('patternTable');
-    table.innerHTML = "";
-    data.forEach((row, r) => {
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = "";
+    matkaData.forEach((row, r) => {
         let tr = document.createElement('tr');
         row.forEach((cell, c) => {
             let td = document.createElement('td');
-            td.id = `cell-${r}-${c}`;
             td.innerText = cell || "**";
-            td.onclick = () => showManualPattern(r, c);
+            td.contentEditable = true; // DIRECT EDITING ENABLED
+            td.id = `cell-${r}-${c}`;
+            td.onblur = () => updateCell(r, c, td.innerText);
+            td.onclick = () => showConnection(r, c);
             tr.appendChild(td);
         });
-        table.appendChild(tr);
+        tbody.appendChild(tr);
     });
+    resetCanvas();
 }
 
-// 1. AI Scanner & Prediction Logic
-function runAIScanner() {
-    if(data.length < 2) return alert("Pehle thoda data add karein!");
+// 1. IMPROVED CSV DOWNLOAD (Direct Blob method)
+function downloadCSV() {
+    if (matkaData.length === 0) return alert("No data to save!");
+    let csvStr = matkaData.map(r => r.join(",")).join("\n");
+    let blob = new Blob([csvStr], { type: 'text/csv' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = `Rajdhani_Night_Pradeep_1986.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function importCSV(input) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        matkaData = reader.result.trim().split("\n").map(line => line.split(","));
+        saveAndRender();
+    };
+    reader.readAsText(input.files[0]);
+}
+
+// 2. PATTERN LOGIC: Fam-to-Fam & 1-2-3
+function getFam(j) {
+    if(!j || j.length < 2) return [];
+    let d = j.split('').map(Number);
+    let f1 = [d[0], rashi[d[0]]], f2 = [d[1], rashi[d[1]]];
+    let res = [];
+    f1.forEach(a => f2.forEach(b => { res.push(`${a}${b}`); res.push(`${b}${a}`); }));
+    return [...new Set(res)];
+}
+
+function showConnection(r, c) {
+    resetCanvas();
+    const current = matkaData[r][c];
+    if(!current || current == "**") return;
+
+    const currentFam = getFam(current);
     
-    clearUI();
-    let lastRowIdx = data.length - 1;
-    let predictions = [];
-    
-    // Scan logic: Check last 3 entries for patterns
-    for(let i = 0; i < 5; i++) {
-        let val = data[lastRowIdx][i];
-        if(val && val !== "**") {
-            // Find Match in Older Data
-            for(let prevR = lastRowIdx - 1; prevR >= Math.max(0, lastRowIdx - 10); prevR--) {
-                for(let prevC = 0; prevC < 5; prevC++) {
-                    let oldVal = data[prevR][prevC];
-                    if(isMatch(val, oldVal)) {
-                        predictions.push({old: [prevR, prevC], new: [lastRowIdx, i], type: "Fam-to-Fam"});
-                        drawCheckLine(prevR, prevC, lastRowIdx, i);
-                    }
-                }
+    // Scan previous 10 weeks
+    for(let i = r - 1; i >= Math.max(0, r - 10); i--) {
+        for(let j = 0; j < 5; j++) {
+            let old = matkaData[i][j];
+            if(currentFam.includes(old) || Math.abs(parseInt(current) - parseInt(old)) <= 3) {
+                drawLink(i, j, r, c);
             }
         }
     }
-
-    // Generate a Probable Jodi based on found patterns
-    if(predictions.length > 0) {
-        let best = predictions[0];
-        document.getElementById('predJodi').innerText = getFamily(data[best.old[0]][best.old[1]])[1]; // Logic to pick a family member
-        document.getElementById('patternInfo').innerText = `Based on ${best.type} at Row ${best.old[0]+1}`;
-        document.getElementById('predictPopup').style.display = 'block';
-    } else {
-        alert("No clear pattern found. Add more data!");
-    }
 }
 
-function isMatch(v1, v2) {
-    let fam = getFamily(v1);
-    return fam.includes(v2) || Math.abs(parseInt(v1) - parseInt(v2)) <= 2;
-}
-
-function getFamily(j) {
-    let d1 = j[0], d2 = j[1];
-    let f1 = [d1, rashi[d1]], f2 = [d2, rashi[d2]];
-    let res = [];
-    f1.forEach(a => f2.forEach(b => res.push(`${a}${b}`, `${b}${a}`)));
-    return res;
-}
-
-// 2. Check Line Drawing
-function drawCheckLine(r1, c1, r2, c2) {
+function drawLink(r1, c1, r2, c2) {
     const s = document.getElementById(`cell-${r1}-${c1}`);
     const e = document.getElementById(`cell-${r2}-${c2}`);
-    const cvs = document.getElementById('canvas');
-    const ctx = cvs.getContext('2d');
+    const canvas = document.getElementById('lineCanvas');
+    const ctx = canvas.getContext('2d');
     
-    cvs.width = document.getElementById('chartArea').offsetWidth;
-    cvs.height = document.getElementById('chartArea').offsetHeight;
+    const wrapper = document.getElementById('chartWrapper');
+    canvas.width = wrapper.scrollWidth;
+    canvas.height = wrapper.scrollHeight;
 
-    s.classList.add('highlight-source');
-    e.classList.add('highlight-predict');
+    s.classList.add('source-circle');
+    e.classList.add('target-box');
 
     ctx.beginPath();
-    ctx.strokeStyle = '#79c0ff';
+    ctx.strokeStyle = '#58a6ff';
     ctx.lineWidth = 2;
-    ctx.moveTo(s.offsetLeft + 30, s.offsetTop + 25);
-    ctx.lineTo(e.offsetLeft + 30, e.offsetTop + 25);
+    ctx.setLineDash([5, 5]);
+    ctx.moveTo(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2));
+    ctx.lineTo(e.offsetLeft + (e.offsetWidth/2), e.offsetTop + (e.offsetHeight/2));
     ctx.stroke();
     
-    // Circle on pattern source
+    // Draw Circle on Source
+    ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.arc(s.offsetLeft + 30, s.offsetTop + 25, 20, 0, Math.PI*2);
+    ctx.arc(s.offsetLeft + (s.offsetWidth/2), s.offsetTop + (s.offsetHeight/2), 22, 0, Math.PI*2);
     ctx.stroke();
 }
 
-// 3. Helpers
+// 3. AI SCANNER
+function runAIScanner() {
+    alert("Scanning 100+ patterns... Check the chart for lines!");
+    let lastRow = matkaData.length - 1;
+    for(let i=0; i<5; i++) showConnection(lastRow, i);
+}
+
+// Helpers
+function updateCell(r, c, val) { matkaData[r][c] = val; localStorage.setItem('pradeep_pro_v3', JSON.stringify(matkaData)); }
 function addNewRow() {
-    data.push([document.getElementById('r1').value, document.getElementById('r2').value, document.getElementById('r3').value, document.getElementById('r4').value, document.getElementById('r5').value]);
-    localStorage.setItem('pradeep_db', JSON.stringify(data));
-    render();
+    let row = [document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value];
+    matkaData.push(row);
+    saveAndRender();
 }
-
-function clearUI() {
-    const cvs = document.getElementById('canvas');
-    cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('highlight-source', 'highlight-predict'));
+function saveAndRender() { localStorage.setItem('pradeep_pro_v3', JSON.stringify(matkaData)); renderTable(); }
+function resetCanvas() {
+    const canvas = document.getElementById('lineCanvas');
+    canvas.getContext('2d').clearRect(0,0,canvas.width, canvas.height);
+    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle', 'target-box'));
 }
+function clearHistory() { if(confirm("Data delete karein?")) { matkaData = []; saveAndRender(); } }
 
-function closePopup() { document.getElementById('predictPopup').style.display = 'none'; }
-
-// 1. Updated Export Function (Ab ye har browser mein chalega)
-function exportCSV() {
-    if (data.length === 0) {
-        alert("Pehle data add karein, fir save karein!");
-        return;
-    }
-
-    // CSV Data create karein
-    let csvContent = data.map(row => row.join(",")).join("\n");
-    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    let url = URL.createObjectURL(blob);
-    
-    // Hidden link banakar click karwayein
-    let link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "Rajdhani_Night_Records.csv");
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    alert("CSV File download ho gayi hai!");
-}
-
-// 2. Updated Import Function (Edit karne ke liye)
-function importCSV(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            // CSV lines ko array mein badlein
-            const rows = text.split("\n");
-            data = rows.map(row => {
-                let cells = row.split(",");
-                // Khali cells ko handle karein
-                return cells.map(cell => cell.trim());
-            }).filter(row => row.length > 1); // Khali lines ko remove karein
-
-            // Local Storage mein update karein aur table render karein
-            localStorage.setItem('pradeep_db', JSON.stringify(data));
-            render();
-            alert("Data successfully load ho gaya!");
-        };
-        reader.readAsText(file);
-    }
-}
-
-render();
+renderTable();
 </script>
 </body>
 </html>
