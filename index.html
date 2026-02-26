@@ -170,12 +170,53 @@ function clearUI() {
 
 function closePopup() { document.getElementById('predictPopup').style.display = 'none'; }
 
+// 1. Updated Export Function (Ab ye har browser mein chalega)
 function exportCSV() {
-    let blob = new Blob([data.map(r=>r.join(",")).join("\n")], {type:'text/csv'});
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Pradeep_AI_Records.csv';
-    a.click();
+    if (data.length === 0) {
+        alert("Pehle data add karein, fir save karein!");
+        return;
+    }
+
+    // CSV Data create karein
+    let csvContent = data.map(row => row.join(",")).join("\n");
+    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    
+    // Hidden link banakar click karwayein
+    let link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Rajdhani_Night_Records.csv");
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert("CSV File download ho gayi hai!");
+}
+
+// 2. Updated Import Function (Edit karne ke liye)
+function importCSV(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            // CSV lines ko array mein badlein
+            const rows = text.split("\n");
+            data = rows.map(row => {
+                let cells = row.split(",");
+                // Khali cells ko handle karein
+                return cells.map(cell => cell.trim());
+            }).filter(row => row.length > 1); // Khali lines ko remove karein
+
+            // Local Storage mein update karein aur table render karein
+            localStorage.setItem('pradeep_db', JSON.stringify(data));
+            render();
+            alert("Data successfully load ho gaya!");
+        };
+        reader.readAsText(file);
+    }
 }
 
 render();
