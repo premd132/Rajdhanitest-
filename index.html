@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rajdhani Pro AI - Pradeep Edition V100</title>
+<title>Rajdhani Pro AI - Shape & Family Match</title>
 <style>
-:root{ --gold:#ffd700; --red:#ff4757; --blue:#2e86de; --bg:#0f172a; --panel:#1e293b; }
+:root{ --gold:#ffd700; --red:#ff4757; --bg:#0f172a; --panel:#1e293b; }
 body{margin:0; background:var(--bg); color:#fff; font-family: sans-serif; display:flex; flex-direction:column; align-items:center; padding:10px;}
 .toolbar{display:flex; gap:10px; margin-bottom:15px;}
 button{background:#1e293b; color:white; border:1px solid var(--gold); padding:8px 12px; border-radius:5px; cursor:pointer; font-weight:bold;}
@@ -36,14 +36,14 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <div class="card">
-    <b>✔ DNA FAMILY MATCHING (LAST 10 WEEKS)</b>
-    <div id="checkList">Click (**) to identify family patterns...</div>
+    <b>✔ TOP 4 SHAPE & FAMILY MATCHES</b>
+    <div id="checkList">Click (**) to find identical patterns...</div>
 </div>
 
 <div id="overlay">
     <div class="popup-box">
         <button style="float:right; background:red; color:white; border:none; padding:5px 10px; border-radius:5px;" onclick="closePopup()">CLOSE</button>
-        <h3>Real Record Pattern Match</h3>
+        <h3>Real Pattern Match (Old Record)</h3>
         <div style="position:relative; overflow:auto; max-height:400px; border:1px solid #ccc;">
             <canvas id="popupCanvas"></canvas>
             <table id="tblPopup"></table>
@@ -52,15 +52,14 @@ canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10;
 </div>
 
 <script>
-// Matka Family Logic: DNA connection for all 100 jodis
 function getFamilyDNA(val) {
     if(!val || val === "**" || val === "") return null;
     let n = val.padStart(2, '0').split('').map(Number);
     let f = n.map(d => (d > 4 ? d - 5 : d)).sort();
-    return f.join(''); // Example: 12, 17, 62, 67 all return "12"
+    return f.join('');
 }
 
-let data = JSON.parse(localStorage.getItem('pData')) || Array(30).fill().map(()=>Array(5).fill("**"));
+let data = JSON.parse(localStorage.getItem('pData')) || Array(40).fill().map(()=>Array(5).fill("**"));
 
 function render(tid, tdata, p = null){
     let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
@@ -83,59 +82,56 @@ function upd(r,c,v){ data[r][c]=v.trim(); localStorage.setItem('pData', JSON.str
 function cellClick(r,c){
     if(data[r][c] !== "**") return;
     
-    // Scan up to 10 weeks above for Family DNA matching
+    // Pattern: 2-step slanting match (Common in Matka)
+    let offsets = [{ro: 2, co: -1}, {ro: 4, co: -2}]; 
     let matches = [];
-    let baseDNA = null;
+    
+    offsets.forEach(off => {
+        if(data[r-off.ro]?.[c+off.co]) matches.push({r: r-off.ro, c: c+off.co});
+    });
 
-    // We assume the target family is based on the cell directly above or a recent cell
-    for(let i=1; i<=10; i++){
-        if(data[r-i]?.[c] && data[r-i][c] !== "**") {
-            baseDNA = getFamilyDNA(data[r-i][c]);
-            break;
-        }
-    }
-
-    if(baseDNA){
-        for(let i=1; i<=10; i++){
-            for(let j=0; j<5; j++){
-                if(data[r-i]?.[j] && getFamilyDNA(data[r-i][j]) === baseDNA){
-                    matches.push({r: r-i, c: j});
-                }
-            }
-        }
-    }
-
-    let p = { yR: r, yC: c, matches: matches.slice(0, 3), origin: matches[0] };
+    let p = { yR: r, yC: c, matches: matches, origin: matches[0] };
     render("tblMain", data, p);
 
     let list = document.getElementById('checkList');
     list.innerHTML = "";
     
-    // History Check Lines
-    for(let i=10; i<data.length; i++){
-        if(i !== r && data[i][c] !== "**"){
-            let div = document.createElement('div');
-            div.className = "check-item";
-            div.innerText = `View Real Family Record: Week ${i+1}`;
-            div.onclick = () => openPopup(i, c, p.matches.map(m=>({ro: r-m.r, co: m.c})));
-            list.appendChild(div);
+    // Find SAME SHAPE + SAME FAMILY in history
+    let foundCount = 0;
+    for(let i=0; i < data.length; i++){
+        if(i !== r && data[i][c] !== "**" && foundCount < 4){
+            // Check if history record at 'i' has the same family dna at the same offsets
+            let isMatch = matches.every(m => {
+                let histVal = data[i-(r-m.r)]?.[m.c];
+                return getFamilyDNA(histVal) === getFamilyDNA(data[m.r][m.c]);
+            });
+
+            if(isMatch && matches.length > 0){
+                foundCount++;
+                let div = document.createElement('div');
+                div.className = "check-item";
+                div.innerText = `${foundCount}. Same Shape Match: Week ${i+1}`;
+                div.onclick = () => openPopup(i, c, offsets);
+                list.appendChild(div);
+            }
         }
     }
+    if(foundCount === 0) list.innerHTML = "No identical shape/family match found in last 10 weeks.";
 }
 
 function openPopup(mR, mC, offsets){
     document.getElementById('overlay').style.display = 'flex';
     let p = {
         yR: mR, yC: mC,
-        matches: offsets.map(o => ({r: mR-o.ro, c: o.co})),
-        origin: offsets[0] ? {r: mR-offsets[0].ro, c: offsets[0].co} : null
+        matches: offsets.map(o => ({r: mR-o.ro, c: mC+o.co})),
+        origin: {r: mR-offsets[0].ro, c: mC+offsets[0].co}
     };
     let start = Math.max(0, mR - 10);
     let subData = data.slice(start, mR + 2);
     let adjP = {
         yR: mR - start, yC: mC,
         matches: p.matches.map(pt => ({r: pt.r - start, c: pt.c})),
-        origin: p.origin ? {r: p.origin.r - start, c: p.origin.c} : null
+        origin: {r: p.origin.r - start, c: p.origin.c}
     };
     render("tblPopup", subData, adjP);
     setTimeout(() => drawLines("popupCanvas", "tblPopup", adjP), 100);
@@ -152,7 +148,7 @@ function drawLines(canId, tblId, p){
 
     ctx.strokeStyle = "#ff4757"; ctx.lineWidth = 3;
     p.matches.forEach(pt => {
-        if(pt.r<0 || pt.r >= table.rows.length-1) return;
+        if(pt.r<0) return;
         const cRect = table.rows[pt.r+1].cells[pt.c].getBoundingClientRect();
         ctx.beginPath();
         ctx.moveTo(cRect.left-rect.left+cRect.width/2, cRect.top-rect.top+cRect.height/2);
@@ -163,7 +159,7 @@ function drawLines(canId, tblId, p){
 
 function addRow(){ data.push(["**","**","**","**","**"]); render("tblMain", data); }
 function closePopup(){ document.getElementById('overlay').style.display='none'; }
-function exportCSV(){ let csv = data.map(r => r.join(",")).join("\n"); let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani_v100.csv"; a.click(); }
+function exportCSV(){ let csv = data.map(r => r.join(",")).join("\n"); let a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="rajdhani_shape_match.csv"; a.click(); }
 render("tblMain", data);
 </script>
 </body>
