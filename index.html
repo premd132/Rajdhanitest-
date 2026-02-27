@@ -1,216 +1,254 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
 <meta charset="UTF-8">
+<title>PRO AI Family Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajdhani AI Pro – Ultimate</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-:root { --gold:#ffd700; --blue:#3e84ff; --red:#ff3e3e; --bg:#121212; --panel:#1e1e1e; }
-body{font-family:Segoe UI,Arial;background:var(--bg);color:#fff;margin:0;padding:10px}
-h2{color:var(--gold);text-align:center;margin:5px 0}
-.toolbar{background:var(--panel);padding:10px;border-radius:8px;border:1px solid #444;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.table-container{position:relative;display:inline-block;background:#fff;padding:5px;border-radius:5px}
-table{border-collapse:collapse;font-size:12px;color:#000}
-td,th{border:1px solid #ccc;width:35px;height:35px;text-align:center;font-weight:bold}
-th{background:#800000;color:#fff}
-.f1{border:3px solid var(--blue)!important;border-radius:50%}
-.f2{border:3px solid var(--red)!important;border-radius:50%}
-.blank{background:#e0e0e0;cursor:pointer}
-.dashboard{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
-.card{background:var(--panel);padding:10px;border-radius:8px;border-left:4px solid var(--gold);flex:1;min-width:250px}
-canvas{position:absolute;top:0;left:0;pointer-events:none}
-button{background:var(--gold);border:none;padding:8px 12px;font-weight:bold;border-radius:4px;cursor:pointer}
-#popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;color:#000;
-border:3px solid var(--gold);display:none;z-index:100;padding:15px;border-radius:8px}
-.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;z-index:90}
+body{font-family:Arial;background:#f4f4f4;margin:10px}
+h2{text-align:center}
+button,input{padding:6px;margin:5px}
+
+#wrap{
+  position:relative;
+  background:#fff;
+  padding:10px;
+  overflow:auto;
+}
+
+table{
+  border-collapse:collapse;
+}
+td{
+  border:1px solid #999;
+  padding:6px;
+  text-align:center;
+  min-width:55px;
+  position:relative;
+}
+td[contenteditable]{background:#fffbe6}
+
+.circle{
+  border:3px solid blue;
+  border-radius:50%;
+}
+
+#draw{
+  position:absolute;
+  top:0;
+  left:0;
+  pointer-events:none;
+}
+
+#aiPanel{
+  margin-top:15px;
+  padding:10px;
+  background:#e6f2ff;
+  border:1px solid #99c2ff;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🏆 Rajdhani AI – CSV & Pattern Pro</h2>
+<h2>PRO AI Family Pattern Engine</h2>
 
-<div class="toolbar">
-<input type="file" id="csvFile" accept=".csv" hidden>
-<button onclick="csvFile.click()" style="background:#6f42c1;color:#fff">📂 Upload CSV</button>
-<button onclick="addRow()">➕ Row</button>
-<button onclick="saveData()" style="background:#28a745;color:#fff">💾 Save</button>
-<button onclick="exportImage()" style="background:#17a2b8;color:#fff">📸 Screenshot</button>
-<button onclick="clearData()" style="background:#dc3545;color:#fff">🗑️ Reset</button>
+<input type="file" id="csvFile" accept=".csv">
+<button onclick="addRow()">➕ Add Row</button>
+<button onclick="runProAI()">🧠 Run PRO AI</button>
+<button onclick="clearAll()">🗑 Clear</button>
+
+<div id="wrap">
+  <canvas id="draw"></canvas>
+  <table id="chart"></table>
 </div>
 
-<center>
-<div id="captureArea" class="table-container">
-<canvas id="mainCanvas"></canvas>
-<table id="tbl"></table>
-</div>
-</center>
-
-<div class="dashboard">
-<div class="card"><h3>🎯 Matches</h3><div id="checks"></div></div>
-<div class="card"><h3>🔮 Future AI</h3><div id="future">Select match</div></div>
-</div>
-
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-<button onclick="closePopup()" style="float:right;background:#800000;color:#fff">X</button>
-<h3>Connection Detail</h3>
-<div id="popData"></div>
+<div id="aiPanel">
+  <b>AI Result:</b>
+  <div id="aiOutput">No scan yet.</div>
 </div>
 
 <script>
-const STORAGE_KEY="rajdhani_ai_final";
 
-const families={
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"]
+// ===== FAMILY MAP =====
+const FAMILY={
+ "22":["22","27","72","77"],
+ "11":["11","61","66","16"],
+ "33":["33","83","88","38"],
+ "99":["99","44","49","94"],
+ "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"],  
+ "13":["13","18","31","36","63","68","81","86"],  
+ "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"],  
+ "23":["23","28","32","37","73","78","82","87"],  
+ "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"],  
+ "34":["34","39","43","48","84","89","93","98"],  
+ "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
 };
 
-function fam(v){for(let k in families) if(families[k].includes(v)) return k; return "NA";}
-function norm(v){if(!v||v=="**") return "**"; v=v.trim(); return v.length==1?"0"+v:v;}
+const table=document.getElementById("chart");
+const canvas=document.getElementById("draw");
+const ctx=canvas.getContext("2d");
 
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY))||[
-["51","91","41","57","19"],
-["05","90","74","06","19"],
-["90","34","82","09","28"],
-["11","17","86","44","00"],
-["**","**","**","**","**"]
-];
+// ===== LOAD LOCAL =====
+const saved=localStorage.getItem("jodiData");
+if(saved) buildTable(JSON.parse(saved));
 
-let activeMark=null,lastTargetCol=0;
+function save(){
+  const data=[];
+  [...table.rows].forEach(r=>{
+    let row=[];
+    [...r.cells].forEach(c=>{
+      let v=c.innerText.trim();
+      if(v.length===1) v="0"+v;
+      row.push(v);
+    });
+    data.push(row);
+  });
+  localStorage.setItem("jodiData",JSON.stringify(data));
+}
 
-function draw(){
-let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
-data.forEach((r,ri)=>{
-h+="<tr>";
-r.forEach((c,ci)=>{
-let p=isPartOfPattern(ri,ci);
-let cls=p==1?"f1":p==2?"f2":"";
-if(c=="**") cls+=" blank";
-h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':''}">${c}</td>`;
+function buildTable(data){
+  table.innerHTML="";
+  data.forEach(row=>{
+    const tr=document.createElement("tr");
+    row.forEach(val=>{
+      const td=document.createElement("td");
+      td.innerText=val;
+      td.contentEditable=true;
+      td.oninput=save;
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+  resizeCanvas();
+}
+
+document.getElementById("csvFile").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const rows=reader.result.trim().split(/\r?\n/)
+      .map(l=>l.split(",").map(v=>v.trim()));
+    buildTable(rows);
+    save();
+  };
+  reader.readAsText(file);
 });
-h+="</tr>";
-});
-tbl.innerHTML=h;
+
+function addRow(){
+  const tr=document.createElement("tr");
+  for(let i=0;i<6;i++){
+    const td=document.createElement("td");
+    td.contentEditable=true;
+    td.oninput=save;
+    tr.appendChild(td);
+  }
+  table.appendChild(tr);
+  save();
+  resizeCanvas();
 }
 
-function isPartOfPattern(r,c){
-if(!activeMark) return 0;
-let rr=r-activeMark.start;
-if(rr<0||rr>=activeMark.shape.length) return 0;
-return activeMark.shape[rr][c]||0;
+function clearAll(){
+  table.innerHTML="";
+  localStorage.removeItem("jodiData");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  document.getElementById("aiOutput").innerText="No scan yet.";
 }
 
-csvFile.addEventListener("change",e=>{
-let file=e.target.files[0]; if(!file) return;
-let reader=new FileReader();
-reader.onload=ev=>{
-let rows=ev.target.result.split(/\r?\n/).filter(r=>r.trim());
-data=rows.map(r=>{
-let c=r.split(",").map(v=>norm(v));
-while(c.length<5) c.push("**");
-return c.slice(0,5);
-});
-activeMark=null; draw();
-alert("CSV Loaded ✅");
-};
-reader.readAsText(file);
-});
-
-function makePattern(r,c){
-lastTargetCol=c;
-let famPos={},start=Math.max(0,r-5);
-for(let i=start;i<=r;i++){
-for(let j=0;j<5;j++){
-let v=data[i][j];
-if(v!="**"){
-let f=fam(v);
-famPos[f]=famPos[f]||[];
-if(famPos[f].length<2) famPos[f].push({i,j});
-}
-}
-}
-let fams=Object.keys(famPos).filter(f=>famPos[f].length==2).slice(0,2);
-if(fams.length<2){alert("Pattern nahi mila");return;}
-let shape=Array.from({length:r-start+1},()=>Array(5).fill(0));
-fams.forEach((f,idx)=>famPos[f].forEach(p=>shape[p.i-start][p.j]=idx+1));
-searchPattern(shape,fams);
+function resizeCanvas(){
+  canvas.width=table.offsetWidth;
+  canvas.height=table.offsetHeight;
 }
 
-function searchPattern(shape,fams){
-let m=[];
-for(let i=0;i<=data.length-shape.length;i++){
-let ok=true;
-for(let r=0;r<shape.length;r++){
-for(let c=0;c<5;c++){
-if(shape[r][c]==1&&fam(data[i+r][c])!=fams[0]) ok=false;
-if(shape[r][c]==2&&fam(data[i+r][c])!=fams[1]) ok=false;
-}
-}
-if(ok) m.push({index:i});
-}
-showMatches(shape,m.slice(0,3));
+function getFamily(val){
+  for(const key in FAMILY){
+    if(FAMILY[key].includes(val)) return key;
+  }
+  return null;
 }
 
-function showMatches(shape,m){
-checks.innerHTML="";
-m.forEach((x,i)=>{
-let b=document.createElement("button");
-b.textContent=`Match ${i+1} (Row ${x.index+1})`;
-b.style="width:100%;margin-bottom:5px";
-b.onclick=()=>{activeMark={start:x.index,shape};draw();predictFuture(m);openPopup(x.index,shape);}
-checks.appendChild(b);
-});
+function center(td){
+  const r=td.getBoundingClientRect();
+  const t=table.getBoundingClientRect();
+  return {x:r.left-t.left+r.width/2,y:r.top-t.top+r.height/2};
 }
 
-function predictFuture(m){
-let p=[];
-m.forEach(x=>{
-let nr=x.index+activeMark.shape.length;
-if(nr<data.length&&data[nr][lastTargetCol]!="**") p.push(data[nr][lastTargetCol]);
-});
-future.innerHTML=p.length?`<b>AI:</b> ${[...new Set(p)].join(", ")}`:"No data";
+// ===== PRO AI ENGINE =====
+function runProAI(){
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("circle"));
+
+  const total=table.rows.length;
+  const start=Math.max(0,total-7);
+
+  let familyScore={};
+  let match=0;
+  let possible=0;
+
+  for(let r=start;r<total-1;r++){
+    for(let c=0;c<6;c++){
+
+      let cell=table.rows[r].cells[c];
+      let val=cell.innerText.trim();
+      if(val==="**"||!val) continue;
+
+      let fam=getFamily(val);
+      if(!fam) continue;
+
+      possible++;
+
+      for(let nc=c-1;nc<=c+1;nc++){
+        if(nc<0||nc>=6) continue;
+
+        let next=table.rows[r+1].cells[nc];
+        let nVal=next.innerText.trim();
+        let nFam=getFamily(nVal);
+
+        if(nFam===fam){
+
+          match++;
+          familyScore[fam]=(familyScore[fam]||0)+1;
+
+          cell.classList.add("circle");
+          next.classList.add("circle");
+
+          let p1=center(cell);
+          let p2=center(next);
+
+          ctx.beginPath();
+          ctx.moveTo(p1.x,p1.y);
+          ctx.lineTo(p2.x,p2.y);
+          ctx.strokeStyle="blue";
+          ctx.lineWidth=2;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  let sorted=Object.entries(familyScore)
+    .sort((a,b)=>b[1]-a[1]);
+
+  let top1=sorted[0]?.[0]||"None";
+  let top2=sorted[1]?.[0]||"None";
+
+  let strength=possible?Math.round((match/possible)*100):0;
+
+  let nextGuess=top1!=="None"?FAMILY[top1].join(", "):"No Suggestion";
+
+  document.getElementById("aiOutput").innerHTML=
+    "Top Family 1: <b>"+top1+"</b><br>"+
+    "Top Family 2: <b>"+top2+"</b><br>"+
+    "Pattern Strength: <b>"+strength+"%</b><br>"+
+    "Next Possible Jodi: <b>"+nextGuess+"</b>";
 }
 
-function openPopup(i,shape){
-let h="<table>";
-for(let r=0;r<shape.length;r++){
-h+="<tr>";
-for(let c=0;c<5;c++){
-let cls=shape[r][c]==1?"f1":shape[r][c]==2?"f2":"";
-h+=`<td class="${cls}">${data[i+r][c]}</td>`;
-}
-h+="</tr>";
-}
-popData.innerHTML=h+"</table>";
-popup.style.display=overlay.style.display="block";
-}
-
-function exportImage(){
-html2canvas(captureArea).then(c=>{
-let a=document.createElement("a");
-a.download="rajdhani_ai.png";
-a.href=c.toDataURL(); a.click();
-});
-}
-
-function edit(r,c,e){data[r][c]=norm(e.innerText);}
-function addRow(){data.push(["**","**","**","**","**"]);draw();}
-function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));alert("Saved");}
-function clearData(){if(confirm("Clear?")){localStorage.clear();location.reload();}}
-function closePopup(){popup.style.display=overlay.style.display="none";}
-
-draw();
 </script>
 </body>
 </html>
