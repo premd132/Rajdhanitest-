@@ -2,60 +2,73 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI - 0-Sequence Master</title>
+    <title>Pradeep AI - Fam to Fam Check Line</title>
     <style>
-        :root { --line: #00e5ff; --circle: #ffd700; --bg: #050505; }
-        body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; padding: 20px; }
+        :root { --fam-clr: #ff00ff; --check-clr: #00ff00; --bg: #0a0a0a; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
         
-        /* Master Chart Style */
-        .chart-frame { position: relative; background: #111; border: 2px solid #333; display: inline-block; box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+        /* Dpboss Style Grid */
+        .chart-box { position: relative; background: #000; border: 2px solid #444; display: inline-block; }
         table { border-collapse: collapse; position: relative; z-index: 10; }
-        td { border: 1px solid #222; width: 75px; height: 65px; text-align: center; cursor: pointer; font-size: 1.6em; font-weight: bold; transition: 0.3s; }
-        td:hover { background: #1a1a1a; color: var(--line); }
+        td { border: 1px solid #333; width: 75px; height: 60px; text-align: center; cursor: pointer; font-size: 1.5em; font-weight: bold; }
         
-        /* Check Line & Circle */
-        .source-circle { position: relative; color: var(--circle) !important; }
-        .source-circle::after { content: ''; position: absolute; width: 50px; height: 50px; border: 3px solid var(--circle); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        /* Fam to Fam Visuals */
+        .fam-circle { position: relative; color: var(--fam-clr) !important; }
+        .fam-circle::after { content: ''; position: absolute; width: 50px; height: 50px; border: 3px solid var(--fam-clr); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
         
-        /* Controls */
-        .header-panel { background: #111; padding: 20px; border-radius: 10px; border-bottom: 4px solid var(--line); margin-bottom: 20px; }
-        button { padding: 12px 24px; cursor: pointer; background: var(--line); color: black; border: none; font-weight: bold; border-radius: 5px; margin-right: 10px; }
-        .btn-predict { background: var(--circle); }
-        input { padding: 10px; width: 80px; text-align: center; background: #000; color: var(--line); border: 1px solid #444; font-size: 1.2em; }
+        .panel { background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-bottom: 3px solid var(--fam-clr); }
+        button { padding: 12px 20px; cursor: pointer; background: var(--fam-clr); color: white; border: none; font-weight: bold; border-radius: 5px; }
+        input { padding: 10px; width: 80px; text-align: center; background: #000; color: #00ff00; border: 1px solid #444; font-size: 1.1em; }
     </style>
 </head>
 <body>
 
-<div class="header-panel">
-    <h1 style="margin:0; color:var(--line);">01-02-03 SEQUENCE ANALYZER</h1>
-    <p>Pradeep ji, yahan aapke <b>0-prefix patterns</b> ki automatic <b>Check Lines</b> banegi.</p>
-    <button onclick="document.getElementById('csvIn').click()">IMPORT CSV DATA</button>
-    <input type="file" id="csvIn" style="display:none" onchange="importData(this)">
-    <button class="btn-predict" onclick="scanZeroPatterns()">SCAN 0-SEQUENCE LINES</button>
+<div class="panel">
+    <h1>FAM TO FAM - CHECK LINE ENGINE</h1>
+    <p>Pradeep ji, yahan sirf <b>2.2 Jodi</b> family matches ki <b>Check Line</b> dikhegi.</p>
+    <button onclick="document.getElementById('fileIn').click()">IMPORT CSV</button>
+    <input type="file" id="fileIn" style="display:none" onchange="importCSV(this)">
+    <button onclick="exportCSV()" style="background:#444; margin-left:10px;">SAVE CSV</button>
 </div>
 
-<div class="chart-frame" id="chartBox">
-    <canvas id="patternCanvas"></canvas>
+<div class="chart-box" id="container">
+    <canvas id="lineCanvas"></canvas>
     <table id="mainTable">
         <tbody id="gridBody"></tbody>
     </table>
 </div>
 
-<div class="header-panel" style="margin-top:20px;">
-    <h3>Add Fresh Row (01, 02, 03...)</h3>
+<div class="panel" style="margin-top:20px;">
+    <h3>Nayi Row Add Karein</h3>
     <input type="text" id="m1" placeholder="Mon">
     <input type="text" id="m2" placeholder="Tue">
     <input type="text" id="m3" placeholder="Wed">
     <input type="text" id="m4" placeholder="Thu">
     <input type="text" id="m5" placeholder="Fri">
-    <button onclick="addRow()">Add Row</button>
-    <button onclick="exportCSV()" style="background:#555; color:white;">Download CSV</button>
+    <button onclick="addRow()" style="background:#0088ff;">ADD ROW</button>
 </div>
 
 <script>
-let records = JSON.parse(localStorage.getItem('pradeep_zero_db')) || [];
+let records = JSON.parse(localStorage.getItem('pradeep_fam_db')) || [];
+const rashi = {'0':5, '1':6, '2':7, '3':8, '4':9, '5':0, '6':1, '7':2, '8':3, '9':4};
+
+// 1. Family Calculation (2.2 Jodi Logic)
+function getFamilySet(jodi) {
+    if(!jodi || jodi.length < 2) return [];
+    let d1 = jodi[0], d2 = jodi[1];
+    let r1 = rashi[d1], r2 = rashi[d2];
+    
+    // Family components: Direct, Palat, Half-Cut, Full-Cut
+    let set = [
+        `${d1}${d2}`, `${d2}${d1}`, // Direct & Palat
+        `${r1}${d2}`, `${d1}${r2}`, // Half Cut
+        `${r1}${r2}`, `${r2}${r1}`, // Full Cut & Palat
+        `${d2}${r1}`, `${r2}${d1}`  // Cross Cut
+    ];
+    return [...new Set(set)];
+}
 
 function render() {
     const body = document.getElementById('gridBody');
@@ -64,74 +77,62 @@ function render() {
         let tr = document.createElement('tr');
         row.forEach((cell, c) => {
             let td = document.createElement('td');
-            td.id = `cell-${r}-${c}`;
-            // Automating 0 prefix if only single digit is entered
-            let displayVal = cell.length === 1 ? '0' + cell : cell;
-            td.innerText = displayVal || "**";
-            td.onclick = () => findZeroLine(r, c);
+            td.id = `c-${r}-${c}`;
+            td.innerText = cell || "**";
+            td.onclick = () => scanFamToFam(r, c);
             tr.appendChild(td);
         });
         body.appendChild(tr);
     });
 }
 
-// 1. Zero-Sequence Check Line Logic
-function findZeroLine(r, c) {
+// 2. Fam to Fam Scanner & Check Line
+function scanFamToFam(r, c) {
     clearUI();
     let current = records[r][c];
     if(!current || current == "**") return;
-    
-    // Scan last 10 weeks specifically for 01-09 patterns
+
+    let myFamily = getFamilySet(current);
+    document.getElementById(`c-${r}-${c}`).style.color = "#00ff00";
+
+    // Scan last 10 weeks
     for(let i = r - 1; i >= Math.max(0, r - 10); i--) {
         for(let j = 0; j < 5; j++) {
             let old = records[i][j];
-            if(isZeroPattern(current, old)) {
-                drawCheckLine(i, j, r, c);
+            if(myFamily.includes(old) && old !== "**") {
+                drawFamLine(i, j, r, c);
             }
         }
     }
 }
 
-function isZeroPattern(val1, val2) {
-    if(!val2 || val2 == "**") return false;
-    // Check if it's a sequence: 01->02, 02->03, etc.
-    let n1 = parseInt(val1);
-    let n2 = parseInt(val2);
-    let diff = Math.abs(n1 - n2);
+function drawFamLine(r1, c1, r2, c2) {
+    const s = document.getElementById(`c-${r1}-${c1}`);
+    const e = document.getElementById(`c-${r2}-${c2}`);
+    const cvs = document.getElementById('lineCanvas');
+    const ctx = cvs.getContext('2d');
     
-    // Strong Pattern: Difference of 1, 2, or 3 in the 0-prefix series
-    return (diff >= 1 && diff <= 3);
-}
+    cvs.width = document.getElementById('container').offsetWidth;
+    cvs.height = document.getElementById('container').offsetHeight;
 
-// 2. Professional Check Line Visuals
-function drawCheckLine(r1, c1, r2, c2) {
-    const s = document.getElementById(`cell-${r1}-${c1}`);
-    const e = document.getElementById(`cell-${r2}-${c2}`);
-    const canvas = document.getElementById('patternCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    canvas.width = document.getElementById('chartBox').offsetWidth;
-    canvas.height = document.getElementById('chartBox').offsetHeight;
-
-    s.classList.add('source-circle'); // Highlight with Circle
+    s.classList.add('fam-circle'); // Circle on Old Record
 
     ctx.beginPath();
-    ctx.strokeStyle = "#00e5ff"; // Cyan Check Line
+    ctx.strokeStyle = "#ff00ff"; // Pink Fam-to-Fam Line
     ctx.lineWidth = 3;
-    ctx.setLineDash([10, 5]); // Dashed line for professional look
-    ctx.moveTo(s.offsetLeft + 37, s.offsetTop + 32);
-    ctx.lineTo(e.offsetLeft + 37, e.offsetTop + 32);
+    ctx.moveTo(s.offsetLeft + 37, s.offsetTop + 30);
+    ctx.lineTo(e.offsetLeft + 37, e.offsetTop + 30);
     ctx.stroke();
 }
 
 // --- CSV & Data Management ---
-function importData(input) {
+function importCSV(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
-        records = e.target.result.trim().split("\n").map(l => l.split(","));
-        localStorage.setItem('pradeep_zero_db', JSON.stringify(records));
+        records = e.target.result.trim().split("\n").map(l => l.split(",").map(v => v.trim()));
+        localStorage.setItem('pradeep_fam_db', JSON.stringify(records));
         render();
-        alert("0-Sequence Data Loaded!");
+        alert("Family Data Loaded Successfully!");
     };
     reader.readAsText(input.files[0]);
 }
@@ -140,24 +141,23 @@ function exportCSV() {
     let csv = records.map(r => r.join(",")).join("\n");
     let a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-    a.download = 'Pradeep_Zero_Patterns.csv';
+    a.download = 'Pradeep_Fam_Records.csv';
     a.click();
 }
 
 function addRow() {
     records.push([document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value]);
-    localStorage.setItem('pradeep_zero_db', JSON.stringify(records));
+    localStorage.setItem('pradeep_fam_db', JSON.stringify(records));
     render();
 }
 
 function clearUI() {
-    const cvs = document.getElementById('patternCanvas');
+    const cvs = document.getElementById('lineCanvas');
     cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle'));
-}
-
-function scanZeroPatterns() {
-    if(records.length > 0) findZeroLine(records.length-1, 0);
+    document.querySelectorAll('td').forEach(t => {
+        t.classList.remove('fam-circle');
+        t.style.color = "#fff";
+    });
 }
 
 render();
