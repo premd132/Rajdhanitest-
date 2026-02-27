@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PRO AI Family Engine</title>
+<title>ULTRA AI Pattern Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -17,9 +17,7 @@ button,input{padding:6px;margin:5px}
   overflow:auto;
 }
 
-table{
-  border-collapse:collapse;
-}
+table{border-collapse:collapse}
 td{
   border:1px solid #999;
   padding:6px;
@@ -52,11 +50,11 @@ td[contenteditable]{background:#fffbe6}
 
 <body>
 
-<h2>PRO AI Family Pattern Engine</h2>
+<h2>ULTRA AI Family Engine</h2>
 
 <input type="file" id="csvFile" accept=".csv">
 <button onclick="addRow()">➕ Add Row</button>
-<button onclick="runProAI()">🧠 Run PRO AI</button>
+<button onclick="runUltraAI()">🚀 Run Ultra AI</button>
 <button onclick="clearAll()">🗑 Clear</button>
 
 <div id="wrap">
@@ -94,7 +92,6 @@ const table=document.getElementById("chart");
 const canvas=document.getElementById("draw");
 const ctx=canvas.getContext("2d");
 
-// ===== LOAD LOCAL =====
 const saved=localStorage.getItem("jodiData");
 if(saved) buildTable(JSON.parse(saved));
 
@@ -129,7 +126,6 @@ function buildTable(data){
 }
 
 document.getElementById("csvFile").addEventListener("change",e=>{
-  const file=e.target.files[0];
   const reader=new FileReader();
   reader.onload=()=>{
     const rows=reader.result.trim().split(/\r?\n/)
@@ -137,7 +133,7 @@ document.getElementById("csvFile").addEventListener("change",e=>{
     buildTable(rows);
     save();
   };
-  reader.readAsText(file);
+  reader.readAsText(e.target.files[0]);
 });
 
 function addRow(){
@@ -178,48 +174,44 @@ function center(td){
   return {x:r.left-t.left+r.width/2,y:r.top-t.top+r.height/2};
 }
 
-// ===== PRO AI ENGINE =====
-function runProAI(){
+// ===== ULTRA AI =====
+function runUltraAI(){
 
   ctx.clearRect(0,0,canvas.width,canvas.height);
   [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("circle"));
 
-  const total=table.rows.length;
-  const start=Math.max(0,total-7);
+  const rows=table.rows.length;
+  if(rows<8){ alert("Need at least 8 rows"); return; }
 
+  const start=rows-7;
+  let template=[];
   let familyScore={};
-  let match=0;
-  let possible=0;
 
-  for(let r=start;r<total-1;r++){
+  // Extract Template
+  for(let r=start;r<rows-1;r++){
     for(let c=0;c<6;c++){
-
-      let cell=table.rows[r].cells[c];
-      let val=cell.innerText.trim();
-      if(val==="**"||!val) continue;
-
+      let val=table.rows[r].cells[c].innerText.trim();
       let fam=getFamily(val);
       if(!fam) continue;
-
-      possible++;
 
       for(let nc=c-1;nc<=c+1;nc++){
         if(nc<0||nc>=6) continue;
 
-        let next=table.rows[r+1].cells[nc];
-        let nVal=next.innerText.trim();
-        let nFam=getFamily(nVal);
+        let nextVal=table.rows[r+1].cells[nc].innerText.trim();
+        let nextFam=getFamily(nextVal);
 
-        if(nFam===fam){
-
-          match++;
+        if(nextFam===fam){
+          template.push({fam,dc:nc-c});
           familyScore[fam]=(familyScore[fam]||0)+1;
 
-          cell.classList.add("circle");
-          next.classList.add("circle");
+          let cell1=table.rows[r].cells[c];
+          let cell2=table.rows[r+1].cells[nc];
 
-          let p1=center(cell);
-          let p2=center(next);
+          cell1.classList.add("circle");
+          cell2.classList.add("circle");
+
+          let p1=center(cell1);
+          let p2=center(cell2);
 
           ctx.beginPath();
           ctx.moveTo(p1.x,p1.y);
@@ -232,23 +224,30 @@ function runProAI(){
     }
   }
 
+  // History Scan
+  let historyMatch=0;
+  for(let r=0;r<rows-7;r++){
+    template.forEach(t=>{
+      let val=table.rows[r].cells[0].innerText.trim();
+      if(getFamily(val)===t.fam) historyMatch++;
+    });
+  }
+
   let sorted=Object.entries(familyScore)
     .sort((a,b)=>b[1]-a[1]);
 
-  let top1=sorted[0]?.[0]||"None";
-  let top2=sorted[1]?.[0]||"None";
+  let top3=sorted.slice(0,3).map(x=>x[0]);
 
-  let strength=possible?Math.round((match/possible)*100):0;
+  let probability=Math.min(95,
+      Math.round((historyMatch/template.length)*100));
 
-  let nextGuess=top1!=="None"?FAMILY[top1].join(", "):"No Suggestion";
+  let nextGuess=top3.length?FAMILY[top3[0]].join(", "):"None";
 
   document.getElementById("aiOutput").innerHTML=
-    "Top Family 1: <b>"+top1+"</b><br>"+
-    "Top Family 2: <b>"+top2+"</b><br>"+
-    "Pattern Strength: <b>"+strength+"%</b><br>"+
-    "Next Possible Jodi: <b>"+nextGuess+"</b>";
+    "Top Families: <b>"+top3.join(", ")+"</b><br>"+
+    "Probability: <b>"+probability+"%</b><br>"+
+    "Next Smart Guess: <b>"+nextGuess+"</b>";
 }
-
 </script>
 </body>
 </html>
