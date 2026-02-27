@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ULTRA AI Pattern Engine</title>
+<title>QUANTUM AI Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -50,11 +50,11 @@ td[contenteditable]{background:#fffbe6}
 
 <body>
 
-<h2>ULTRA AI Family Engine</h2>
+<h2>QUANTUM AI Pattern Engine</h2>
 
 <input type="file" id="csvFile" accept=".csv">
 <button onclick="addRow()">➕ Add Row</button>
-<button onclick="runUltraAI()">🚀 Run Ultra AI</button>
+<button onclick="runQuantum()">⚛ Run Quantum AI</button>
 <button onclick="clearAll()">🗑 Clear</button>
 
 <div id="wrap">
@@ -63,7 +63,7 @@ td[contenteditable]{background:#fffbe6}
 </div>
 
 <div id="aiPanel">
-  <b>AI Result:</b>
+  <b>Quantum Result:</b>
   <div id="aiOutput">No scan yet.</div>
 </div>
 
@@ -92,16 +92,20 @@ const table=document.getElementById("chart");
 const canvas=document.getElementById("draw");
 const ctx=canvas.getContext("2d");
 
+// ===== LOAD LOCAL =====
 const saved=localStorage.getItem("jodiData");
 if(saved) buildTable(JSON.parse(saved));
 
+// ===== SAVE (AUTO ZERO PADDING) =====
 function save(){
   const data=[];
   [...table.rows].forEach(r=>{
     let row=[];
     [...r.cells].forEach(c=>{
       let v=c.innerText.trim();
+      if(v==="") return;
       if(v.length===1) v="0"+v;
+      c.innerText=v;
       row.push(v);
     });
     data.push(row);
@@ -115,6 +119,7 @@ function buildTable(data){
     const tr=document.createElement("tr");
     row.forEach(val=>{
       const td=document.createElement("td");
+      if(val.length===1) val="0"+val;
       td.innerText=val;
       td.contentEditable=true;
       td.oninput=save;
@@ -174,8 +179,8 @@ function center(td){
   return {x:r.left-t.left+r.width/2,y:r.top-t.top+r.height/2};
 }
 
-// ===== ULTRA AI =====
-function runUltraAI(){
+// ===== QUANTUM AI =====
+function runQuantum(){
 
   ctx.clearRect(0,0,canvas.width,canvas.height);
   [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("circle"));
@@ -184,15 +189,19 @@ function runUltraAI(){
   if(rows<8){ alert("Need at least 8 rows"); return; }
 
   const start=rows-7;
-  let template=[];
-  let familyScore={};
 
-  // Extract Template
+  let familyHeat={};
+  let continuity=0;
+  let possible=0;
+
   for(let r=start;r<rows-1;r++){
     for(let c=0;c<6;c++){
+
       let val=table.rows[r].cells[c].innerText.trim();
       let fam=getFamily(val);
       if(!fam) continue;
+
+      possible++;
 
       for(let nc=c-1;nc<=c+1;nc++){
         if(nc<0||nc>=6) continue;
@@ -201,8 +210,8 @@ function runUltraAI(){
         let nextFam=getFamily(nextVal);
 
         if(nextFam===fam){
-          template.push({fam,dc:nc-c});
-          familyScore[fam]=(familyScore[fam]||0)+1;
+          continuity++;
+          familyHeat[fam]=(familyHeat[fam]||0)+2;
 
           let cell1=table.rows[r].cells[c];
           let cell2=table.rows[r+1].cells[nc];
@@ -224,30 +233,22 @@ function runUltraAI(){
     }
   }
 
-  // History Scan
-  let historyMatch=0;
-  for(let r=0;r<rows-7;r++){
-    template.forEach(t=>{
-      let val=table.rows[r].cells[0].innerText.trim();
-      if(getFamily(val)===t.fam) historyMatch++;
-    });
-  }
-
-  let sorted=Object.entries(familyScore)
+  let sorted=Object.entries(familyHeat)
     .sort((a,b)=>b[1]-a[1]);
 
   let top3=sorted.slice(0,3).map(x=>x[0]);
 
-  let probability=Math.min(95,
-      Math.round((historyMatch/template.length)*100));
+  let strength=possible?Math.min(99,
+      Math.round((continuity/possible)*100)):0;
 
   let nextGuess=top3.length?FAMILY[top3[0]].join(", "):"None";
 
   document.getElementById("aiOutput").innerHTML=
-    "Top Families: <b>"+top3.join(", ")+"</b><br>"+
-    "Probability: <b>"+probability+"%</b><br>"+
-    "Next Smart Guess: <b>"+nextGuess+"</b>";
+    "Top Quantum Families: <b>"+top3.join(", ")+"</b><br>"+
+    "Quantum Strength: <b>"+strength+"%</b><br>"+
+    "Next Row Smart Spread: <b>"+nextGuess+"</b>";
 }
+
 </script>
 </body>
 </html>
