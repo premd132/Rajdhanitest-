@@ -2,159 +2,166 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI - Blank Pattern Scanner</title>
+    <title>Pradeep AI - Blank Fam-to-Fam Check Line</title>
     <style>
-        :root { --line: #00ffcc; --circle: #ff3366; --bg: #0d1117; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        :root { --fam: #ff00ff; --line: #00ff00; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 20px; }
         
-        /* Professional Grid */
-        .chart-frame { position: relative; background: #000; border: 2px solid #30363d; display: inline-block; }
+        /* Grid Design */
+        .chart-box { position: relative; background: #000; border: 2px solid #444; display: inline-block; }
         table { border-collapse: collapse; position: relative; z-index: 10; }
-        td { border: 1px solid #30363d; width: 80px; height: 65px; text-align: center; cursor: pointer; font-size: 1.4em; font-weight: bold; }
-        td:empty::before { content: '?'; color: #444; } /* Blank cell marker */
+        td { border: 1px solid #333; width: 80px; height: 65px; text-align: center; cursor: pointer; font-size: 1.5em; font-weight: bold; }
         
-        /* Visual Lines & Circles */
-        .source-mark { position: relative; color: var(--circle) !important; }
-        .source-mark::after { content: ''; position: absolute; width: 50px; height: 50px; border: 3px solid var(--circle); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        /* Circle & Line Visuals */
+        .source-circle { position: relative; color: var(--line) !important; }
+        .source-circle::after { content: ''; position: absolute; width: 50px; height: 50px; border: 3px solid var(--line); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }
         
-        .controls { background: #161b22; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-bottom: 3px solid var(--line); }
-        button { padding: 12px 20px; cursor: pointer; background: var(--line); color: black; border: none; font-weight: bold; border-radius: 5px; }
-        input { padding: 10px; width: 85px; text-align: center; background: #000; color: #00ffcc; border: 1px solid #30363d; font-size: 1.1em; }
-        .info-text { color: #8b949e; font-size: 0.9em; margin-top: 10px; }
+        .panel { background: #111; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--fam); }
+        button { padding: 10px 20px; cursor: pointer; background: var(--fam); color: white; border: none; font-weight: bold; }
+        input { padding: 8px; width: 80px; text-align: center; background: #000; color: gold; border: 1px solid #444; }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <h2>BLANK CLICK PREDICTION SYSTEM</h2>
-    <p class="info-text">Kisi bhi <b>Khali (Blank)</b> cell par click karein uske piche ki <b>Check Lines</b> dekhne ke liye.</p>
-    <button onclick="document.getElementById('csvPicker').click()">IMPORT RECORDS (CSV)</button>
-    <input type="file" id="csvPicker" style="display:none" onchange="loadCSV(this)">
-    <button onclick="exportCSV()" style="background:#30363d; color:white; margin-left:10px;">SAVE DATA</button>
+<div class="panel">
+    <h2>RAJDHANI NIGHT: BLANK SCANNER (FAM-TO-FAM)</h2>
+    <p>Pradeep ji, <b>Blank (Khali)</b> cell par click karein. Agar piche <b>2.2 Jodi</b> ki family hogi, toh <b>Check Line</b> ban jayegi.</p>
+    <button onclick="document.getElementById('csvIn').click()">IMPORT OLD CSV</button>
+    <input type="file" id="csvIn" style="display:none" onchange="importCSV(this)">
+    <button onclick="exportCSV()" style="background:#333; margin-left:10px;">SAVE DATA</button>
 </div>
 
-<div class="chart-frame" id="mainContainer">
+<div class="chart-box" id="container">
     <canvas id="lineCanvas"></canvas>
-    <table id="matkaTable">
-        <tbody id="tableBody"></tbody>
+    <table id="mainTable">
+        <tbody id="gridBody"></tbody>
     </table>
 </div>
 
-<div class="controls" style="margin-top:20px;">
-    <h3>Add New Week</h3>
-    <input type="text" id="w1" placeholder="Mon">
-    <input type="text" id="w2" placeholder="Tue">
-    <input type="text" id="w3" placeholder="Wed">
-    <input type="text" id="w4" placeholder="Thu">
-    <input type="text" id="w5" placeholder="Fri">
-    <button onclick="addNewWeek()">Add Row</button>
+<div class="panel" style="margin-top:20px;">
+    <input type="text" id="m1" placeholder="Mon">
+    <input type="text" id="m2" placeholder="Tue">
+    <input type="text" id="m3" placeholder="Wed">
+    <input type="text" id="m4" placeholder="Thu">
+    <input type="text" id="m5" placeholder="Fri">
+    <button onclick="addRow()">ADD NEW WEEK</button>
 </div>
 
 <script>
-let matkaData = JSON.parse(localStorage.getItem('pradeep_blank_db')) || [];
-const rashi = {'0':5,'1':6,'2':7,'3':8,'4':9,'5':0,'6':1,'7':2,'8':3,'9':4};
+let data = JSON.parse(localStorage.getItem('pradeep_final_db')) || [];
+const rashi = {'0':5, '1':6, '2':7, '3':8, '4':9, '5':0, '6':1, '7':2, '8':3, '9':4};
+
+// Family matching logic (2.2 Jodi)
+function getFamily(jodi) {
+    if(!jodi || jodi.length < 2) return [];
+    let d = jodi.split('').map(Number);
+    let r = d.map(x => rashi[x]);
+    let set = [
+        `${d[0]}${d[1]}`, `${d[1]}${d[0]}`, // Direct/Palat
+        `${r[0]}${d[1]}`, `${d[0]}${r[1]}`, // Half Cut
+        `${r[0]}${r[1]}`, `${r[1]}${r[0]}`, // Full Cut
+        `${d[1]}${r[0]}`, `${r[1]}${d[0]}`  // Mixed
+    ];
+    return [...new Set(set)];
+}
 
 function render() {
-    const tbody = document.getElementById('tableBody');
+    const tbody = document.getElementById('gridBody');
     tbody.innerHTML = "";
-    matkaData.forEach((row, r) => {
+    data.forEach((row, r) => {
         let tr = document.createElement('tr');
         row.forEach((cell, c) => {
             let td = document.createElement('td');
-            td.id = `cell-${r}-${c}`;
+            td.id = `c-${r}-${c}`;
             td.innerText = (cell && cell !== "**") ? cell : "";
-            td.onclick = () => scanBlankPattern(r, c);
+            td.onclick = () => scanBlankForFam(r, c);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
     });
 }
 
-// 1. Logic for Blank Cell Pattern Discovery
-function scanBlankPattern(r, c) {
-    resetCanvas();
-    let currentVal = matkaData[r][c];
-    
-    // Agar cell khali hai, toh hum prediction mode mein hain
-    alert("Scanning historical patterns for this position...");
+// 1. Blank Cell Prediction Logic
+function scanBlankForFam(r, c) {
+    clearCanvas();
+    // System pichle records mein connection dhundega
+    let found = false;
 
-    // Scan previous 10 weeks same column (Vertical) and cross
+    // Scan last 10 weeks
     for (let i = r - 1; i >= Math.max(0, r - 10); i--) {
         for (let j = 0; j < 5; j++) {
-            let oldVal = matkaData[i][j];
+            let oldVal = data[i][j];
             if (!oldVal || oldVal === "**") continue;
 
-            // Check if this old record could be the basis (Check Line)
-            // Logic: Fam-to-Fam or 0-prefix Sequence
-            if (isPotentialPattern(oldVal, i, j, r, c)) {
-                drawCheckLine(i, j, r, c);
+            // Hume check karna hai ki kya koi purani jodi is position se
+            // Fam-to-Fam ka "Check Line" pattern bana rahi hai
+            for(let prevI = i-1; prevI >= Math.max(0, i-5); prevI--) {
+                for(let prevJ = 0; prevJ < 5; prevJ++) {
+                    let veryOldVal = data[prevI][prevJ];
+                    if(getFamily(oldVal).includes(veryOldVal)) {
+                        // Agar purane records mein Fam-to-Fam ki line mili
+                        // Toh use current blank cell ki prediction ke liye dikhao
+                        drawCheckLine(prevI, prevJ, i, j);
+                        found = true;
+                    }
+                }
             }
         }
     }
+    if(!found) alert("Is position ke liye piche koi Fam-to-Fam check line nahi mili.");
 }
 
-function isPotentialPattern(oldVal, oldR, oldC, newR, newC) {
-    // 1. Vertical Same Day Pattern (Strong)
-    if (oldC === newC) return true;
-    
-    // 2. Cross Connection (Diagonal)
-    if (Math.abs(oldR - newR) === Math.abs(oldC - newC)) return true;
-
-    return false;
-}
-
-// 2. Drawing Check Lines for Proof
 function drawCheckLine(r1, c1, r2, c2) {
-    const s = document.getElementById(`cell-${r1}-${c1}`);
-    const e = document.getElementById(`cell-${r2}-${c2}`);
-    const canvas = document.getElementById('lineCanvas');
-    const ctx = canvas.getContext('2d');
+    const s = document.getElementById(`c-${r1}-${c1}`);
+    const e = document.getElementById(`c-${r2}-${c2}`);
+    const cvs = document.getElementById('lineCanvas');
+    const ctx = cvs.getContext('2d');
     
-    canvas.width = document.getElementById('mainContainer').offsetWidth;
-    canvas.height = document.getElementById('mainContainer').offsetHeight;
+    cvs.width = document.getElementById('container').offsetWidth;
+    cvs.height = document.getElementById('container').offsetHeight;
 
-    s.classList.add('source-mark'); // Circle on the historical proof
+    s.classList.add('source-circle'); // Purani jodi par Circle
 
     ctx.beginPath();
-    ctx.strokeStyle = (c1 === c2) ? "#00ffcc" : "#ff3366"; // Cyan for Vertical, Red for Cross
+    ctx.strokeStyle = "#00ff00"; // Green Check Line
     ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
+    ctx.setLineDash([5, 3]);
     ctx.moveTo(s.offsetLeft + 40, s.offsetTop + 32);
     ctx.lineTo(e.offsetLeft + 40, e.offsetTop + 32);
     ctx.stroke();
 }
 
-// Data Management
-function loadCSV(input) {
+// Data Handling
+function importCSV(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
-        matkaData = e.target.result.trim().split("\n").map(l => l.split(",").map(v => v.trim()));
+        data = e.target.result.trim().split("\n").map(l => l.split(",").map(v => v.trim()));
         save(); render();
-        alert("Records Loaded! Now click any cell to see check lines.");
+        alert("Old Records Loaded! Ab blank par click karke check line dekhein.");
     };
     reader.readAsText(input.files[0]);
 }
 
 function exportCSV() {
-    let csv = matkaData.map(r => r.join(",")).join("\n");
+    let csv = data.map(r => r.join(",")).join("\n");
     let a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-    a.download = 'Pradeep_Pattern_Data.csv';
+    a.download = 'Pradeep_Fam_Records.csv';
     a.click();
 }
 
-function addNewWeek() {
-    matkaData.push([document.getElementById('w1').value, document.getElementById('w2').value, document.getElementById('w3').value, document.getElementById('w4').value, document.getElementById('w5').value]);
+function addRow() {
+    data.push([document.getElementById('m1').value, document.getElementById('m2').value, document.getElementById('m3').value, document.getElementById('m4').value, document.getElementById('m5').value]);
     save(); render();
 }
 
-function save() { localStorage.setItem('pradeep_blank_db', JSON.stringify(matkaData)); }
-function resetCanvas() {
+function save() { localStorage.setItem('pradeep_final_db', JSON.stringify(data)); }
+function clearCanvas() {
     const cvs = document.getElementById('lineCanvas');
     cvs.getContext('2d').clearRect(0,0,cvs.width, cvs.height);
-    document.querySelectorAll('td').forEach(t => t.classList.remove('source-mark'));
+    document.querySelectorAll('td').forEach(t => t.classList.remove('source-circle'));
 }
 
 render();
