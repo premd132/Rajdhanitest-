@@ -2,253 +2,168 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>QUANTUM AI Engine</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Pattern Engine V1</title>
 
 <style>
-body{font-family:Arial;background:#f4f4f4;margin:10px}
-h2{text-align:center}
-button,input{padding:6px;margin:5px}
 
-#wrap{
-  position:relative;
-  background:#fff;
-  padding:10px;
-  overflow:auto;
+body{
+    font-family: Arial;
+    background:#111;
+    color:white;
 }
 
-table{border-collapse:collapse}
+#topbar{
+    padding:10px;
+    background:#222;
+}
+
+button{
+    padding:8px;
+    margin:5px;
+}
+
+#tableBox{
+    height:80vh;
+    overflow:auto;
+    border:1px solid #555;
+}
+
+table{
+    border-collapse:collapse;
+}
+
 td{
-  border:1px solid #999;
-  padding:6px;
-  text-align:center;
-  min-width:55px;
-  position:relative;
-}
-td[contenteditable]{background:#fffbe6}
-
-.circle{
-  border:3px solid blue;
-  border-radius:50%;
+    width:50px;
+    height:40px;
+    border:1px solid #444;
+    text-align:center;
+    font-size:18px;
+    cursor:pointer;
 }
 
-#draw{
-  position:absolute;
-  top:0;
-  left:0;
-  pointer-events:none;
+.blank{
+    background:#333;
 }
 
-#aiPanel{
-  margin-top:15px;
-  padding:10px;
-  background:#e6f2ff;
-  border:1px solid #99c2ff;
-}
 </style>
 </head>
 
+
 <body>
 
-<h2>QUANTUM AI Pattern Engine</h2>
+<div id="topbar">
 
-<input type="file" id="csvFile" accept=".csv">
-<button onclick="addRow()">➕ Add Row</button>
-<button onclick="runQuantum()">⚛ Run Quantum AI</button>
-<button onclick="clearAll()">🗑 Clear</button>
+<input type="file" id="file">
 
-<div id="wrap">
-  <canvas id="draw"></canvas>
-  <table id="chart"></table>
+<button onclick="loadCSV()">Upload CSV</button>
+
 </div>
 
-<div id="aiPanel">
-  <b>Quantum Result:</b>
-  <div id="aiOutput">No scan yet.</div>
+
+<div id="tableBox">
+<table id="grid"></table>
 </div>
+
+
 
 <script>
 
-// ===== FAMILY MAP =====
-const FAMILY={
- "22":["22","27","72","77"],
- "11":["11","61","66","16"],
- "33":["33","83","88","38"],
- "99":["99","44","49","94"],
- "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"],  
- "13":["13","18","31","36","63","68","81","86"],  
- "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"],  
- "23":["23","28","32","37","73","78","82","87"],  
- "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"],  
- "34":["34","39","43","48","84","89","93","98"],  
- "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
-};
+let data=[]
 
-const table=document.getElementById("chart");
-const canvas=document.getElementById("draw");
-const ctx=canvas.getContext("2d");
 
-// ===== LOAD LOCAL =====
-const saved=localStorage.getItem("jodiData");
-if(saved) buildTable(JSON.parse(saved));
+function loadCSV(){
 
-// ===== SAVE (AUTO ZERO PADDING) =====
-function save(){
-  const data=[];
-  [...table.rows].forEach(r=>{
-    let row=[];
-    [...r.cells].forEach(c=>{
-      let v=c.innerText.trim();
-      if(v==="") return;
-      if(v.length===1) v="0"+v;
-      c.innerText=v;
-      row.push(v);
-    });
-    data.push(row);
-  });
-  localStorage.setItem("jodiData",JSON.stringify(data));
-}
+    let f=document.getElementById("file").files[0]
 
-function buildTable(data){
-  table.innerHTML="";
-  data.forEach(row=>{
-    const tr=document.createElement("tr");
-    row.forEach(val=>{
-      const td=document.createElement("td");
-      if(val.length===1) val="0"+val;
-      td.innerText=val;
-      td.contentEditable=true;
-      td.oninput=save;
-      tr.appendChild(td);
-    });
-    table.appendChild(tr);
-  });
-  resizeCanvas();
-}
+    if(!f) return
 
-document.getElementById("csvFile").addEventListener("change",e=>{
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const rows=reader.result.trim().split(/\r?\n/)
-      .map(l=>l.split(",").map(v=>v.trim()));
-    buildTable(rows);
-    save();
-  };
-  reader.readAsText(e.target.files[0]);
-});
+    let r=new FileReader()
 
-function addRow(){
-  const tr=document.createElement("tr");
-  for(let i=0;i<6;i++){
-    const td=document.createElement("td");
-    td.contentEditable=true;
-    td.oninput=save;
-    tr.appendChild(td);
-  }
-  table.appendChild(tr);
-  save();
-  resizeCanvas();
-}
+    r.onload=function(e){
 
-function clearAll(){
-  table.innerHTML="";
-  localStorage.removeItem("jodiData");
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  document.getElementById("aiOutput").innerText="No scan yet.";
-}
+        let text=e.target.result
 
-function resizeCanvas(){
-  canvas.width=table.offsetWidth;
-  canvas.height=table.offsetHeight;
-}
+        parseCSV(text)
 
-function getFamily(val){
-  for(const key in FAMILY){
-    if(FAMILY[key].includes(val)) return key;
-  }
-  return null;
-}
+        drawTable()
 
-function center(td){
-  const r=td.getBoundingClientRect();
-  const t=table.getBoundingClientRect();
-  return {x:r.left-t.left+r.width/2,y:r.top-t.top+r.height/2};
-}
-
-// ===== QUANTUM AI =====
-function runQuantum(){
-
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  [...table.querySelectorAll("td")].forEach(td=>td.classList.remove("circle"));
-
-  const rows=table.rows.length;
-  if(rows<8){ alert("Need at least 8 rows"); return; }
-
-  const start=rows-7;
-
-  let familyHeat={};
-  let continuity=0;
-  let possible=0;
-
-  for(let r=start;r<rows-1;r++){
-    for(let c=0;c<6;c++){
-
-      let val=table.rows[r].cells[c].innerText.trim();
-      let fam=getFamily(val);
-      if(!fam) continue;
-
-      possible++;
-
-      for(let nc=c-1;nc<=c+1;nc++){
-        if(nc<0||nc>=6) continue;
-
-        let nextVal=table.rows[r+1].cells[nc].innerText.trim();
-        let nextFam=getFamily(nextVal);
-
-        if(nextFam===fam){
-          continuity++;
-          familyHeat[fam]=(familyHeat[fam]||0)+2;
-
-          let cell1=table.rows[r].cells[c];
-          let cell2=table.rows[r+1].cells[nc];
-
-          cell1.classList.add("circle");
-          cell2.classList.add("circle");
-
-          let p1=center(cell1);
-          let p2=center(cell2);
-
-          ctx.beginPath();
-          ctx.moveTo(p1.x,p1.y);
-          ctx.lineTo(p2.x,p2.y);
-          ctx.strokeStyle="blue";
-          ctx.lineWidth=2;
-          ctx.stroke();
-        }
-      }
     }
-  }
 
-  let sorted=Object.entries(familyHeat)
-    .sort((a,b)=>b[1]-a[1]);
+    r.readAsText(f)
 
-  let top3=sorted.slice(0,3).map(x=>x[0]);
-
-  let strength=possible?Math.min(99,
-      Math.round((continuity/possible)*100)):0;
-
-  let nextGuess=top3.length?FAMILY[top3[0]].join(", "):"None";
-
-  document.getElementById("aiOutput").innerHTML=
-    "Top Quantum Families: <b>"+top3.join(", ")+"</b><br>"+
-    "Quantum Strength: <b>"+strength+"%</b><br>"+
-    "Next Row Smart Spread: <b>"+nextGuess+"</b>";
 }
+
+
+
+function parseCSV(text){
+
+    data=[]
+
+    let rows=text.split(/\r?\n/)
+
+    for(let row of rows){
+
+        if(row.trim()=="") continue
+
+        let cols=row.trim().split(".")
+
+        while(cols.length<6) cols.push("**")
+
+        data.push(cols)
+
+    }
+
+}
+
+
+
+function drawTable(){
+
+    let g=document.getElementById("grid")
+
+    g.innerHTML=""
+
+    for(let r=0;r<data.length;r++){
+
+        let tr=document.createElement("tr")
+
+        for(let c=0;c<6;c++){
+
+            let td=document.createElement("td")
+
+            let v=data[r][c]
+
+            td.innerText=v
+
+            if(v=="**") td.classList.add("blank")
+
+            td.onclick=function(){
+
+                cellClick(r,c)
+
+            }
+
+            tr.appendChild(td)
+
+        }
+
+        g.appendChild(tr)
+
+    }
+
+}
+
+
+
+function cellClick(r,c){
+
+    alert("Row "+r+" Col "+c+" = "+data[r][c])
+
+}
+
 
 </script>
+
+
 </body>
 </html>
