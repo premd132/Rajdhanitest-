@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AI Pattern Engine</title>
+<title>AI Pattern Engine Full</title>
 
 <style>
 
@@ -18,8 +18,8 @@ body{
 }
 
 button{
+    margin:3px;
     padding:6px;
-    margin:4px;
 }
 
 #tableBox{
@@ -33,32 +33,32 @@ table{
 }
 
 td{
-    width:50px;
-    height:40px;
+    width:45px;
+    height:35px;
     border:1px solid #444;
     text-align:center;
     cursor:pointer;
-    font-size:18px;
 }
 
-.blank{
-    background:#333;
-}
+.blank{background:#333;}
 
-.line{
-    background:red !important;
-}
+.line{background:red!important;}
+.diag{background:blue!important;}
+.cross{background:green!important;}
+.family{background:orange!important;}
 
-.diag{
-    background:blue !important;
-}
+#panel{
 
-.cross{
-    background:green !important;
-}
+position:fixed;
+right:0;
+top:60px;
+width:230px;
+height:80vh;
+background:#000;
+border-left:2px solid #555;
+overflow:auto;
+padding:10px;
 
-.family{
-    background:orange !important;
 }
 
 </style>
@@ -67,6 +67,7 @@ td{
 
 <body>
 
+
 <div id="topbar">
 
 <input type="file" id="file">
@@ -74,18 +75,28 @@ td{
 <button onclick="loadCSV()">Upload</button>
 
 <button onclick="mode('line')">Line</button>
-<button onclick="mode('diag')">Diagonal</button>
+<button onclick="mode('diag')">Diag</button>
 <button onclick="mode('cross')">Cross</button>
-<button onclick="mode('family')">Family</button>
 
 <button onclick="clearDraw()">Clear</button>
+
+<button onclick="aiScan()">AI Scan</button>
 
 </div>
 
 
-<div id="tableBox">
 
+<div id="tableBox">
 <table id="grid"></table>
+</div>
+
+
+
+<div id="panel">
+
+<h3>AI Result</h3>
+
+<div id="result"></div>
 
 </div>
 
@@ -94,30 +105,29 @@ td{
 <script>
 
 let data=[]
-
 let selected=[]
-
 let drawMode="line"
 
 
 
+/* ---------------- CSV ---------------- */
+
 function loadCSV(){
 
-    let f=document.getElementById("file").files[0]
+let f=file.files[0]
 
-    if(!f) return
+if(!f)return
 
-    let r=new FileReader()
+let r=new FileReader()
 
-    r.onload=function(e){
+r.onload=e=>{
 
-        parseCSV(e.target.result)
+parseCSV(e.target.result)
+drawTable()
 
-        drawTable()
+}
 
-    }
-
-    r.readAsText(f)
+r.readAsText(f)
 
 }
 
@@ -125,21 +135,21 @@ function loadCSV(){
 
 function parseCSV(text){
 
-    data=[]
+data=[]
 
-    let rows=text.split(/\r?\n/)
+let rows=text.split(/\r?\n/)
 
-    for(let row of rows){
+for(let row of rows){
 
-        if(row.trim()=="") continue
+if(!row.trim())continue
 
-        let cols=row.trim().split(".")
+let cols=row.split(".")
 
-        while(cols.length<6) cols.push("**")
+while(cols.length<6)cols.push("**")
 
-        data.push(cols)
+data.push(cols)
 
-    }
+}
 
 }
 
@@ -147,136 +157,246 @@ function parseCSV(text){
 
 function drawTable(){
 
-    let g=document.getElementById("grid")
+let g=grid
+g.innerHTML=""
 
-    g.innerHTML=""
+for(let r=0;r<data.length;r++){
 
-    for(let r=0;r<data.length;r++){
+let tr=document.createElement("tr")
 
-        let tr=document.createElement("tr")
+for(let c=0;c<6;c++){
 
-        for(let c=0;c<6;c++){
+let td=document.createElement("td")
 
-            let td=document.createElement("td")
+let v=data[r][c]
 
-            let v=data[r][c]
+td.innerText=v
 
-            td.innerText=v
+if(v=="**")td.classList.add("blank")
 
-            if(v=="**") td.classList.add("blank")
+td.onclick=()=>cellClick(r,c)
 
-            td.onclick=function(){
+tr.appendChild(td)
 
-                cellClick(r,c)
+}
 
-            }
+g.appendChild(tr)
 
-            tr.appendChild(td)
-
-        }
-
-        g.appendChild(tr)
-
-    }
+}
 
 }
 
 
+
+/* ------------ draw system ------------ */
 
 function mode(m){
 
-    drawMode=m
-
-    selected=[]
+drawMode=m
+selected=[]
 
 }
-
 
 
 function cellClick(r,c){
 
-    selected.push({r,c})
+selected.push({r,c})
 
-    if(selected.length==2){
-
-        drawPattern()
-
-    }
+if(selected.length==2)drawPattern()
 
 }
-
 
 
 function drawPattern(){
 
-    let t=document.getElementById("grid")
+let t=grid
 
-    let a=selected[0]
+let a=selected[0]
+let b=selected[1]
 
-    let b=selected[1]
+let c1=t.rows[a.r].cells[a.c]
+let c2=t.rows[b.r].cells[b.c]
 
-    let c1=t.rows[a.r].cells[a.c]
+if(drawMode=="line"){
+c1.classList.add("line")
+c2.classList.add("line")
+}
 
-    let c2=t.rows[b.r].cells[b.c]
+if(drawMode=="diag"){
+c1.classList.add("diag")
+c2.classList.add("diag")
+}
 
-    if(drawMode=="line"){
+if(drawMode=="cross"){
+c1.classList.add("cross")
+c2.classList.add("cross")
+}
 
-        c1.classList.add("line")
+selected=[]
 
-        c2.classList.add("line")
+}
 
-    }
 
-    if(drawMode=="diag"){
+function clearDraw(){
 
-        c1.classList.add("diag")
+document.querySelectorAll("td").forEach(x=>{
 
-        c2.classList.add("diag")
+x.classList.remove(
+"line","diag","cross","family"
+)
 
-    }
-
-    if(drawMode=="cross"){
-
-        c1.classList.add("cross")
-
-        c2.classList.add("cross")
-
-    }
-
-    if(drawMode=="family"){
-
-        c1.classList.add("family")
-
-        c2.classList.add("family")
-
-    }
-
-    selected=[]
+})
 
 }
 
 
 
-function clearDraw(){
+/* ------------ FAMILY ENGINE ----------- */
 
-    let td=document.querySelectorAll("td")
+let family={
 
-    td.forEach(x=>{
+"12":["12","17","21","26","62","67","71","76"],
+"13":["13","18","31","36","63","68","81","86"],
+"14":["14","19","41","46","64","69","91","96"],
+"15":["01","06","10","15","51","56","60","65"],
+"23":["23","28","32","37","73","78","82","87"],
+"24":["24","29","42","47","74","79","92","97"],
+"25":["02","07","20","25","52","57","70","75"],
+"34":["34","39","43","48","84","89","93","98"],
+"35":["03","08","30","35","53","58","80","85"],
+"45":["04","09","40","45","54","59","90","95"]
 
-        x.classList.remove(
-            "line",
-            "diag",
-            "cross",
-            "family"
-        )
+}
 
-    })
+
+function fam(v){
+
+for(let k in family){
+
+if(family[k].includes(v))return k
+
+}
+
+return "X"
+
+}
+
+
+
+/* ------------ TRICK ENGINE ----------- */
+
+
+function aiScan(){
+
+clearDraw()
+
+let last=data.length-1
+
+let res=""
+
+for(let depth=2;depth<=10;depth++){
+
+if(last-depth<0)continue
+
+if(trickRepeat(last,depth)){
+
+res+="Repeat depth "+depth+"<br>"
+
+highlight(last,depth)
+
+}
+
+if(trickFamily(last,depth)){
+
+res+="Family depth "+depth+"<br>"
+
+highlight(last,depth)
+
+}
+
+if(trickDiagonal(last,depth)){
+
+res+="Diagonal "+depth+"<br>"
+
+highlight(last,depth)
+
+}
+
+}
+
+if(res=="")res="No pattern"
+
+result.innerHTML=res
+
+}
+
+
+
+/* -------- trick 1 repeat -------- */
+
+function trickRepeat(last,depth){
+
+for(let c=0;c<6;c++){
+
+if(data[last][c]!=data[last-depth][c])return false
+
+}
+
+return true
+
+}
+
+
+/* -------- trick 2 family -------- */
+
+function trickFamily(last,depth){
+
+for(let c=0;c<6;c++){
+
+let a=fam(data[last][c])
+let b=fam(data[last-depth][c])
+
+if(a!=b)return false
+
+}
+
+return true
+
+}
+
+
+/* -------- trick 3 diagonal -------- */
+
+function trickDiagonal(last,depth){
+
+for(let c=0;c<5;c++){
+
+if(data[last][c]!=data[last-depth][c+1])return false
+
+}
+
+return true
+
+}
+
+
+
+/* ---------- highlight ----------- */
+
+function highlight(last,depth){
+
+for(let c=0;c<6;c++){
+
+grid.rows[last].cells[c].classList.add("line")
+
+grid.rows[last-depth].cells[c].classList.add("diag")
+
+}
 
 }
 
 
 </script>
-
 
 </body>
 </html>
