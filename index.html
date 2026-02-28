@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ULTRA AI ENGINE V2</title>
+<title>ULTRA AI ENGINE</title>
 
 <style>
 
@@ -49,7 +49,7 @@ cursor:pointer;
 position:fixed;
 right:0;
 top:60px;
-width:250px;
+width:260px;
 height:80vh;
 background:#000;
 border-left:2px solid #555;
@@ -71,6 +71,8 @@ padding:10px;
 <button onclick="loadCSV()">Upload</button>
 
 <button onclick="aiScan()">AI Scan</button>
+
+<button onclick="predictNext()">Predict</button>
 
 <button onclick="clearDraw()">Clear</button>
 
@@ -101,6 +103,8 @@ let data=[]
 let maxCol=0
 
 
+
+/* ===== CSV ===== */
 
 function loadCSV(){
 
@@ -142,8 +146,6 @@ data.push(cols)
 
 }
 
-
-// fill blank
 
 for(let r=0;r<data.length;r++){
 
@@ -189,6 +191,8 @@ grid.appendChild(tr)
 
 
 
+/* ===== CLEAR ===== */
+
 function clearDraw(){
 
 document.querySelectorAll("td").forEach(x=>{
@@ -203,8 +207,7 @@ x.classList.remove(
 
 
 
-/* ===== ULTRA AI SCAN ===== */
-
+/* ===== AI SCAN ===== */
 
 function aiScan(){
 
@@ -212,7 +215,7 @@ clearDraw()
 
 let last=data.length-1
 
-let res=""
+let res="Scan:<br>"
 
 for(let d=2;d<20;d++){
 
@@ -234,8 +237,6 @@ highlight(last,d)
 
 }
 
-if(res=="")res="No pattern"
-
 result.innerHTML=res
 
 }
@@ -247,7 +248,6 @@ function repeatCheck(last,d){
 for(let c=0;c<maxCol;c++){
 
 if(data[last][c]!=data[last-d][c])
-
 return false
 
 }
@@ -263,7 +263,6 @@ function diagCheck(last,d){
 for(let c=0;c<maxCol-1;c++){
 
 if(data[last][c]!=data[last-d][c+1])
-
 return false
 
 }
@@ -286,6 +285,78 @@ grid.rows[last-d].cells[c].classList.add("diag")
 
 }
 
+
+
+/* ===== PREDICTION ===== */
+
+function predictNext(){
+
+clearDraw()
+
+let last=data.length-1
+let prev=last-1
+
+if(prev<0)return
+
+let res="Prediction:<br>"
+
+for(let d=2;d<20;d++){
+
+if(prev-d<0)continue
+
+if(repeatCheck(prev,d)){
+
+let r=prev-d+1
+
+res+="Repeat "+d+" → "
+
+for(let c=0;c<maxCol;c++){
+
+res+=data[r][c]+" "
+
+highlightCell(last,c)
+
+}
+
+res+="<br>"
+
+}
+
+if(diagCheck(prev,d)){
+
+let r=prev-d+1
+
+res+="Diag "+d+" → "
+
+for(let c=0;c<maxCol;c++){
+
+res+=data[r][c]+" "
+
+highlightCell(last,c)
+
+}
+
+res+="<br>"
+
+}
+
+}
+
+result.innerHTML=res
+
+}
+
+
+
+function highlightCell(r,c){
+
+if(grid.rows[r] && grid.rows[r].cells[c]){
+
+grid.rows[r].cells[c].classList.add("cross")
+
+}
+
+}
 
 
 </script>
