@@ -2,63 +2,59 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AI Pattern Engine Full</title>
+<title>ULTRA AI ENGINE V2</title>
 
 <style>
 
 body{
-    font-family:Arial;
-    background:#111;
-    color:white;
+background:#111;
+color:#fff;
+font-family:Arial;
 }
 
 #topbar{
-    background:#222;
-    padding:10px;
+background:#222;
+padding:10px;
 }
 
 button{
-    margin:3px;
-    padding:6px;
+margin:3px;
+padding:6px;
 }
 
 #tableBox{
-    height:80vh;
-    overflow:auto;
-    border:1px solid #555;
+height:80vh;
+overflow:auto;
+border:1px solid #555;
 }
 
 table{
-    border-collapse:collapse;
+border-collapse:collapse;
 }
 
 td{
-    width:45px;
-    height:35px;
-    border:1px solid #444;
-    text-align:center;
-    cursor:pointer;
+border:1px solid #444;
+width:45px;
+height:35px;
+text-align:center;
+cursor:pointer;
 }
 
 .blank{background:#333;}
-
 .line{background:red!important;}
 .diag{background:blue!important;}
 .cross{background:green!important;}
-.family{background:orange!important;}
 
 #panel{
-
 position:fixed;
 right:0;
 top:60px;
-width:230px;
+width:250px;
 height:80vh;
 background:#000;
 border-left:2px solid #555;
 overflow:auto;
 padding:10px;
-
 }
 
 </style>
@@ -74,27 +70,23 @@ padding:10px;
 
 <button onclick="loadCSV()">Upload</button>
 
-<button onclick="mode('line')">Line</button>
-<button onclick="mode('diag')">Diag</button>
-<button onclick="mode('cross')">Cross</button>
+<button onclick="aiScan()">AI Scan</button>
 
 <button onclick="clearDraw()">Clear</button>
 
-<button onclick="aiScan()">AI Scan</button>
-
 </div>
-
 
 
 <div id="tableBox">
-<table id="grid"></table>
-</div>
 
+<table id="grid"></table>
+
+</div>
 
 
 <div id="panel">
 
-<h3>AI Result</h3>
+<h3>ULTRA AI</h3>
 
 <div id="result"></div>
 
@@ -104,13 +96,11 @@ padding:10px;
 
 <script>
 
+
 let data=[]
-let selected=[]
-let drawMode="line"
+let maxCol=0
 
 
-
-/* ---------------- CSV ---------------- */
 
 function loadCSV(){
 
@@ -136,6 +126,7 @@ r.readAsText(f)
 function parseCSV(text){
 
 data=[]
+maxCol=0
 
 let rows=text.split(/\r?\n/)
 
@@ -143,11 +134,24 @@ for(let row of rows){
 
 if(!row.trim())continue
 
-let cols=row.split(".")
+let cols=row.trim().split(".")
 
-while(cols.length<6)cols.push("**")
+if(cols.length>maxCol)maxCol=cols.length
 
 data.push(cols)
+
+}
+
+
+// fill blank
+
+for(let r=0;r<data.length;r++){
+
+while(data[r].length<maxCol){
+
+data[r].push("**")
+
+}
 
 }
 
@@ -157,14 +161,13 @@ data.push(cols)
 
 function drawTable(){
 
-let g=grid
-g.innerHTML=""
+grid.innerHTML=""
 
 for(let r=0;r<data.length;r++){
 
 let tr=document.createElement("tr")
 
-for(let c=0;c<6;c++){
+for(let c=0;c<maxCol;c++){
 
 let td=document.createElement("td")
 
@@ -174,67 +177,16 @@ td.innerText=v
 
 if(v=="**")td.classList.add("blank")
 
-td.onclick=()=>cellClick(r,c)
-
 tr.appendChild(td)
 
 }
 
-g.appendChild(tr)
+grid.appendChild(tr)
 
 }
 
 }
 
-
-
-/* ------------ draw system ------------ */
-
-function mode(m){
-
-drawMode=m
-selected=[]
-
-}
-
-
-function cellClick(r,c){
-
-selected.push({r,c})
-
-if(selected.length==2)drawPattern()
-
-}
-
-
-function drawPattern(){
-
-let t=grid
-
-let a=selected[0]
-let b=selected[1]
-
-let c1=t.rows[a.r].cells[a.c]
-let c2=t.rows[b.r].cells[b.c]
-
-if(drawMode=="line"){
-c1.classList.add("line")
-c2.classList.add("line")
-}
-
-if(drawMode=="diag"){
-c1.classList.add("diag")
-c2.classList.add("diag")
-}
-
-if(drawMode=="cross"){
-c1.classList.add("cross")
-c2.classList.add("cross")
-}
-
-selected=[]
-
-}
 
 
 function clearDraw(){
@@ -242,7 +194,7 @@ function clearDraw(){
 document.querySelectorAll("td").forEach(x=>{
 
 x.classList.remove(
-"line","diag","cross","family"
+"line","diag","cross"
 )
 
 })
@@ -251,39 +203,7 @@ x.classList.remove(
 
 
 
-/* ------------ FAMILY ENGINE ----------- */
-
-let family={
-
-"12":["12","17","21","26","62","67","71","76"],
-"13":["13","18","31","36","63","68","81","86"],
-"14":["14","19","41","46","64","69","91","96"],
-"15":["01","06","10","15","51","56","60","65"],
-"23":["23","28","32","37","73","78","82","87"],
-"24":["24","29","42","47","74","79","92","97"],
-"25":["02","07","20","25","52","57","70","75"],
-"34":["34","39","43","48","84","89","93","98"],
-"35":["03","08","30","35","53","58","80","85"],
-"45":["04","09","40","45","54","59","90","95"]
-
-}
-
-
-function fam(v){
-
-for(let k in family){
-
-if(family[k].includes(v))return k
-
-}
-
-return "X"
-
-}
-
-
-
-/* ------------ TRICK ENGINE ----------- */
+/* ===== ULTRA AI SCAN ===== */
 
 
 function aiScan(){
@@ -294,31 +214,21 @@ let last=data.length-1
 
 let res=""
 
-for(let depth=2;depth<=10;depth++){
+for(let d=2;d<20;d++){
 
-if(last-depth<0)continue
+if(last-d<0)continue
 
-if(trickRepeat(last,depth)){
+if(repeatCheck(last,d)){
 
-res+="Repeat depth "+depth+"<br>"
-
-highlight(last,depth)
-
-}
-
-if(trickFamily(last,depth)){
-
-res+="Family depth "+depth+"<br>"
-
-highlight(last,depth)
+res+="Repeat "+d+"<br>"
+highlight(last,d)
 
 }
 
-if(trickDiagonal(last,depth)){
+if(diagCheck(last,d)){
 
-res+="Diagonal "+depth+"<br>"
-
-highlight(last,depth)
+res+="Diagonal "+d+"<br>"
+highlight(last,d)
 
 }
 
@@ -332,46 +242,13 @@ result.innerHTML=res
 
 
 
-/* -------- trick 1 repeat -------- */
+function repeatCheck(last,d){
 
-function trickRepeat(last,depth){
+for(let c=0;c<maxCol;c++){
 
-for(let c=0;c<6;c++){
+if(data[last][c]!=data[last-d][c])
 
-if(data[last][c]!=data[last-depth][c])return false
-
-}
-
-return true
-
-}
-
-
-/* -------- trick 2 family -------- */
-
-function trickFamily(last,depth){
-
-for(let c=0;c<6;c++){
-
-let a=fam(data[last][c])
-let b=fam(data[last-depth][c])
-
-if(a!=b)return false
-
-}
-
-return true
-
-}
-
-
-/* -------- trick 3 diagonal -------- */
-
-function trickDiagonal(last,depth){
-
-for(let c=0;c<5;c++){
-
-if(data[last][c]!=data[last-depth][c+1])return false
+return false
 
 }
 
@@ -381,22 +258,38 @@ return true
 
 
 
-/* ---------- highlight ----------- */
+function diagCheck(last,d){
 
-function highlight(last,depth){
+for(let c=0;c<maxCol-1;c++){
 
-for(let c=0;c<6;c++){
+if(data[last][c]!=data[last-d][c+1])
+
+return false
+
+}
+
+return true
+
+}
+
+
+
+function highlight(last,d){
+
+for(let c=0;c<maxCol;c++){
 
 grid.rows[last].cells[c].classList.add("line")
 
-grid.rows[last-depth].cells[c].classList.add("diag")
+grid.rows[last-d].cells[c].classList.add("diag")
 
 }
 
 }
+
 
 
 </script>
+
 
 </body>
 </html>
