@@ -2,24 +2,24 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AI Pattern Engine V1</title>
+<title>AI Pattern Engine</title>
 
 <style>
 
 body{
-    font-family: Arial;
+    font-family:Arial;
     background:#111;
     color:white;
 }
 
 #topbar{
-    padding:10px;
     background:#222;
+    padding:10px;
 }
 
 button{
-    padding:8px;
-    margin:5px;
+    padding:6px;
+    margin:4px;
 }
 
 #tableBox{
@@ -37,12 +37,28 @@ td{
     height:40px;
     border:1px solid #444;
     text-align:center;
-    font-size:18px;
     cursor:pointer;
+    font-size:18px;
 }
 
 .blank{
     background:#333;
+}
+
+.line{
+    background:red !important;
+}
+
+.diag{
+    background:blue !important;
+}
+
+.cross{
+    background:green !important;
+}
+
+.family{
+    background:orange !important;
 }
 
 </style>
@@ -55,13 +71,22 @@ td{
 
 <input type="file" id="file">
 
-<button onclick="loadCSV()">Upload CSV</button>
+<button onclick="loadCSV()">Upload</button>
+
+<button onclick="mode('line')">Line</button>
+<button onclick="mode('diag')">Diagonal</button>
+<button onclick="mode('cross')">Cross</button>
+<button onclick="mode('family')">Family</button>
+
+<button onclick="clearDraw()">Clear</button>
 
 </div>
 
 
 <div id="tableBox">
+
 <table id="grid"></table>
+
 </div>
 
 
@@ -69,6 +94,11 @@ td{
 <script>
 
 let data=[]
+
+let selected=[]
+
+let drawMode="line"
+
 
 
 function loadCSV(){
@@ -81,9 +111,7 @@ function loadCSV(){
 
     r.onload=function(e){
 
-        let text=e.target.result
-
-        parseCSV(text)
+        parseCSV(e.target.result)
 
         drawTable()
 
@@ -155,9 +183,94 @@ function drawTable(){
 
 
 
+function mode(m){
+
+    drawMode=m
+
+    selected=[]
+
+}
+
+
+
 function cellClick(r,c){
 
-    alert("Row "+r+" Col "+c+" = "+data[r][c])
+    selected.push({r,c})
+
+    if(selected.length==2){
+
+        drawPattern()
+
+    }
+
+}
+
+
+
+function drawPattern(){
+
+    let t=document.getElementById("grid")
+
+    let a=selected[0]
+
+    let b=selected[1]
+
+    let c1=t.rows[a.r].cells[a.c]
+
+    let c2=t.rows[b.r].cells[b.c]
+
+    if(drawMode=="line"){
+
+        c1.classList.add("line")
+
+        c2.classList.add("line")
+
+    }
+
+    if(drawMode=="diag"){
+
+        c1.classList.add("diag")
+
+        c2.classList.add("diag")
+
+    }
+
+    if(drawMode=="cross"){
+
+        c1.classList.add("cross")
+
+        c2.classList.add("cross")
+
+    }
+
+    if(drawMode=="family"){
+
+        c1.classList.add("family")
+
+        c2.classList.add("family")
+
+    }
+
+    selected=[]
+
+}
+
+
+
+function clearDraw(){
+
+    let td=document.querySelectorAll("td")
+
+    td.forEach(x=>{
+
+        x.classList.remove(
+            "line",
+            "diag",
+            "cross",
+            "family"
+        )
+
+    })
 
 }
 
