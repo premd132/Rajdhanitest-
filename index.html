@@ -1,366 +1,231 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>ULTRA AI ENGINE</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalyan Pro AI – Pradeep Kumar System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; 
+            --green-line: #00ff88; 
+            --bg: #0f172a; 
+            --panel: #1e293b; 
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-<style>
+        /* Dashboard Styling */
+        #main-app { padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
+        th { background: #1e293b; color: white; font-size: 11px; }
+        
+        .circle { 
+            border: 3px solid var(--blue-circle) !important; 
+            border-radius: 50% !important; 
+            background: rgba(0, 132, 255, 0.15); 
+            z-index: 10;
+        }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-body{
-background:#111;
-color:#fff;
-font-family:Arial;
-}
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
 
-#topbar{
-background:#222;
-padding:10px;
-}
-
-button{
-margin:3px;
-padding:6px;
-}
-
-#tableBox{
-height:80vh;
-overflow:auto;
-border:1px solid #555;
-}
-
-table{
-border-collapse:collapse;
-}
-
-td{
-border:1px solid #444;
-width:45px;
-height:35px;
-text-align:center;
-cursor:pointer;
-}
-
-.blank{background:#333;}
-.line{background:red!important;}
-.diag{background:blue!important;}
-.cross{background:green!important;}
-
-#panel{
-position:fixed;
-right:0;
-top:60px;
-width:260px;
-height:80vh;
-background:#000;
-border-left:2px solid #555;
-overflow:auto;
-padding:10px;
-}
-
-</style>
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 500px; box-shadow: 0 0 50px #000; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
+    </style>
 </head>
-
-
 <body>
 
+<div id="main-app" style="display: block;">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h2 style="color:var(--gold); margin:0;">Kalyan Pro AI</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
+    </div>
 
-<div id="topbar">
+    <div class="toolbar">
+        <input type="file" id="csv" style="display:none">
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
+    </div>
 
-<input type="file" id="file">
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
 
-<button onclick="loadCSV()">Upload</button>
-
-<button onclick="aiScan()">AI Scan</button>
-
-<button onclick="predictNext()">Predict</button>
-
-<button onclick="clearDraw()">Clear</button>
-
+    <div class="dashboard">
+        <div class="card">
+            <h3>✔ Tircha Matches (10 Week)</h3>
+            <div id="checks">Click a blank cell to analyze...</div>
+        </div>
+        <div class="card">
+            <h3>🤖 AI Advanced Results</h3>
+            <div id="ai">Wait for input...</div>
+        </div>
+        <div class="card">
+            <h3>🔮 Future AI (3-Pair)</h3>
+            <div id="future">Select a match...</div>
+        </div>
+    </div>
 </div>
 
-
-<div id="tableBox">
-
-<table id="grid"></table>
-
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0; color:#000;">Cross Sequence Trace</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #ddd; width:100%; overflow:auto;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
 </div>
-
-
-<div id="panel">
-
-<h3>ULTRA AI</h3>
-
-<div id="result"></div>
-
-</div>
-
-
 
 <script>
+const STORAGE_KEY="pdata_Kalyan_v3";
+let targetCol=null;
+const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill(["**","**","**","**","**","**"]);
+let activeMark=null;
 
-let data=[]
-let maxCol=0
+function norm(v){if(v==""||v=="**")return "**"; v=String(v).trim(); return v.length==1?"0"+v:v;}
+function smartMatch(a,b){ if(a=="**"||b=="**") return false; if(a===b || a===b.split('').reverse().join('')) return true; for(let k in FAMILY) if(FAMILY[k].includes(a) && FAMILY[k].includes(b)) return true; return false; }
 
-
-
-/* ===== CSV ===== */
-
-function loadCSV(){
-
-let f=file.files[0]
-
-if(!f)return
-
-let r=new FileReader()
-
-r.onload=e=>{
-
-parseCSV(e.target.result)
-drawTable()
-
+function draw(){
+    let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((r,ri)=>{
+        h+="<tr>";
+        r.forEach((c,ci)=>{
+            let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
+            h+=`<td class="${cls}" contenteditable onblur="data[${ri}][${ci}]=norm(this.innerText)" onclick="handleCellClick(${ri},${ci})">${c}</td>`;
+        });
+        h+="</tr>";
+    });
+    document.getElementById("tbl").innerHTML=h;
+    if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
 }
 
-r.readAsText(f)
-
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    return activeMark.coords.some(p => p.r === ri && p.c === ci);
 }
 
-
-
-function parseCSV(text){
-
-data=[]
-maxCol=0
-
-let rows=text.split(/\r?\n/)
-
-for(let row of rows){
-
-if(!row.trim())continue
-
-let cols=row.trim().split(".")
-
-if(cols.length>maxCol)maxCol=cols.length
-
-data.push(cols)
-
+function handleCellClick(r, c) {
+    if(data[r][c] === "**") {
+        makeTirchaPattern(r, c);
+    }
 }
 
+// Tircha Pattern Logic: 3 Row upar se 10 week scan
+function makeTirchaPattern(r, c) {
+    targetCol = c;
+    let scanResults = [];
+    let startPoint = r - 3; // 3 Row uper se shuru
+    if(startPoint < 0) startPoint = 0;
 
-for(let r=0;r<data.length;r++){
+    // Scanning last 10 weeks (approx 60 rows)
+    let lookback = Math.max(0, r - 60);
 
-while(data[r].length<maxCol){
-
-data[r].push("**")
-
+    for(let i = r - 1; i >= lookback; i--) {
+        // Diagonal checking (Left Cross, Straight, Right Cross)
+        let directions = [c-1, c, c+1]; 
+        directions.forEach(dirCol => {
+            if(dirCol >= 0 && dirCol < 6 && data[i][dirCol] !== "**") {
+                // Agar pichli row mein similar pattern milta hai
+                if(i < r-1 && smartMatch(data[i][dirCol], data[r-1][c])) {
+                    scanResults.push({row: i, col: dirCol, type: dirCol === c ? 'Straight' : 'Tircha'});
+                }
+            }
+        });
+    }
+    showMatches(scanResults, r, c);
 }
 
+function showMatches(matches, tr, tc) {
+    let container = document.getElementById("checks");
+    container.innerHTML = "";
+    matches.slice(0, 10).forEach((m, idx) => {
+        let d = document.createElement("div");
+        d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; border-left:4px solid #0084ff;";
+        d.innerText = `${m.type} Match Found @ Row ${m.row + 1}`;
+        d.onclick = () => {
+            activeMark = { coords: [{r: m.row, c: m.col}, {r: m.row+1, c: tc}] };
+            draw();
+            showPopupPattern(m.row, m.col, tc);
+        };
+        container.appendChild(d);
+    });
+    
+    // AI Prediction
+    let pool = matches.map(m => data[m.row + 1] ? data[m.row + 1][tc] : null).filter(v => v && v !== "**");
+    document.getElementById("future").innerHTML = pool.length ? `<b>Probable:</b> ${[...new Set(pool)].slice(0,3).join(" , ")}` : "Analyzing...";
 }
 
+function showPopupPattern(r, c, tc) {
+    let html = "<table id='popTbl' style='width:100%'>";
+    for(let i = -1; i <= 2; i++) {
+        if(!data[r+i]) continue;
+        html += "<tr>";
+        data[r+i].forEach((v, j) => {
+            let isCircle = (i === 0 && j === c) || (i === 1 && j === tc);
+            html += `<td class="${isCircle ? 'circle' : ''}">${v}</td>`;
+        });
+        html += "</tr>";
+    }
+    document.getElementById("popData").innerHTML = html + "</table>";
+    document.getElementById("popup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
+    setTimeout(() => drawLines("popCanvas", document.getElementById("popTbl")), 100);
 }
 
-
-
-function drawTable(){
-
-grid.innerHTML=""
-
-for(let r=0;r<data.length;r++){
-
-let tr=document.createElement("tr")
-
-for(let c=0;c<maxCol;c++){
-
-let td=document.createElement("td")
-
-let v=data[r][c]
-
-td.innerText=v
-
-if(v=="**")td.classList.add("blank")
-
-tr.appendChild(td)
-
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const cells = tblEl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
+    
+    ctx.strokeStyle = "#00ff88"; 
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const x = c.offsetLeft + c.offsetWidth/2;
+        const y = c.offsetTop + c.offsetHeight/2;
+        if(idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
 }
 
-grid.appendChild(tr)
-
-}
-
-}
-
-
-
-/* ===== CLEAR ===== */
-
-function clearDraw(){
-
-document.querySelectorAll("td").forEach(x=>{
-
-x.classList.remove(
-"line","diag","cross"
-)
-
-})
-
-}
-
-
-
-/* ===== AI SCAN ===== */
-
-function aiScan(){
-
-clearDraw()
-
-let last=data.length-1
-
-let res="Scan:<br>"
-
-for(let d=2;d<20;d++){
-
-if(last-d<0)continue
-
-if(repeatCheck(last,d)){
-
-res+="Repeat "+d+"<br>"
-highlight(last,d)
-
-}
-
-if(diagCheck(last,d)){
-
-res+="Diagonal "+d+"<br>"
-highlight(last,d)
-
-}
-
-}
-
-result.innerHTML=res
-
-}
-
-
-
-function repeatCheck(last,d){
-
-for(let c=0;c<maxCol;c++){
-
-if(data[last][c]!=data[last-d][c])
-return false
-
-}
-
-return true
-
-}
-
-
-
-function diagCheck(last,d){
-
-for(let c=0;c<maxCol-1;c++){
-
-if(data[last][c]!=data[last-d][c+1])
-return false
-
-}
-
-return true
-
-}
-
-
-
-function highlight(last,d){
-
-for(let c=0;c<maxCol;c++){
-
-grid.rows[last].cells[c].classList.add("line")
-
-grid.rows[last-d].cells[c].classList.add("diag")
-
-}
-
-}
-
-
-
-/* ===== PREDICTION ===== */
-
-function predictNext(){
-
-clearDraw()
-
-let last=data.length-1
-let prev=last-1
-
-if(prev<0)return
-
-let res="Prediction:<br>"
-
-for(let d=2;d<20;d++){
-
-if(prev-d<0)continue
-
-if(repeatCheck(prev,d)){
-
-let r=prev-d+1
-
-res+="Repeat "+d+" → "
-
-for(let c=0;c<maxCol;c++){
-
-res+=data[r][c]+" "
-
-highlightCell(last,c)
-
-}
-
-res+="<br>"
-
-}
-
-if(diagCheck(prev,d)){
-
-let r=prev-d+1
-
-res+="Diag "+d+" → "
-
-for(let c=0;c<maxCol;c++){
-
-res+=data[r][c]+" "
-
-highlightCell(last,c)
-
-}
-
-res+="<br>"
-
-}
-
-}
-
-result.innerHTML=res
-
-}
-
-
-
-function highlightCell(r,c){
-
-if(grid.rows[r] && grid.rows[r].cells[c]){
-
-grid.rows[r].cells[c].classList.add("cross")
-
-}
-
-}
-
-
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved!"); }
+function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v)));
+        draw();
+    };
+    fr.readAsText(e.target.files[0]);
+};
+
+draw();
 </script>
-
-
 </body>
 </html>
