@@ -3,40 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Base Jodi System</title>
+    <title>Kalyan Pro AI – Short Pattern System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; }
         #main-app { padding: 15px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
         th { background: #1e293b; color: white; font-size: 11px; }
-        
-        /* Special Colors */
-        .base-jodi { background-color: var(--yellow) !important; color: #000 !important; border: 2px solid #000 !important; }
+        .base-jodi { background-color: var(--yellow) !important; color: #000 !important; }
         .circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-        
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; }
-        #future { font-size: 22px; color: var(--green-line); font-weight: 800; text-align: center; letter-spacing: 3px; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 12px; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 10px; }
+        #future { font-size: 22px; color: var(--green); font-weight: 800; text-align: center; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 12px; color: white; }
     </style>
 </head>
 <body>
 
 <div id="main-app">
-    <h2 style="color:var(--gold); text-align:center; margin:0 0 10px 0;">PRADEEP AI: BASE JODI SYSTEM</h2>
+    <h2 style="color:var(--gold); text-align:center; margin:0 0 10px 0;">KALYAN AI: 12-ROW SYSTEM</h2>
 
     <div class="toolbar">
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
-        <button onclick="document.getElementById('csv').click()" style="background:#0084ff; color:white;">📂 UPLOAD CSV</button>
-        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
-        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
-        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
+        <button onclick="document.getElementById('csv').click()" style="background:#0084ff;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745;">💾 SAVE</button>
+        <button onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR</button>
     </div>
 
     <center>
@@ -47,18 +44,14 @@
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); font-size:12px;">📊 CHECK LINE (Same Shape Matches)</h3>
-        <div id="matchLog" style="font-size:12px; color:var(--green);"></div>
-    </div>
-
-    <div class="card">
-        <h3 style="color:var(--gold); font-size:12px;">🔮 BEST 3-PAIR PREDICTION</h3>
+        <h3 style="color:var(--gold); font-size:12px;">🔮 PREDICTION (MAX 3)</h3>
         <div id="future">-- -- --</div>
+        <div id="matchLog" style="font-size:11px; color:#aaa; margin-top:5px; text-align:center;"></div>
     </div>
 </div>
 
 <script>
-const KEY="pdata_base_jodi_v1";
+const KEY="pdata_short_v1";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -67,7 +60,7 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem(KEY)) || [["12","25","36","48","50","60"],["**","**","**","**","**","**"]];
 let activePattern = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
@@ -79,7 +72,7 @@ function draw(){
   h+="<tr>";
   r.forEach((c,ci)=>{
    let isBase = activePattern && activePattern.baseR == ri && activePattern.baseC == ci;
-   let isCircle = activePattern && isPatternCell(ri, ci);
+   let isCircle = activePattern && ((activePattern.matchR == ri && activePattern.matchC == ci) || (activePattern.curR == ri && activePattern.curC == ci));
    let cls = isBase ? "base-jodi" : (isCircle ? "circle" : "");
    h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="processPattern(${ri},${ci})">${c}</td>`;
   });
@@ -89,30 +82,22 @@ function draw(){
  if(activePattern) setTimeout(drawConnectionLines, 50);
 }
 
-function isPatternCell(r, c) {
-    if(!activePattern) return false;
-    // Check if this cell is part of the old matching record
-    return (activePattern.matchR == r && activePattern.matchC == c) || (activePattern.curR == r && activePattern.curC == c);
-}
-
 function processPattern(r, c) {
     if(data[r][c] !== "**") return;
     
-    // 1. Base Jodi = 1 week ago Monday (MON is index 0)
+    // 1. Base Jodi = 1 week ago Monday
     let baseRow = r - 1;
     if(baseRow < 0) return;
-    let baseJodi = data[baseRow][0]; // MON jodi
+    let baseJodi = data[baseRow][0];
     if(baseJodi == "**") return;
 
-    // 2. Search for same shape pattern in records
+    // 2. Scan only last 12 rows
     let targetFam = fam(baseJodi);
     let foundMatch = null;
+    let startLimit = Math.max(0, r - 12);
 
-    // Search last 10 weeks
-    for(let i=0; i < r - 1; i++) {
-        // Check if this old row has the same family in MON
+    for(let i=r-2; i >= startLimit; i--) {
         if(fam(data[i][0]) === targetFam) {
-            // Check if there was a result in the same column 'c' back then
             if(data[i+1] && data[i+1][c] !== "**") {
                 foundMatch = { oldBaseR: i, oldResultR: i+1 };
                 break; 
@@ -122,22 +107,17 @@ function processPattern(r, c) {
 
     if(foundMatch) {
         activePattern = {
-            baseR: baseRow, baseC: 0, // Current Base Jodi (Yellow)
-            curR: r, curC: c,         // Current Clicked Cell (Circle)
-            matchR: foundMatch.oldResultR, matchC: c // Old matching cell (Circle)
+            baseR: baseRow, baseC: 0,
+            curR: r, curC: c,
+            matchR: foundMatch.oldResultR, matchC: c
         };
         draw();
         
-        // Prediction Logic
         let oldVal = data[foundMatch.oldResultR][c];
-        let p1 = norm((parseInt(oldVal) + 5) % 100);
-        let p2 = oldVal.split('').reverse().join('');
-        let p3 = FAMILY[fam(oldVal)] ? FAMILY[fam(oldVal)][0] : "05";
-        
-        document.getElementById("future").innerText = `${p1} - ${p2} - ${p3}`;
-        document.getElementById("matchLog").innerHTML = `Base Jodi Match: Row ${foundMatch.oldBaseR + 1} (MON). Same shape result found at Row ${foundMatch.oldResultR + 1}.`;
+        document.getElementById("future").innerText = `${norm((parseInt(oldVal)+5)%100)} - ${oldVal.split('').reverse().join('')} - ${FAMILY[fam(oldVal)]?.[0] || '00'}`;
+        document.getElementById("matchLog").innerText = `Match found at Row ${foundMatch.oldResultR + 1}`;
     } else {
-        alert("Base Jodi की Family के साथ कोई पिछला रिकॉर्ड नहीं मिला।");
+        alert("Pichle 12 rows mein koi match nahi mila.");
     }
 }
 
@@ -146,29 +126,26 @@ function drawConnectionLines() {
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    const cells = tbl.querySelectorAll(".circle, .base-jodi");
-    if(cells.length < 2) return;
+    // Get only circle cells for line (No line for base-jodi)
+    const circles = tbl.querySelectorAll(".circle");
+    if(circles.length < 2) return;
 
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 2;
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
     const rect = tbl.getBoundingClientRect();
     
-    let points = [];
-    cells.forEach(c => {
-        const r = c.getBoundingClientRect();
-        points.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
-    });
+    let p1 = circles[0].getBoundingClientRect();
+    let p2 = circles[1].getBoundingClientRect();
 
-    ctx.setLineDash([5, 5]); // Dash line for connection
     ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for(let i=1; i<points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.moveTo(p1.left - rect.left + p1.width/2, p1.top - rect.top + p1.height/2);
+    ctx.lineTo(p2.left - rect.left + p2.width/2, p2.top - rect.top + p2.height/2);
     ctx.stroke();
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved!"); }
-function clearData(){ if(confirm("सब डिलीट करें?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
