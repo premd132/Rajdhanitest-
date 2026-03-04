@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Pradeep Family System</title>
+    <title>Kalyan Pro AI – Real Chart Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        /* Dashboard */
         #main-app { padding: 15px; }
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; justify-content: center; }
         
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; box-shadow: 0 0 20px #000; }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; box-shadow: 0 0 25px #000; }
         table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 5px; text-align: center; font-weight: 800; width: 45px; height: 45px; cursor: pointer; }
         th { background: #1e293b; color: #fff; font-size: 11px; }
         
-        .circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
+        /* Marking Styles */
+        .circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); transition: 0.3s; }
+        .source-mark { background: #ff4757 !important; color: #fff !important; border-radius: 4px; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-top: 20px; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
         h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 13px; text-transform: uppercase; }
 
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; }
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 95%; max-width: 450px; box-shadow: 0 0 50px #000; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
         button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 12px; }
     </style>
@@ -34,7 +35,7 @@
 <body>
 
 <div id="main-app">
-    <h2 style="color:var(--gold); margin:0; text-align:center;">Kalyan Pro AI <small style="color:#888;">(Family Cross)</small></h2>
+    <h2 style="color:var(--gold); margin:0; text-align:center;">Kalyan Pro AI <small style="color:#888;">(Real Chart Sync)</small></h2>
     
     <div class="toolbar">
         <button onclick="addRow()" style="background:#444; color:#fff;">+ ROW</button>
@@ -45,7 +46,7 @@
     </div>
 
     <center>
-        <div class="table-container">
+        <div class="table-container" id="mainChartBox">
             <canvas id="mainCanvas"></canvas>
             <table id="tbl"></table>
         </div>
@@ -53,12 +54,12 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>🔍 10-Row Cross Matches</h3>
-            <div id="checks">Click (**) to scan 3-row offset...</div>
+            <h3>🔍 Shape Match Found (1-2-3)</h3>
+            <div id="checks">Click (**) to scan 3 row above...</div>
         </div>
         <div class="card">
-            <h3>🔮 Future AI Prediction</h3>
-            <div id="future-ai" style="font-size: 22px; color: var(--gold); font-weight: 800; text-align: center;">-- -- --</div>
+            <h3>🔮 Future AI (3 Pairs)</h3>
+            <div id="future-ai" style="font-size: 24px; color: var(--gold); font-weight: 800; text-align: center;">-- -- --</div>
         </div>
     </div>
 </div>
@@ -66,7 +67,7 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:#fff;">X</button>
-    <h3 style="color:#000">Tircha Family Trace</h3>
+    <h3 style="color:#000">Old Record Shape Trace</h3>
     <div class="table-container" style="width:100%; overflow:auto;">
         <canvas id="popCanvas"></canvas>
         <table id="popTbl" style="width:100%"></table>
@@ -74,11 +75,11 @@
 </div>
 
 <script>
-const STORAGE_KEY = "pdata_kalyan_family_v1";
+const STORAGE_KEY = "pdata_kalyan_real_sync";
 const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(15).fill(["**","**","**","**","**","**"]);
-let activeMark = null;
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || Array(12).fill(["**","**","**","**","**","**"]);
+let activePattern = null; 
 
 function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
 function isFamily(a, b){
@@ -93,37 +94,36 @@ function draw(){
     data.forEach((r, ri) => {
         h += "<tr>";
         r.forEach((c, ci) => {
-            let cls = (activeMark && activeMark.some(p => p.r===ri && p.c===ci)) ? "circle" : "";
-            h += `<td class="${cls}" contenteditable onblur="data[${ri}][${ci}]=norm(this.innerText)" onclick="handleScan(${ri},${ci})">${c}</td>`;
+            let isMarked = activePattern && activePattern.some(p => p.r === ri && p.c === ci);
+            h += `<td class="${isMarked ? 'circle' : ''}" contenteditable onblur="data[${ri}][${ci}]=norm(this.innerText)" onclick="handleScan(${ri},${ci})">${c}</td>`;
         });
         h += "</tr>";
     });
     document.getElementById("tbl").innerHTML = h;
-    if(activeMark) setTimeout(() => drawLines("mainCanvas", "tbl"), 50);
+    if(activePattern) setTimeout(() => drawLines("mainCanvas", "tbl"), 50);
 }
 
 function handleScan(r, c) {
     if(data[r][c] !== "**") return;
     
     let matches = [];
-    let startR = r - 3; // Blank se 3 row upar
+    let startR = r - 3; // Start scanning 3 rows above the blank
     if(startR < 0) return;
 
-    // Scan up to 10 rows further up from startR
+    // Search range: 10 rows further up from the start point
     let limitR = Math.max(0, startR - 10);
 
     for(let i = startR; i >= limitR; i--) {
-        // Tircha Check (Left Diagonal and Right Diagonal)
-        let colsToCheck = [c-1, c+1]; 
-        colsToCheck.forEach(tc => {
-            if(tc >= 0 && tc < 6 && data[i][tc] !== "**") {
-                // Family connection check
-                for(let prevIdx = i-1; prevIdx >= 0; prevIdx--) {
-                    for(let prevCol=0; prevCol<6; prevCol++) {
-                        if(isFamily(data[i][tc], data[prevIdx][prevCol])) {
+        // Tircha Scan (Left-Diagonal, Straight, Right-Diagonal)
+        let cols = [c-1, c, c+1];
+        cols.forEach(colIdx => {
+            if(colIdx >= 0 && colIdx < 6 && data[i][colIdx] !== "**") {
+                // If a connection (Family) is found in old records
+                for(let oldR = 0; oldR < i; oldR++) {
+                    for(let oldC = 0; oldC < 6; oldC++) {
+                        if(isFamily(data[i][colIdx], data[oldR][oldC])) {
                             matches.push({
-                                anchorR: i, anchorC: tc,
-                                sourceR: prevIdx, sourceC: prevCol,
+                                shape: [{r: i, c: colIdx}, {r: oldR, c: oldC}],
                                 nextVal: data[i+1] ? data[i+1][c] : "**"
                             });
                         }
@@ -132,31 +132,37 @@ function handleScan(r, c) {
             }
         });
     }
-    displayResults(matches, r, c);
+    displayMatches(matches);
 }
 
-function displayResults(matches, tr, tc) {
+function displayMatches(matches) {
     let html = "";
     matches.slice(0, 5).forEach((m, idx) => {
-        html += `<div style="background:#334155; padding:10px; margin-bottom:5px; border-radius:8px; cursor:pointer; border-left:4px solid var(--green);" 
-                 onclick="showPopup(${m.anchorR}, ${m.anchorC}, ${m.sourceR}, ${m.sourceC})">
-                 Tircha Match: Row ${m.anchorR+1} & ${m.sourceR+1} ➔</div>`;
+        html += `<div style="background:#334155; padding:10px; margin-bottom:5px; border-radius:8px; cursor:pointer; border-left:4px solid var(--blue);" 
+                 onclick="syncWithRealChart(${JSON.stringify(m.shape)})">
+                 Match Sequence ${idx+1} ➔ View Shape</div>`;
     });
-    document.getElementById("checks").innerHTML = html || "No Family Cross Pattern in 10-row range.";
+    document.getElementById("checks").innerHTML = html || "No same-shape pattern in 10-row range.";
     
-    // Future AI Prediction (3 pairs)
+    // Future AI Prediction
     let preds = [...new Set(matches.map(m => m.nextVal))].filter(v => v!=="**").slice(0,3);
-    document.getElementById("future-ai").innerHTML = preds.length ? preds.join("  ") : "05  50  55";
+    document.getElementById("future-ai").innerHTML = preds.length ? preds.join("  ") : "10  15  60";
 }
 
-function showPopup(r1, c1, r2, c2) {
-    let minR = Math.min(r1, r2);
-    let maxR = Math.max(r1, r2);
+function syncWithRealChart(shape) {
+    // Ye function main chart par pattern highlight karega
+    activePattern = shape;
+    draw();
+    
+    // Show in Popup as well
     let h = "";
+    let minR = Math.min(...shape.map(p => p.r));
+    let maxR = Math.max(...shape.map(p => p.r));
+    
     for(let i = minR; i <= maxR; i++) {
         h += "<tr>";
         data[i].forEach((v, j) => {
-            let isCir = (i===r1 && j===c1) || (i===r2 && j===c2);
+            let isCir = shape.some(p => p.r === i && p.c === j);
             h += `<td class="${isCir?'circle':''}">${v}</td>`;
         });
         h += "</tr>";
@@ -175,29 +181,29 @@ function drawLines(cvsId, tblId) {
     ctx.clearRect(0,0,cvs.width,cvs.height);
     let dots = tbl.querySelectorAll(".circle");
     if(dots.length < 2) return;
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
+    
+    ctx.strokeStyle = "#00ff88"; // Green Line
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
     ctx.beginPath();
-    dots.forEach((d, i) => {
-        let x = d.offsetLeft + d.offsetWidth/2;
-        let y = d.offsetTop + d.offsetHeight/2;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    
+    // Connect dots in order
+    let coords = [];
+    dots.forEach(d => {
+        coords.push({x: d.offsetLeft + d.offsetWidth/2, y: d.offsetTop + d.offsetHeight/2});
     });
+    
+    ctx.moveTo(coords[0].x, coords[0].y);
+    for(let i=1; i<coords.length; i++) {
+        ctx.lineTo(coords[i].x, coords[i].y);
+    }
     ctx.stroke();
 }
 
 function addRow() { data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Chart Saved!"); }
 function clearData() { if(confirm("Clear All?")) { localStorage.clear(); location.reload(); } }
 function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-
-document.getElementById("csv").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l=>l.split(',').map(v=>norm(v)));
-        draw();
-    };
-    fr.readAsText(e.target.files[0]);
-};
 
 draw();
 </script>
