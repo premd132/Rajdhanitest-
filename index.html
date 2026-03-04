@@ -3,35 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Short Pattern System</title>
+    <title>Pradeep AI - Dynamic Base System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; }
-        #main-app { padding: 15px; }
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
-        th { background: #1e293b; color: white; font-size: 11px; }
-        .base-jodi { background-color: var(--yellow) !important; color: #000 !important; }
+        th { background: #1e293b; color: white; font-size: 10px; }
+        .base-jodi { background-color: var(--yellow) !important; color: #000 !important; border: 2px solid #000 !important; }
         .circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 10px; }
-        #future { font-size: 22px; color: var(--green); font-weight: 800; text-align: center; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 12px; color: white; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; text-align: center; }
+        #future { font-size: 26px; color: var(--green); font-weight: 800; letter-spacing: 5px; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 10px 15px; color: white; }
     </style>
 </head>
 <body>
 
-<div id="main-app">
-    <h2 style="color:var(--gold); text-align:center; margin:0 0 10px 0;">KALYAN AI: 12-ROW SYSTEM</h2>
-
     <div class="toolbar">
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
-        <button onclick="document.getElementById('csv').click()" style="background:#0084ff;">📂 CSV</button>
-        <button onclick="addRow()" style="background:#444;">➕ ROW</button>
+        <button onclick="document.getElementById('csv').click()" style="background:#0084ff;">📂 UPLOAD CSV</button>
+        <button onclick="addRow()" style="background:#444;">➕ ADD ROW</button>
         <button onclick="saveData()" style="background:#28a745;">💾 SAVE</button>
         <button onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR</button>
     </div>
@@ -44,14 +40,13 @@
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); font-size:12px;">🔮 PREDICTION (MAX 3)</h3>
+        <h3 style="color:var(--gold); font-size:12px; margin-bottom:5px;">🤖 AI PREDICTION (MAX 3)</h3>
         <div id="future">-- -- --</div>
-        <div id="matchLog" style="font-size:11px; color:#aaa; margin-top:5px; text-align:center;"></div>
+        <div id="matchLog" style="font-size:11px; color:#aaa; margin-top:5px;">Click on any blank cell (**) to scan pattern</div>
     </div>
-</div>
 
 <script>
-const KEY="pdata_short_v1";
+const KEY="pradeep_dynamic_v2";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -85,19 +80,19 @@ function draw(){
 function processPattern(r, c) {
     if(data[r][c] !== "**") return;
     
-    // 1. Base Jodi = 1 week ago Monday
+    // 1. DYNAMIC BASE: Cell ke theek upar wali jodi (r-1, same column c)
     let baseRow = r - 1;
     if(baseRow < 0) return;
-    let baseJodi = data[baseRow][0];
+    let baseJodi = data[baseRow][c];
     if(baseJodi == "**") return;
 
-    // 2. Scan only last 12 rows
     let targetFam = fam(baseJodi);
     let foundMatch = null;
-    let startLimit = Math.max(0, r - 12);
+    let startLimit = Math.max(0, r - 12); // Scan pichle 12 hafte
 
-    for(let i=r-2; i >= startLimit; i--) {
-        if(fam(data[i][0]) === targetFam) {
+    // 2. Search records for same family base jodi
+    for(let i = r-2; i >= startLimit; i--) {
+        if(fam(data[i][c]) === targetFam) {
             if(data[i+1] && data[i+1][c] !== "**") {
                 foundMatch = { oldBaseR: i, oldResultR: i+1 };
                 break; 
@@ -107,17 +102,22 @@ function processPattern(r, c) {
 
     if(foundMatch) {
         activePattern = {
-            baseR: baseRow, baseC: 0,
-            curR: r, curC: c,
-            matchR: foundMatch.oldResultR, matchC: c
+            baseR: baseRow, baseC: c,      // Yellow Base (Just above click)
+            curR: r, curC: c,              // Blue Circle (Today)
+            matchR: foundMatch.oldResultR, matchC: c // Blue Circle (Old Match)
         };
         draw();
         
         let oldVal = data[foundMatch.oldResultR][c];
-        document.getElementById("future").innerText = `${norm((parseInt(oldVal)+5)%100)} - ${oldVal.split('').reverse().join('')} - ${FAMILY[fam(oldVal)]?.[0] || '00'}`;
-        document.getElementById("matchLog").innerText = `Match found at Row ${foundMatch.oldResultR + 1}`;
+        // Prediction: Old Match + Family + Reverse
+        let p1 = norm((parseInt(oldVal)+5)%100);
+        let p2 = oldVal.split('').reverse().join('');
+        let p3 = FAMILY[fam(oldVal)] ? FAMILY[fam(oldVal)][0] : "05";
+        
+        document.getElementById("future").innerText = `${p1} - ${p2} - ${p3}`;
+        document.getElementById("matchLog").innerText = `Match Found at Row ${foundMatch.oldResultR + 1}`;
     } else {
-        alert("Pichle 12 rows mein koi match nahi mila.");
+        alert("Is Base Jodi ki Family pichle 12 hafton mein nahi mili.");
     }
 }
 
@@ -126,16 +126,16 @@ function drawConnectionLines() {
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    // Get only circle cells for line (No line for base-jodi)
     const circles = tbl.querySelectorAll(".circle");
     if(circles.length < 2) return;
 
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 4;
     const rect = tbl.getBoundingClientRect();
     
     let p1 = circles[0].getBoundingClientRect();
     let p2 = circles[1].getBoundingClientRect();
 
+    // Check Line only between blue circles
     ctx.beginPath();
     ctx.moveTo(p1.left - rect.left + p1.width/2, p1.top - rect.top + p1.height/2);
     ctx.lineTo(p2.left - rect.left + p2.width/2, p2.top - rect.top + p2.height/2);
@@ -144,8 +144,8 @@ function drawConnectionLines() {
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved Locally!"); }
+function clearData(){ if(confirm("Clear Data?")){ localStorage.clear(); location.reload(); }}
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
