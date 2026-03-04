@@ -1,289 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pradeep Master AI – Life Changer System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pradeep AI - Pattern Scanner</title>
     <style>
-        :root { 
-            --gold: #ffd700; 
-            --blue-circle: #0084ff; 
-            --green-line: #00ff88; 
-            --bg: #0f172a; 
-            --panel: #1e293b; 
-        }
-
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
-
-        #home-screen {
-            height: 100vh; width: 100vw; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
-        .hero-title { font-size: 2.5rem; color: var(--gold); margin: 0; }
-        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; font-size: 14px; }
+        :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; }
+        body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+        .container { max-width: 1000px; margin: auto; }
         
-        #main-app { display: none; padding: 15px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        /* Table Style */
+        .table-wrap { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; }
+        table { border-collapse: collapse; color: #000; }
+        td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; }
+        th { background: #1e293b; color: #fff; font-size: 12px; }
         
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; overflow: visible; }
-        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
-        th { background: #1e293b; color: white; }
+        /* Circle & Line */
+        .circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+        /* Dashboard */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .card { background: #1e293b; padding: 15px; border-radius: 10px; border-top: 3px solid var(--gold); }
+        .jodi-box { font-size: 24px; color: var(--gold); font-weight: 800; text-align: center; letter-spacing: 5px; }
         
-        .circle { 
-            border: 3px solid var(--blue-circle) !important; 
-            border-radius: 50% !important; 
-            background: rgba(0, 132, 255, 0.2); 
-            z-index: 10;
-        }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 20px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; }
-
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 450px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 12px; }
-        input[type="number"] { background: #0f172a; color: var(--gold); border: 1px solid #444; padding: 5px; border-radius: 4px; }
+        button { background: #444; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #28a745; }
     </style>
 </head>
 <body>
 
-<div id="home-screen">
-    <h1 class="hero-title">Pradeep AI System</h1>
-    <p class="hero-sub">ADVANCED PATTERN & DEBT RECOVERY</p>
-    <button class="enter-btn" onclick="startApp()" style="background:var(--gold); padding:15px 40px; border-radius:50px; font-weight:800;">START SYSTEM</button>
-</div>
-
-<div id="main-app">
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0; font-size:18px;">Master Dashboard</h2>
-        <div>
-            <span id="lucky-ank" style="background:var(--gold); color:#000; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:12px; margin-right:10px;">Lucky: 3,5,6</span>
-            <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444;">Logout</button>
-        </div>
-    </div>
-
-    <div class="toolbar">
-        <input type="file" id="csv" style="display:none">
-        <button onclick="document.getElementById('csv').click()" style="background:#0084ff; color:white;">📂 UPLOAD CSV</button>
-        <button onclick="addRow()" style="background:#444; color:white;">➕ ADD ROW</button>
-        <button onclick="exportCSV()" style="background:#f39c12; color:white;">📥 EXPORT CSV</button>
-        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
-        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
+<div class="container">
+    <h2 style="color:var(--gold); text-align:center;">Pradeep AI: Pattern Master</h2>
+    
+    <div style="margin-bottom:15px; text-align:center;">
+        <button onclick="addRow()">+ ADD ROW</button>
+        <button onclick="saveData()" class="btn-save">SAVE DATA</button>
+        <button onclick="exportCSV()">EXPORT CSV</button>
+        <button onclick="clearAll()" style="background:#dc3545;">CLEAR</button>
     </div>
 
     <center>
-        <div class="table-container" id="tbl-wrap">
-            <canvas id="mainCanvas"></canvas>
-            <table id="tbl"></table>
+        <div class="table-wrap">
+            <canvas id="canvas"></canvas>
+            <table id="mainTable"></table>
         </div>
     </center>
 
     <div class="dashboard">
         <div class="card">
-            <h3>📈 Match Intelligence</h3>
-            <div id="checks" style="max-height: 150px; overflow-y: auto;">Waiting for scan...</div>
+            <h3>🤖 AI Prediction (Max 3)</h3>
+            <div id="prediction" class="jodi-box">-- -- --</div>
+            <p id="ai-info" style="font-size:12px; color:#aaa;">पैटर्न स्कैन करें...</p>
         </div>
         <div class="card">
-            <h3>🤖 AI Master Prediction</h3>
-            <div id="ai" style="font-size: 14px; line-height: 1.6;">Input data to scan 10 weeks...</div>
-            <div id="prediction-3pair" style="margin-top:10px; font-size:22px; color:var(--gold); font-weight:800; text-align:center;"></div>
-        </div>
-        <div class="card">
-            <h3>💰 Debt Recovery Tracker</h3>
-            <div style="font-size: 12px; margin-bottom:5px;">Target Amount:</div>
-            <input type="number" id="debt" placeholder="0.00" onchange="localStorage.setItem('debt_p', this.value)">
-            <p id="debt-status" style="font-size:11px; margin-top:10px; color:#00ff88;">Status: AI Safe Mode On</p>
+            <h3>📉 Pattern Matches</h3>
+            <div id="matchList" style="font-size:13px; max-height:100px; overflow-y:auto;"></div>
         </div>
     </div>
 </div>
 
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
-    <h3 style="margin: 0 0 10px 0; font-size:16px;">Pattern Link: 10-Week Scan</h3>
-    <center>
-        <div class="table-container" style="border: 1px solid #ddd; padding:10px;">
-            <canvas id="popCanvas"></canvas>
-            <div id="popData"></div>
-        </div>
-    </center>
-</div>
-
 <script>
-const STORAGE_KEY="pradeep_ai_v3";
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
-let activeMark=null;
-let targetCol=null;
+const KEY = "pradeep_pro_v4";
+let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
+let activeMatch = null;
 
-// Ank Jotish (Numerology) Impact
-const LUCKY_ANKS = ["3", "5", "6"];
-
-function startApp() {
-    document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    document.getElementById('debt').value = localStorage.getItem('debt_p') || "";
-    draw();
+function drawTable() {
+    let html = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    data.forEach((row, rIdx) => {
+        html += "<tr>";
+        row.forEach((val, cIdx) => {
+            let isMarked = activeMatch && checkInShape(rIdx, cIdx);
+            html += `<td class="${isMarked ? 'circle' : ''}" contenteditable oninput="update(${rIdx},${cIdx},this)" onclick="scan(${rIdx},${cIdx})">${val}</td>`;
+        });
+        html += "</tr>";
+    });
+    document.getElementById("mainTable").innerHTML = html;
+    if(activeMatch) setTimeout(drawLines, 50);
 }
 
-function norm(v){ v=String(v).trim(); if(v==""||v=="**")return "**"; return v.length==1?"0"+v:v; }
-
-function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
-   if(c=="**") cls += " blank";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="handleCellClick(${ri},${ci})">${c}</td>`;
-  });
-  h+="</tr>";
- });
- document.getElementById("tbl").innerHTML=h;
- if(activeMark) setTimeout(() => drawLines("mainCanvas", "tbl"), 50);
+function checkInShape(r, c) {
+    if(!activeMatch) return false;
+    let dr = r - activeMatch.startRow;
+    return (dr >= 0 && dr < activeMatch.shape.length && activeMatch.shape[dr][c]);
 }
 
-function isPartOfPattern(ri, ci){
-    if(!activeMark) return false;
-    let i = ri - activeMark.start;
-    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
-}
-
-function drawLines(cvsId, tblId) {
-    const cvs = document.getElementById(cvsId);
-    const tbl = document.getElementById(tblId);
+function drawLines() {
+    const cvs = document.getElementById("canvas");
+    const tbl = document.getElementById("mainTable");
     const ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     const cells = tbl.querySelectorAll(".circle");
     if(cells.length < 2) return;
-    
+
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
     const tRect = tbl.getBoundingClientRect();
-    ctx.strokeStyle = "#00ff88"; // Neon Green
-    ctx.lineWidth = 3;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "#00ff88";
-    
     ctx.beginPath();
-    cells.forEach((c, idx) => {
-        const r = c.getBoundingClientRect();
+    cells.forEach((cell, i) => {
+        const r = cell.getBoundingClientRect();
         const x = r.left - tRect.left + r.width/2;
         const y = r.top - tRect.top + r.height/2;
-        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
 }
 
-function handleCellClick(r, c) {
-    if(data[r][c] === "**") {
-        targetCol = c;
-        // Search for the last non-blank value in this column
-        let base = "**";
-        for(let i=r-1; i>=0; i--) { if(data[i][c] !== "**") { base = data[i][c]; break; } }
-        if(base !== "**") autoPatternScan(r, c, base);
-    }
-}
+function scan(r, c) {
+    if(data[r][c] !== "**") return;
+    
+    // 1. Same Shape Pattern ढूंढना (पिछले 10 हफ्ते)
+    let lastVal = "";
+    for(let i=r-1; i>=0; i--) { if(data[i][c] !== "**") { lastVal = data[i][c]; break; } }
+    if(!lastVal) return;
 
-function autoPatternScan(row, col, baseValue) {
-    // Generate a 5-row shape based on the baseValue logic
     let shape = [];
-    let startRow = Math.max(0, row - 4);
-    for(let i = startRow; i <= row; i++){
-        let rowArr = [];
-        for(let j=0; j<6; j++){
-            // Highlighting similar values or patterns
-            rowArr.push((data[i][j] !== "**" && (data[i][j] === baseValue || data[i][j].includes(baseValue[0]))) ? 1 : 0);
-        }
-        shape.push(rowArr);
+    let startScan = Math.max(0, r-3); // 3-row shape
+    for(let i=startScan; i<=r; i++) {
+        let rowShape = [];
+        for(let j=0; j<6; j++) { rowShape.push(data[i][j] === lastVal ? 1 : 0); }
+        shape.push(rowShape);
     }
-    
-    // Scan all records (up to 10 weeks or more)
+
     let matches = [];
-    for(let i=0; i <= data.length - shape.length; i++){
-        let score = 0;
-        for(let k=0; k<shape.length; k++){
-            for(let j=0; j<6; j++){
-                if(shape[k][j] && data[i+k][j] !== "**") score++;
-            }
+    for(let i=0; i <= data.length - shape.length; i++) {
+        let matchCount = 0;
+        for(let k=0; k<shape.length; k++) {
+            for(let j=0; j<6; j++) { if(shape[k][j] && data[i+k][j] === lastVal) matchCount++; }
         }
-        if(score >= 2) matches.push({index: i, score: score});
+        if(matchCount >= 1 && i !== startScan) matches.push({row: i});
     }
-    matches.sort((a,b) => b.score - a.score);
-    showResults(shape, matches);
+
+    if(matches.length > 0) {
+        activeMatch = { startRow: matches[0].row, shape: shape };
+        drawTable();
+        predict(matches[0].row, c);
+        document.getElementById("matchList").innerHTML = `Match found at Week ${Math.floor(matches[0].row/1)+1}`;
+    }
 }
 
-function showResults(shape, matches) {
-    const checkDiv = document.getElementById("checks");
-    checkDiv.innerHTML = "";
-    matches.slice(0, 5).forEach(m => {
-        let d = document.createElement("div");
-        d.style = "background:#2d3436; color:#fff; margin:5px 0; padding:8px; border-radius:6px; font-size:12px; border-left:4px solid #00ff88; cursor:pointer;";
-        d.innerHTML = `Week ${Math.floor(m.index/1)+1} Pattern Match Found (Score: ${m.score})`;
-        d.onclick = () => {
-            activeMark = {start: m.index, shape: shape};
-            draw();
-            showPopupPattern(shape, m.index);
-            generateFuture3Pair(m.index);
-        };
-        checkDiv.appendChild(d);
-    });
-}
-
-function generateFuture3Pair(matchIdx) {
-    // Prediction based on historic movement + Numerology
-    let seed = data[matchIdx][targetCol] || "15";
-    let p1 = (parseInt(seed) + 11) % 100;
-    let p2 = (seed[1] + seed[0]); // Palti
-    let p3 = LUCKY_ANKS[Math.floor(Math.random()*3)] + seed[1]; // Numerology Pair
+function predict(matchRow, col) {
+    // Current चाल विश्लेषण
+    let p1 = data[matchRow] ? data[matchRow][col] : "05";
+    let p2 = (parseInt(p1) + 10) % 100;
+    let p3 = "3" + p1.toString().slice(-1); // लकी 3 का संगम
     
-    document.getElementById("prediction-3pair").innerText = `${norm(p1)} - ${norm(p2)} - ${norm(p3)}`;
-    document.getElementById("ai").innerHTML = `<b>Master Signal:</b> Historic trend detected from Row ${matchIdx+1}. Numbers 3, 5, 6 are vibrating strong today.`;
+    document.getElementById("prediction").innerText = `${p1}  ${p2.toString().padStart(2,'0')}  ${p3.toString().padStart(2,'0')}`;
+    document.getElementById("ai-info").innerText = "AI ने 10 हफ्ते स्कैन करके 3 जोड़ियाँ चुनी हैं।";
 }
 
-function showPopupPattern(shape, idx) {
-    let html="<table id='popTbl' style='background:#fff;'>";
-    for(let i=0; i<shape.length; i++){
-        html+="<tr>";
-        data[idx+i].forEach((v,j)=>{
-            html+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
-        });
-        html+="</tr>";
-    }
-    document.getElementById("popData").innerHTML=html+"</table>";
-    document.getElementById("popup").style.display="block";
-    document.getElementById("overlay").style.display="block";
-    setTimeout(()=>drawLines("popCanvas", "popTbl"), 150);
-}
-
+function update(r,c,el) { data[r][c] = el.innerText.trim() || "**"; }
+function addRow() { data.push(["**","**","**","**","**","**"]); drawTable(); }
+function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("Saved!"); }
+function clearAll() { if(confirm("Clear All?")) { localStorage.clear(); location.reload(); } }
 function exportCSV() {
-    let csv = data.map(row => row.join(",")).join("\n");
+    let csv = data.map(r => r.join(",")).join("\n");
     let blob = new Blob([csv], {type: 'text/csv'});
     let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `Kalyan_Analysis_${new Date().toLocaleDateString()}.csv`;
-    a.click();
+    a.download = "data.csv"; a.click();
 }
 
-function importCSV(e) {
-    let fr = new FileReader();
-    fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v)));
-        draw();
-    };
-    fr.readAsText(e.target.files[0]);
-}
-
-document.getElementById("csv").onchange = importCSV;
-function edit(r,c,el){ data[r][c]=norm(el.innerText); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Synced with Local Storage!"); }
-function clearData(){ if(confirm("Clear Everything?")) { localStorage.clear(); location.reload(); } }
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+drawTable();
 </script>
 </body>
 </html>
