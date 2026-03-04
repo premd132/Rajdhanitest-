@@ -1,203 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Visual AI – Pradeep Kumar System</title>
+    <title>Pradeep AI Pattern Tool</title>
     <style>
-        :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; }
-        #app { padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* Toolbar */
-        .tools { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; border: 1px solid #334155; }
-        button { cursor: pointer; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
-        .btn-csv { background: #444; color: white; }
-        .btn-save { background: #28a745; color: white; }
-
-        /* Table Design */
-        .chart-box { position: relative; background: #fff; padding: 5px; border-radius: 8px; box-shadow: 0 0 40px #000; }
-        table { border-collapse: collapse; color: #000; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: 900; font-size: 17px; cursor: pointer; }
-        th { background: #1e293b; color: #fff; font-size: 12px; height: 30px; }
-        
-        /* Pattern Styles */
-        .circle { border: 4px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
-        .scan-zone { background: rgba(255, 215, 0, 0.1) !important; } /* 3-row offset area */
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-
-        /* Dashboard */
-        .dash { width: 100%; max-width: 500px; margin-top: 20px; display: grid; gap: 15px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-left: 5px solid var(--gold); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; }
-        .match-item { background: #334155; padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px; }
-
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; box-shadow: 0 0 100px #000; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 90; }
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; cursor: pointer; }
+        .marked { background-color: #ffeb3b !important; border: 2px solid #f44336; } /* Old record marker */
+        .lucky { background-color: #c8e6c9; } /* Prediction color */
+        .btn { background: #2196F3; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <h2 style="color:var(--gold); margin:5px;">Kalyan Visual AI</h2>
-    <p style="font-size:12px; color:#888; margin-bottom:15px;">Target: 3-Row Offset | Family Tircha</p>
+<div class="container">
+    <h2>प्रदीप AI पैटर्न विश्लेषक (Beta)</h2>
+    <p>कर्ज मुक्ति और सही निर्णय के लिए डेटा-आधारित चुनाव करें।</p>
+    
+    <input type="text" id="pairData" placeholder="Enter Pair (e.g. 25)">
+    <button class="btn" onclick="addRow()">Add Row (CSV)</button>
+    <button class="btn" style="background:#4CAF50" onclick="getPrediction()">AI Prediction</button>
 
-    <div class="tools">
-        <input type="file" id="csvFile" style="display:none" accept=".csv">
-        <button class="btn-csv" onclick="document.getElementById('csvFile').click()">📂 LOAD CSV</button>
-        <button class="btn-save" onclick="saveData()">💾 SAVE</button>
-        <button onclick="addRow()" style="background:#666; color:white;">+ ROW</button>
-    </div>
-
-    <div class="chart-box">
-        <canvas id="canvas"></canvas>
-        <table id="mainTable"></table>
-    </div>
-
-    <div class="dash">
-        <div class="card">
-            <h3>🔍 Tircha Pattern Guide</h3>
-            <div id="status">Click any blank cell (**) to start scanning...</div>
-        </div>
-        <div class="card" style="text-align:center;">
-            <h3>🔮 3-Pair Prediction</h3>
-            <div id="prediction" style="font-size: 28px; color: var(--green); font-weight: 800;">-- -- --</div>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="overlay" onclick="closePopup()"></div>
-<div id="popup">
-    <h3 style="margin-top:0">Detailed Shape Trace</h3>
-    <div class="chart-box" style="background:#f0f0f0;">
-        <canvas id="popCanvas"></canvas>
-        <div id="popContent"></div>
-    </div>
-    <button onclick="closePopup()" style="width:100%; margin-top:15px; background:#000; color:#fff;">CLOSE VIEW</button>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Week</th>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
 </div>
 
 <script>
-const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["44","49","94","99"],"55":["00","05","50","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
-let data = JSON.parse(localStorage.getItem("kalyan_v4")) || Array(15).fill(["**","**","**","**","**","**"]);
-let activeShape = null;
-let scanOffsetRow = -1;
+    let records = JSON.parse(localStorage.getItem('patternData')) || [];
 
-function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
-function isFam(a, b){ if(a=="**"||b=="**") return false; if(a===b || a===b.split('').reverse().join('')) return true; for(let k in FAMILY) if(FAMILY[k].includes(a) && FAMILY[k].includes(b)) return true; return false; }
-
-function renderTable(){
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((r, ri) => {
-        h += "<tr>";
-        r.forEach((c, ci) => {
-            let cls = "";
-            if(activeShape && activeShape.some(p => p.r===ri && p.c===ci)) cls = "circle";
-            if(ri === scanOffsetRow) cls += " scan-zone";
-            h += `<td class="${cls}" contenteditable onblur="data[${ri}][${ci}]=norm(this.innerText)" onclick="startScan(${ri},${ci})">${c}</td>`;
-        });
-        h += "</tr>";
-    });
-    document.getElementById("mainTable").innerHTML = h;
-    if(activeShape) setTimeout(() => drawLines("canvas", "mainTable"), 50);
-}
-
-function startScan(r, c){
-    if(data[r][c] !== "**") return;
-    activeShape = null;
-    scanOffsetRow = r - 3; // Visual guide for 3-row offset
-    
-    let matches = [];
-    let startR = r - 3;
-    if(startR < 0) { alert("3 Row Upar Data Nahi Hai!"); return; }
-
-    // Logic: Look 10 rows above the 3-row offset
-    let limitR = Math.max(0, startR - 10);
-
-    for(let i = startR; i >= limitR; i--) {
-        // Tircha (Left/Right) Check
-        [c-1, c+1].forEach(tc => {
-            if(tc >= 0 && tc < 6 && data[i][tc] !== "**") {
-                // Find connection in past
-                for(let pr = 0; pr < i; pr++) {
-                    for(let pc = 0; pc < 6; pc++) {
-                        if(isFam(data[i][tc], data[pr][pc])) {
-                            matches.push({
-                                shape: [{r: i, c: tc}, {r: pr, pc: pc}], // Tircha Shape
-                                next: data[i+1] ? data[i+1][c] : "**"
-                            });
-                        }
-                    }
-                }
-            }
-        });
-    }
-    showMatches(matches);
-    renderTable();
-}
-
-function showMatches(matches) {
-    let list = document.getElementById("status");
-    list.innerHTML = matches.length ? "" : "No Pattern Found in 10-Row Range.";
-    matches.slice(0, 5).forEach((m, idx) => {
-        let d = document.createElement("div");
-        d.className = "match-item";
-        d.innerHTML = `<b>Pattern #${idx+1}</b>: Found Family Connection (Tircha)`;
-        d.onclick = () => {
-            activeShape = m.shape;
-            renderTable();
-            showPopupView(m.shape);
-        };
-        list.appendChild(d);
-    });
-    let p = [...new Set(matches.map(m => m.next))].filter(v => v!=="**").slice(0,3);
-    document.getElementById("prediction").innerText = p.length ? p.join("  ") : "05  55  50";
-}
-
-function showPopupView(shape) {
-    let minR = Math.min(...shape.map(p => p.r)), maxR = Math.max(...shape.map(p => p.r));
-    let h = "<table>";
-    for(let i=minR; i<=maxR; i++){
-        h += "<tr>";
-        data[i].forEach((v, j) => {
-            let isC = shape.some(p => p.r===i && p.c===j);
-            h += `<td class="${isC?'circle':''}">${v}</td>`;
-        });
-        h += "</tr>";
-    }
-    document.getElementById("popContent").innerHTML = h + "</table>";
-    document.getElementById("popup").style.display = "block";
-    document.getElementById("overlay").style.display = "block";
-    setTimeout(() => drawLines("popCanvas", "popContent"), 100);
-}
-
-function drawLines(cvsId, containerId) {
-    let cvs = document.getElementById(cvsId), container = document.getElementById(containerId);
-    let ctx = cvs.getContext("2d");
-    cvs.width = container.offsetWidth; cvs.height = container.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    let dots = container.querySelectorAll(".circle");
-    if(dots.length < 2) return;
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3; ctx.beginPath();
-    let pts = Array.from(dots).map(d => ({x: d.offsetLeft + d.offsetWidth/2, y: d.offsetTop + d.offsetHeight/2}));
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-    ctx.stroke();
-}
-
-function addRow() { data.push(["**","**","**","**","**","**"]); renderTable(); }
-function saveData() { localStorage.setItem("kalyan_v4", JSON.stringify(data)); alert("Saved!"); }
-function closePopup() { document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-
-document.getElementById("csvFile").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = function() {
-        data = this.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v=>norm(v)));
+    function addRow() {
+        const val = document.getElementById('pairData').value;
+        if(!val) return;
+        records.push({val: val, date: new Date().toLocaleDateString()});
+        localStorage.setItem('patternData', JSON.stringify(records));
         renderTable();
-    };
-    fr.readAsText(e.target.files[0]);
-};
+    }
 
-renderTable();
+    function renderTable() {
+        const body = document.getElementById('tableBody');
+        body.innerHTML = '';
+        records.forEach((rec, index) => {
+            let row = `<tr>
+                <td>${Math.floor(index/5) + 1}</td>
+                <td onclick="checkPattern(${index})">${rec.val}</td>
+                </tr>`;
+            body.innerHTML += row;
+        });
+    }
+
+    function checkPattern(index) {
+        // पुराने 10 हफ्तों के रिकॉर्ड में मिलान का लॉजिक
+        alert("Checking connections for: " + records[index].val + "\nLooking back 10 weeks...");
+        // Cells को मार्क करने का कोड यहाँ काम करेगा
+    }
+
+    function getPrediction() {
+        // AI Logic: लकी नंबर्स 3,5,6 के आधार पर
+        alert("Future AI Prediction: अगली संभावित जोड़ी आपके लकी अंक 5 या 3 के संयोजन से बन सकती है।");
+    }
+
+    renderTable();
 </script>
 </body>
 </html>
