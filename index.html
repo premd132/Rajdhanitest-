@@ -1,147 +1,165 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep AI Master Pattern</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalyan Pro AI – Pradeep Kumar System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; }
-        body { font-family: sans-serif; background: var(--bg); color: #fff; padding: 10px; text-align: center; }
-        .table-wrap { position: relative; background: #fff; border-radius: 8px; padding: 10px; display: inline-block; margin-top: 20px; }
-        table { border-collapse: collapse; color: #000; }
-        td, th { border: 1px solid #ccc; width: 45px; height: 45px; text-align: center; font-weight: bold; cursor: pointer; }
-        th { background: #1e293b; color: #fff; font-size: 11px; }
-        .circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        .card { background: #1e293b; padding: 15px; border-radius: 10px; border-top: 3px solid var(--gold); margin-top: 20px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .jodi-box { font-size: 30px; color: var(--gold); font-weight: bold; margin: 10px 0; letter-spacing: 5px; }
-        button { background: #444; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px; font-weight: bold; }
-        .btn-green { background: #28a745; }
+        :root { --gold: #ffd700; --blue-circle: #0084ff; --green-line: #00ff88; --bg: #0f172a; --panel: #1e293b; }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; }
+        #main-app { padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
+        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 10px; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 12px; }
     </style>
 </head>
 <body>
 
-    <h2 style="color:var(--gold);">प्रदीप कुमार देहरिया: AI पैटर्न सिस्टम</h2>
-    <p style="font-size: 12px; opacity: 0.8;">डेटा भरें और पैटर्न स्कैन करने के लिए खाली सेल (**) पर क्लिक करें</p>
+<div id="main-app">
+    <h2 style="color:var(--gold); text-align:center;">Kalyan Pro AI</h2>
 
-    <div>
-        <button onclick="addRow()">+ ADD ROW</button>
-        <button onclick="saveData()" class="btn-green">SAVE (सुरक्षित करें)</button>
-        <button onclick="downloadCSV()" style="background:#0984e3;">DOWNLOAD CSV</button>
-        <button onclick="loadDemoData()" style="background:#6c5ce7;">DEMO DATA (चेक करने के लिए)</button>
-        <button onclick="clearAll()" style="background:#dc3545;">CLEAR</button>
+    <div class="toolbar">
+        <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importCSV(event)">
+        <button onclick="document.getElementById('csvFileInput').click()" style="background:#0084ff; color:white;">📂 UPLOAD CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
 
-    <div class="table-wrap">
-        <canvas id="canvas"></canvas>
-        <table id="mainTable"></table>
-    </div>
+    <center>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
+        </div>
+    </center>
 
     <div class="card">
-        <h3>🤖 AI Prediction (Next 3)</h3>
-        <div id="prediction" class="jodi-box">-- -- --</div>
-        <p id="info" style="font-size:12px; color:var(--green);">पैटर्न ढूंढने के लिए तैयार...</p>
+        <h3 style="color:var(--gold); font-size:14px;">🤖 AI & Family Prediction</h3>
+        <div id="ai" style="font-size:16px;">Wait for input...</div>
+        <div id="future" style="color:var(--green-line); font-weight:bold; margin-top:10px;"></div>
     </div>
+</div>
 
 <script>
-const KEY = "pradeep_final_v5";
-// अगर लोकल स्टोरेज खाली है, तो खाली टेबल दिखाओ
-let data = JSON.parse(localStorage.getItem(KEY)) || [["12","25","36","48","50","60"],["**","**","**","**","**","**"]];
-let activeMatch = null;
+const STORAGE_KEY="pdata_Kalyan_v3";
+// आपकी असली FAMILY
+const FAMILY = {
+ "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
+};
 
-function render() {
-    let h = "<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    data.forEach((row, rIdx) => {
-        h += "<tr>";
-        row.forEach((val, cIdx) => {
-            let isCircle = activeMatch && isMarked(rIdx, cIdx);
-            h += `<td class="${isCircle ? 'circle' : ''}" contenteditable oninput="update(${rIdx},${cIdx},this)" onclick="scan(${rIdx},${cIdx})">${val}</td>`;
-        });
-        h += "</tr>";
-    });
-    document.getElementById("mainTable").innerHTML = h;
-    if(activeMatch) setTimeout(drawLines, 50);
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
+let activeMark = null;
+
+function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
+function smartMatch(a1,b1){ if(a1=="**"||b1=="**") return false; return a1===b1 || fam(a1)===fam(b1); }
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let isCircle = activeMark && isPartOfPattern(ri, ci);
+   h+=`<td class="${isCircle?'circle':''}" contenteditable oninput="edit(${ri},${ci},this)" onclick="makePattern(${ri},${ci})">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines(), 50);
 }
 
-function update(r,c,el) { data[r][c] = el.innerText.trim(); }
-
-function isMarked(r, c) {
-    if(!activeMatch) return false;
-    let dr = r - activeMatch.start;
-    return (dr >= 0 && dr < activeMatch.shape.length && activeMatch.shape[dr][c]);
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMatchCheck(i, ci));
 }
 
-function scan(r, c) {
-    if(data[r][c] !== "**") return;
-    let colData = []; // उस कॉलम का पिछला डेटा
-    for(let i=r-1; i>=0; i--) if(data[i][c] !== "**") colData.push({v: data[i][c], row: i});
-    
-    if(colData.length < 1) { alert("स्कैन के लिए ऊपर कम से कम एक जोड़ी होनी चाहिए।"); return; }
-    
-    let target = colData[0].v; // सबसे ताज़ा जोड़ी
-    let matches = [];
-    
-    // पिछले 10 हफ्तों में इसी जोड़ी को ढूंढना
-    for(let i=0; i < r - 1; i++) {
-        if(data[i][c] === target) {
-            matches.push(i);
-        }
-    }
-
-    if(matches.length > 0) {
-        let matchRow = matches[matches.length-1]; // सबसे करीबी पिछला मैच
-        activeMatch = { start: matchRow, shape: [[0,0,0,0,0,0]] };
-        activeMatch.shape[0][c] = 1; // उसी सेल को मार्क करो
-        render();
-        
-        // Prediction Logic (Last Value + Lucky Numbers)
-        let p1 = (parseInt(target) + 5) % 100;
-        let p2 = (parseInt(target) + 3) % 100;
-        let p3 = target.split('').reverse().join(''); // पलटी
-        
-        document.getElementById("prediction").innerText = `${p1.toString().padStart(2,'0')} ${p2.toString().padStart(2,'0')} ${p3}`;
-        document.getElementById("info").innerText = "मैच मिल गया! पुरानी चाल के आधार पर 3 जोड़ियाँ तैयार हैं।";
-    } else {
-        alert("पुराने रिकॉर्ड में कोई मैच नहीं मिला। और डेटा भरें।");
-    }
+function activeMatchCheck(shapeRow, col){
+    return activeMark.shape[shapeRow][col] === 1;
 }
 
 function drawLines() {
-    const cvs = document.getElementById("canvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
+    const cvs = document.getElementById("mainCanvas");
+    const tbl = document.getElementById("tbl");
+    const ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
-    const dots = tbl.querySelectorAll(".circle");
-    if(dots.length < 1) return;
+    const cells = tbl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
     ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 3;
-    const rect = tbl.getBoundingClientRect();
+    const tRect = tbl.getBoundingClientRect();
     ctx.beginPath();
-    dots.forEach((d, i) => {
-        const r = d.getBoundingClientRect();
-        ctx.arc(r.left - rect.left + r.width/2, r.top - rect.top + r.height/2, 5, 0, Math.PI*2);
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
 }
 
-function addRow() { data.push(["**","**","**","**","**","**"]); render(); }
-function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); alert("डेटा फोन में सुरक्षित हो गया है!"); }
-function clearAll() { if(confirm("सब डिलीट करें?")) { localStorage.clear(); location.reload(); } }
-function loadDemoData() {
-    data = [
-        ["12","25","36","45","89","70"],
-        ["14","22","33","44","55","66"],
-        ["12","90","45","36","11","22"], // 12 यहाँ रिपीट हुआ
-        ["**","**","**","**","**","**"]
-    ];
-    render();
-    alert("डेमो डेटा लोड हो गया। सोमवार (MON) के खाली सेल पर क्लिक करके देखें!");
-}
-function downloadCSV() {
-    let content = "MON,TUE,WED,THU,FRI,SAT\n" + data.map(r => r.join(",")).join("\n");
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([content], {type:'text/csv'}));
-    a.download = "MyRecords.csv"; a.click();
+function makePattern(r,c){
+ if(data[r][c] == "**") return;
+ let base = data[r][c];
+ let shape = [];
+ let startR = Math.max(0, r-2);
+ for(let i=startR; i<=r; i++){
+  let row = [];
+  for(let j=0; j<6; j++){ row.push(smartMatch(data[i][j], base)?1:0); }
+  shape.push(row);
+ }
+ // Search in records
+ for(let i=0; i<data.length-shape.length; i++){
+  if(i === startR) continue;
+  let ok = false;
+  for(let k=0; k<shape.length; k++){
+   if(smartMatch(data[i+k][c], base)) ok = true;
+  }
+  if(ok) {
+   activeMark = {start: i, shape: shape};
+   document.getElementById("ai").innerText = `Family Pattern found at Row ${i+1}`;
+   predict(base);
+   draw();
+   break;
+  }
+ }
 }
 
-render();
+function predict(base){
+    let f = FAMILY[fam(base)] || [base];
+    document.getElementById("future").innerText = "Probable Future Pairs: " + f.slice(0,3).join(" , ");
+}
+
+function edit(r,c,el){ data[r][c]=el.innerText.trim(); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
+
+// CSV अपलोड फंक्शन
+function importCSV(e) {
+    let fr = new FileReader();
+    fr.onload = () => {
+        let lines = fr.result.split('\n');
+        data = lines.filter(l=>l.trim()).map(l => l.split(',').map(v => v.trim()));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        draw();
+        alert("CSV Loaded!");
+    };
+    fr.readAsText(e.target.files[0]);
+}
+
+draw();
 </script>
 </body>
 </html>
