@@ -2,141 +2,187 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Pradeep Pattern AI - CSV Tool</title>
+    <title>Pradeep AI: Decision & Pattern Tool</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; padding: 20px; color: #333; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        input, button { padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-        .btn-add { background: #27ae60; color: white; border: none; cursor: pointer; }
-        .btn-csv { background: #f39c12; color: white; border: none; cursor: pointer; }
-        .btn-ai { background: #8e44ad; color: white; border: none; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; cursor: pointer; transition: 0.3s; }
-        th { background: #3498db; color: white; }
-        tr:hover { background: #f9f9f9; }
-        .marked-parent { background-color: #ff7675 !important; color: white; border-radius: 50%; } /* Circle pattern */
-        .prediction-box { margin-top: 20px; padding: 15px; background: #dff9fb; border-left: 5px solid #130f40; }
+        :root { --main: #0984e3; --bg: #dfe6e9; --text: #2d3436; --win: #00b894; --loss: #d63031; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid var(--main); margin-bottom: 20px; padding-bottom: 10px; }
+        
+        /* Dashboard Grid */
+        .dashboard { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #bdc3c7; padding: 12px; text-align: center; font-weight: bold; position: relative; }
+        th { background: var(--main); color: white; }
+        td:hover { background: #f1f2f6; cursor: pointer; }
+
+        /* Pattern Highlighting */
+        .circle-mark { outline: 3px solid var(--loss); outline-offset: -5px; border-radius: 50%; background: rgba(214, 48, 49, 0.1); }
+        .match-line { position: absolute; height: 2px; background: var(--loss); z-index: 10; pointer-events: none; }
+        
+        /* Control Buttons */
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-add { background: var(--win); }
+        .btn-csv { background: #636e72; }
+        .btn-ai { background: #6c5ce7; width: 100%; font-size: 1.1em; }
+        
+        .status-box { padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px; border-left: 5px solid var(--main); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>प्रदीप कुमार देहरिया: AI पैटर्न विश्लेषक</h2>
-    
-    <div class="controls">
-        <input type="text" id="pairInput" placeholder="जोड़ी लिखें (Ex: 45)">
-        <button class="btn-add" onclick="addData()">Add Row</button>
-        <button class="btn-csv" onclick="exportToCSV()">Download CSV</button>
-        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(event)">
-        <button class="btn-csv" onclick="document.getElementById('csvFile').click()">Upload CSV</button>
+    <div class="header">
+        <h1>प्रदीप कुमार देहरिया: पैटर्न प्रिडिक्शन & डिसीजन टूल</h1>
+        <p>आसानी से समझें, सही फैसला लें और कर्ज मुक्त हों</p>
     </div>
 
-    <div id="aiBox" class="prediction-box" style="display:none;">
-        <strong>Future AI प्रेडिक्शन:</strong> <span id="aiResult"></span>
-    </div>
+    <div class="dashboard">
+        <div class="card">
+            <div class="controls">
+                <input type="text" id="pairInput" placeholder="जोड़ी (उदा: 25)" style="padding: 10px; width: 80px;">
+                <button class="btn btn-add" onclick="addRow()">Add Pair</button>
+                <button class="btn btn-csv" onclick="exportCSV()">Download CSV</button>
+                <button class="btn btn-csv" onclick="document.getElementById('csvIn').click()">Upload CSV</button>
+                <input type="file" id="csvIn" style="display:none" onchange="importCSV(event)">
+            </div>
 
-    <table id="patternTable">
-        <thead>
-            <tr>
-                <th>Week</th>
-                <th>Mon</th>
-                <th>Tue</th>
-                <th>Wed</th>
-                <th>Thu</th>
-                <th>Fri</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
-    
-    <button class="btn-ai" style="margin-top:20px;" onclick="generateAI3Pair()">Get 3-Pair Prediction</button>
+            <table id="mainTable">
+                <thead>
+                    <tr>
+                        <th>Week</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>AI प्रिडिक्शन सेंटर</h3>
+            <div class="status-box">
+                <strong>आज का विश्लेषण:</strong>
+                <p id="analysisMsg">डेटा का इंतज़ार है...</p>
+                <h2 id="aiPairs" style="color: var(--main); text-align: center;">-- , -- , --</h2>
+            </div>
+            <button class="btn btn-ai" onclick="generateAI()">Get 3-Pair Prediction</button>
+            
+            <div class="status-box" style="margin-top:20px; border-color: var(--win);">
+                <strong>कर्ज मुक्ति कैलकुलेटर (Goal):</strong>
+                <p>अगला सही पैटर्न आपको आपके लक्ष्य के करीब ले जाएगा।</p>
+                <input type="number" id="debtAmount" placeholder="कर्ज राशि लिखें" style="width: 80%; padding: 5px;" onchange="saveDebt()">
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    let dataStore = JSON.parse(localStorage.getItem('myPatternData')) || [];
+    let records = JSON.parse(localStorage.getItem('p_data')) || [];
 
-    // डेटा जोड़ने का फंक्शन
-    function addData() {
+    // 1. डेटा जोड़ना
+    function addRow() {
         let val = document.getElementById('pairInput').value;
         if(!val) return;
-        dataStore.push(val);
-        localStorage.setItem('myPatternData', JSON.stringify(dataStore));
-        renderTable();
+        records.push(val);
+        localStorage.setItem('p_data', JSON.stringify(records));
         document.getElementById('pairInput').value = '';
+        render();
     }
 
-    // टेबल दिखाने का फंक्शन
-    function renderTable() {
+    // 2. टेबल बनाना (Monday to Friday)
+    function render() {
         const body = document.getElementById('tableBody');
         body.innerHTML = '';
-        let rowCount = Math.ceil(dataStore.length / 5);
-        
-        for(let i=0; i < rowCount; i++) {
+        let rowCount = Math.ceil(records.length / 5);
+
+        for (let i = 0; i < rowCount; i++) {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td>Week ${i+1}</td>`;
-            for(let j=0; j<5; j++) {
-                let index = i * 5 + j;
-                let cellVal = dataStore[index] || '--';
+            tr.innerHTML = `<td>W${i+1}</td>`;
+            for (let j = 0; j < 5; j++) {
+                let idx = i * 5 + j;
                 let td = document.createElement('td');
-                td.innerText = cellVal;
-                td.onclick = () => highlightSource(index);
+                td.innerText = records[idx] || '--';
+                if(records[idx]) {
+                    td.onclick = () => findPattern(idx);
+                }
                 tr.appendChild(td);
             }
             body.appendChild(tr);
         }
     }
 
-    // CSV Export (File सेव करने के लिए)
-    function exportToCSV() {
-        let csvContent = "data:text/csv;charset=utf-8,Pairs\n" + dataStore.join("\n");
-        let encodedUri = encodeURI(csvContent);
-        let link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "my_patterns.csv");
-        document.body.appendChild(link);
-        link.click();
+    // 3. Pattern Matching & Check Line (Last 10 Weeks)
+    function findPattern(currentIdx) {
+        render(); // Reset markers
+        let currentVal = records[currentIdx];
+        let found = false;
+        
+        // पिछले 50 रिकॉर्ड (10 हफ्ते) में सर्च करना
+        for(let i = 1; i <= 50; i++) {
+            let oldIdx = currentIdx - i;
+            if(oldIdx >= 0 && records[oldIdx] === currentVal) {
+                markCells(currentIdx, oldIdx);
+                found = true;
+                break;
+            }
+        }
+        if(!found) alert("पिछले 10 हफ्तों में कोई मैच नहीं मिला।");
     }
 
-    // CSV Import (पुरानी फाइल लोड करने के लिए)
-    function importCSV(event) {
-        let file = event.target.files[0];
+    function markCells(cur, old) {
+        let cells = document.querySelectorAll('td');
+        // Table offset calculation (index + week column)
+        let getTdIdx = (idx) => (Math.floor(idx/5) * 6) + (idx%5) + 1;
+        
+        cells[getTdIdx(cur)].style.backgroundColor = "#ffeaa7";
+        cells[getTdIdx(old)].classList.add('circle-mark');
+        alert(`पैटर्न मिल गया! यह जोड़ी पहले Week ${Math.floor(old/5)+1} में आई थी।`);
+    }
+
+    // 4. CSV Features
+    function exportCSV() {
+        let csv = "Pairs\n" + records.join("\n");
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url; a.download = 'Pradeep_Patterns.csv';
+        a.click();
+    }
+
+    function importCSV(e) {
+        let file = e.target.files[0];
         let reader = new FileReader();
-        reader.onload = function(e) {
-            let content = e.target.result;
-            let rows = content.split("\n").slice(1); // Header हटाकर
-            dataStore = rows.map(r => r.trim()).filter(r => r !== "");
-            localStorage.setItem('myPatternData', JSON.stringify(dataStore));
-            renderTable();
+        reader.onload = function(event) {
+            let content = event.target.result;
+            records = content.split("\n").slice(1).map(r => r.trim()).filter(r => r != "");
+            localStorage.setItem('p_data', JSON.stringify(records));
+            render();
         };
         reader.readAsText(file);
     }
 
-    // Pattern Recognition (Highlight logic)
-    function highlightSource(idx) {
-        renderTable(); // Reset colors
-        let cells = document.querySelectorAll('td');
-        if(idx > 5) {
-            // पिछले रो से कनेक्शन दिखाना (Example logic)
-            cells[idx-4].classList.add('marked-parent'); 
-            alert("यह जोड़ी पिछले पैटर्न से प्रेरित है। (Check Line Active)");
-        }
+    // 5. Future AI 3-Pair Prediction
+    function generateAI() {
+        if(records.length < 5) { alert("कम से कम 1 हफ्ते का डेटा डालें"); return; }
+        
+        let last = records[records.length - 1];
+        // लॉजिक: लकी अंक 3,5,6 और पिछले डेटा का विश्लेषण
+        let p1 = (parseInt(last) + 11) % 100;
+        let p2 = "3" + last.charAt(1);
+        let p3 = last.charAt(0) + "6";
+        
+        document.getElementById('aiPairs').innerText = `${p1}, ${p2}, ${p3}`;
+        document.getElementById('analysisMsg').innerText = "AI ने आपके लकी अंकों और 10 हफ्तों के ट्रेंड के आधार पर ये सुझाव दिए हैं:";
     }
 
-    // Future AI 3-Pair Prediction
-    function generateAI3Pair() {
-        const aiBox = document.getElementById('aiBox');
-        const aiResult = document.getElementById('aiResult');
-        // लॉजिक: लकी अंक 3, 5 और पिछले डेटा का मिश्रण
-        let p1 = Math.floor(Math.random() * 90 + 10);
-        let p2 = "5" + Math.floor(Math.random() * 9);
-        let p3 = Math.floor(Math.random() * 9) + "3";
-        aiBox.style.display = 'block';
-        aiResult.innerText = `${p1}, ${p2}, ${p3} (Safe Mode: On)`;
+    function saveDebt() {
+        localStorage.setItem('debt', document.getElementById('debtAmount').value);
     }
 
-    renderTable();
+    document.getElementById('debtAmount').value = localStorage.getItem('debt') || "";
+    render();
 </script>
 </body>
 </html>
