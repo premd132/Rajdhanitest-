@@ -1,55 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - 12 Row Limit Pattern</title>
+    <title>DPBOSS Style Smart AI - Pradeep Kumar</title>
     <style>
-        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --red: #ff4757; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; }
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid #333; }
-        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 48px; height: 48px; cursor: pointer; outline: none; }
-        th { background: #333; color: white; font-size: 11px; }
+        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #111827; --panel: #1f2937; --yellow: #fbbf24; --red: #ef4444; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; padding: 10px; overflow-x: hidden; }
         
-        /* Shape Nodes */
-        .base-node { background-color: var(--yellow) !important; color: #000; }
-        .shape-node { background-color: var(--red) !important; color: #fff; }
-        .target-node { border: 4px solid var(--blue) !important; border-radius: 50%; }
-        .old-hit-node { border: 4px solid var(--green) !important; border-radius: 50%; }
+        /* Toolbar */
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; border-bottom: 3px solid var(--blue); }
+        
+        /* Table Style like DPBOSS */
+        .table-container { position: relative; background: #fff; border-radius: 4px; padding: 2px; display: inline-block; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        table { border-collapse: collapse; color: #000; font-size: 16px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ccc; padding: 12px 8px; text-align: center; font-weight: 800; width: 45px; height: 45px; cursor: pointer; position: relative; }
+        th { background: #374151; color: white; font-size: 10px; text-transform: uppercase; }
+        
+        /* Pattern Classes */
+        .node-active { background: var(--yellow) !important; color: #000; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
+        .node-match { border: 3px solid var(--green) !important; border-radius: 50%; color: var(--green); }
+        .node-target { border: 3px solid var(--blue) !important; background: rgba(26,115,232,0.1); border-radius: 50%; }
+        .node-family { background: #fee2e2 !important; color: #b91c1c; }
 
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        .card { background: var(--panel); padding: 20px; border-radius: 15px; margin-top: 15px; border-top: 5px solid var(--gold); text-align: center; }
-        #future { font-size: 32px; color: var(--green); font-weight: 900; margin: 15px 0; letter-spacing: 5px; }
-        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 20px; border-radius: 6px; color: white; transition: 0.3s; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; opacity: 0.8; }
+        
+        /* AI Card */
+        .card { background: var(--panel); padding: 20px; border-radius: 16px; margin-top: 20px; text-align: center; border: 1px solid #374151; }
+        #future { font-size: 36px; color: var(--green); font-weight: 900; margin: 10px 0; text-shadow: 0 0 15px rgba(46,204,113,0.4); }
+        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 18px; border-radius: 8px; color: white; transition: 0.2s; font-size: 12px; }
+        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <button onclick="addRow()" style="background:#444;">➕ ADD ROW</button>
-        <button onclick="saveData()" style="background:var(--green);">💾 SAVE</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD</button>
-        <button onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR</button>
+        <button onclick="addRow()" style="background:#4b5563;">➕ Add Row</button>
+        <button onclick="saveData()" style="background:var(--green);">💾 Save Data</button>
+        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 Import CSV</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
     <center>
         <div class="table-container">
-            <canvas id="canvas"></canvas>
+            <canvas id="lineCanvas"></canvas>
             <table id="mainTable"></table>
         </div>
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); margin:0; font-size:14px;">🔍 12-WEEK SHAPE SCANNER</h3>
+        <h3 style="color:var(--gold); margin:0; font-size:14px; letter-spacing:2px;">DPBOSS SMART PATTERN ENGINE</h3>
         <div id="future">-- -- --</div>
-        <div id="log" style="font-size:12px; color:#888;">सिस्टम पिछले 12 हफ्तों के रिकॉर्ड में पैटर्न स्कैन करेगा।</div>
+        <div id="log" style="font-size:12px; color:#9ca3af;">Click on any empty cell (**) to trace pattern lines</div>
     </div>
 
 <script>
-const KEY="pradeep_v12_row";
+const KEY="dpboss_smart_pradeep";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -58,11 +64,11 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
-let activeSet = null;
+let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
+let activePattern = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
-function norm(v){ v=v.replace(/[^0-9*]/g, ''); if(v=="**" || v=="") return "**"; return v.padStart(2,'0').slice(-2); }
+function norm(v){ v=v.replace(/[^0-9*]/g, ''); return (v=="**"||v=="")?"**":v.padStart(2,'0').slice(-2); }
 
 function render(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
@@ -70,97 +76,108 @@ function render(){
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = "";
-   if(activeSet){
-       if(ri==activeSet.target.r && ci==activeSet.target.c) cls="target-node";
-       else if(ri==activeSet.base.r && ci==activeSet.base.c) cls="base-node";
-       else if(ri==activeSet.s1.r && ci==activeSet.s1.c) cls="shape-node";
-       else if(ri==activeSet.old.r && ci==activeSet.old.c) cls="old-hit-node";
+   if(activePattern){
+       if(ri==activePattern.target.r && ci==activeSet.target.c) cls="node-target";
+       else if(activePattern.nodes.some(n => n.r==ri && n.c==ci)) cls="node-active";
+       else if(ri==activePattern.match.r && ci==activePattern.match.c) cls="node-match";
    }
-   h+=`<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="handleInteraction(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="smartSearch(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("mainTable").innerHTML=h;
- if(activeSet) setTimeout(drawLines, 50);
+ if(activePattern) setTimeout(drawDpbossLines, 50);
 }
 
 function updateCell(r, c, el) {
-    let val = el.innerText.trim();
-    data[r][c] = (val === "**" || val === "") ? "**" : norm(val);
+    data[r][c] = norm(el.innerText);
     el.innerText = data[r][c];
 }
 
-function handleInteraction(r, c) {
-    if(data[r][c] === "**") smartScan(r, c);
-}
+function smartSearch(r, c) {
+    if(data[r][c] !== "**") return;
 
-function smartScan(r, c) {
-    let bPos = {r: r-1, c: c}; // Base above
-    let s1Pos = {r: r-1, c: (c>0?c-1:c+1)}; // Side node
-    
-    if(bPos.r < 0) return;
-    let bVal = data[bPos.r][bPos.c];
-    let s1Val = data[s1Pos.r][s1Pos.c];
-    if(bVal == "**") return;
+    // DPBOSS Logic: Scan neighbors for any non-empty jodi
+    let neighbors = [
+        {r: r-1, c: c},       // Top
+        {r: r-1, c: c-1},     // Top-Left (Tircha)
+        {r: r-1, c: c+1}      // Top-Right (Tircha)
+    ].filter(n => n.r >= 0 && n.c >= 0 && n.c < 6 && data[n.r][n.c] !== "**");
 
-    let bFam = fam(bVal), s1Fam = fam(s1Val);
-    let matchIdx = -1;
+    if(neighbors.length === 0) return;
 
-    // --- MAX 12 ROW LIMIT ---
-    let startLimit = Math.max(0, r - 12);
+    let base = neighbors[0]; // Primary pattern trigger
+    let bFam = fam(data[base.r][base.c]);
+    let foundMatch = null;
 
-    for(let i = r-2; i >= startLimit; i--) {
-        if(fam(data[i][bPos.c]) === bFam) {
-            // Shape Check
-            if(s1Val !== "**" && fam(data[i][s1Pos.c]) === s1Fam) {
-                if(data[i+1] && data[i+1][c] !== "**") { matchIdx = i; break; }
-            } else if (s1Val === "**") {
-                if(data[i+1] && data[i+1][c] !== "**") { matchIdx = i; break; }
+    // MAX 12 ROW REVERSE SCAN
+    let limit = Math.max(0, r - 12);
+    for(let i = r-2; i >= limit; i--) {
+        // Search in the same column as the base
+        if(fam(data[i][base.c]) === bFam) {
+            if(data[i+1] && data[i+1][c] !== "**") {
+                foundMatch = {r: i+1, c: c};
+                break;
             }
         }
     }
 
-    if(matchIdx !== -1) {
-        activeSet = { target: {r, c}, base: bPos, s1: s1Pos, old: {r: matchIdx+1, c: c} };
+    if(foundMatch) {
+        activePattern = {
+            target: {r, c},
+            nodes: neighbors,
+            match: foundMatch
+        };
         render();
-        let val = data[matchIdx+1][c];
-        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm(String((parseInt(val)+5)%100))}`;
-        document.getElementById("log").innerText = `12-हफ्ते के अंदर पैटर्न मिला! Row ${matchIdx+2} से कनेक्शन।`;
+        let val = data[foundMatch.r][foundMatch.c];
+        document.getElementById("future").innerText = `${val} • ${val.split('').reverse().join('')} • ${norm(String((parseInt(val)+5)%100))}`;
+        document.getElementById("log").innerText = `PATTERN MATCHED: Trace from Row ${foundMatch.r + 1}`;
     } else {
-        alert("पिछले 12 हफ्तों में कोई मैचिंग पैटर्न नहीं मिला।");
+        alert("12 हफ्तों में कोई 'DPBOSS' स्टाइल पैटर्न नहीं मिला।");
     }
 }
 
-function drawLines() {
-    const cvs = document.getElementById("canvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
+function drawDpbossLines() {
+    const cvs = document.getElementById("lineCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    const sels = [".old-hit-node", ".shape-node", ".base-node", ".target-node"];
     const rect = tbl.getBoundingClientRect();
-    let pts = [];
+    const getPos = (pos) => {
+        let el = tbl.rows[pos.r+1].cells[pos.c];
+        let r = el.getBoundingClientRect();
+        return {x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2};
+    };
 
-    sels.forEach(sel => {
-        let el = tbl.querySelector(sel);
-        if(el && el.innerText !== "**") {
-            let r = el.getBoundingClientRect();
-            pts.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
-        }
+    let start = getPos(activePattern.match);
+    let end = getPos(activePattern.target);
+
+    // DPBOSS Style Thick Path
+    ctx.beginPath();
+    ctx.strokeStyle = "#2ecc71";
+    ctx.lineWidth = 5;
+    ctx.setLineDash([8, 4]);
+    ctx.moveTo(start.x, start.y);
+    
+    // Connect through neighbors
+    activePattern.nodes.forEach(n => {
+        let p = getPos(n);
+        ctx.lineTo(p.x, p.y);
     });
 
-    if(pts.length < 2) return;
-
-    ctx.strokeStyle = "#2ecc71"; ctx.lineWidth = 4;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.lineTo(end.x, end.y);
     ctx.stroke();
+
+    // Add points
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#1a73e8";
+    [start, end].forEach(p => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, 7); ctx.fill();
+    });
 }
 
 function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved!"); }
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
