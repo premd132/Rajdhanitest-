@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - Check Line System</title>
+    <title>Kalyan Pro AI - Original Check Line System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --red: #ff4757; --purple: #a4b0be; }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; justify-content: center; }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
         th { background: #1e293b; color: white; font-size: 10px; }
         
-        /* Pattern Highlighters */
-        .base { background-color: var(--yellow) !important; color: #000; font-weight: 900; }
+        /* Check Line & Pattern Markers */
+        .base { background-color: var(--yellow) !important; color: #000; }
         .p1 { background-color: var(--red) !important; color: #fff; }
-        .p2 { background-color: var(--purple) !important; color: #000; }
-        .target { border: 4px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
-        .old-hit { border: 4px solid var(--green) !important; border-radius: 50% !important; }
+        .p2 { background-color: var(--purple) !important; color: #fff; }
+        .target-cell { border: 4px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
+        .old-record-match { border: 4px solid var(--green) !important; border-radius: 50% !important; }
 
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; text-align: center; }
         #future { font-size: 26px; color: var(--green); font-weight: 800; letter-spacing: 5px; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 10px 15px; color: white; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 10px 15px; color: white; }
     </style>
 </head>
 <body>
@@ -47,13 +46,13 @@
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); font-size:12px; margin:0;">🤖 AI CHECK LINE PREDICTION</h3>
+        <h3 style="color:var(--gold); font-size:12px;">🔍 CHECK LINE PATTERN LOG</h3>
         <div id="future">-- -- --</div>
-        <div id="matchLog" style="font-size:11px; color:var(--green); margin-top:5px; font-weight:bold;"></div>
+        <div id="matchLog" style="font-size:11px; color:var(--green); margin-top:5px;">Check Line will appear here after match</div>
     </div>
 
 <script>
-const KEY="pradeep_checkline_v1";
+const KEY="pradeep_final_checkline";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -63,7 +62,7 @@ const FAMILY = {
 };
 
 let data = JSON.parse(localStorage.getItem(KEY)) || [["12","25","36","48","50","60"],["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
-let activeLine = null;
+let activeData = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
 function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
@@ -74,107 +73,91 @@ function draw(){
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = "";
-   if(activeLine){
-       if(ri==activeLine.cur.r && ci==activeLine.cur.c) cls="target";
-       else if(ri==activeLine.base.r && ci==activeLine.base.c) cls="base";
-       else if(ri==activeLine.p1.r && ci==activeLine.p1.c) cls="p1";
-       else if(ri==activeLine.p2.r && ci==activeLine.p2.c) cls="p2";
-       else if(ri==activeLine.old.r && ci==activeLine.old.c) cls="old-hit";
+   if(activeData){
+       if(ri==activeData.cur.r && ci==activeData.cur.c) cls="target-cell";
+       else if(ri==activeData.base.r && ci==activeData.base.c) cls="base";
+       else if(ri==activeData.p1.r && ci==activeData.p1.c) cls="p1";
+       else if(ri==activeData.p2.r && ci==activeData.p2.c) cls="p2";
+       else if(ri==activeData.oldMatch.r && ci==activeData.oldMatch.c) cls="old-record-match";
    }
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="doCheckLine(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="activateCheckLine(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
- if(activeLine) setTimeout(renderCanvas, 50);
+ if(activeData) setTimeout(drawCheckLineOnCanvas, 50);
 }
 
-function doCheckLine(r, c) {
+function activateCheckLine(r, c) {
     if(data[r][c] !== "**") return;
     
-    // 1. Current Pattern Points
-    let base = {r: r-1, c: c};
-    let p1 = {r: r-2, c: c};
-    let p2 = {r: r-1, c: (c>0 ? c-1 : c+1)};
-
-    if(base.r < 0 || p1.r < 0) return;
+    let base = {r: r-1, c: c}, p1 = {r: r-2, c: c}, p2 = {r: r-1, c: (c>0?c-1:c+1)};
+    if(base.r < 0) return;
     let bVal = data[base.r][base.c];
     if(bVal == "**") return;
 
-    // 2. Scan Old Records for Family Match
     let bFam = fam(bVal);
-    let matchRow = -1;
-    for(let i = r-3; i >= Math.max(0, r-12); i--) {
+    let foundIdx = -1;
+
+    // Scanning last 12 weeks for same family
+    for(let i = r-2; i >= Math.max(0, r-12); i--) {
         if(fam(data[i][base.c]) === bFam) {
             if(data[i+1] && data[i+1][c] !== "**") {
-                matchRow = i;
-                break;
+                foundIdx = i; break;
             }
         }
     }
 
-    if(matchRow !== -1) {
-        activeLine = {
-            cur: {r, c},
-            base: base,
-            p1: p1,
-            p2: p2,
-            old: {r: matchRow+1, c: c}
-        };
+    if(foundIdx !== -1) {
+        activeData = { cur: {r, c}, base, p1, p2, oldMatch: {r: foundIdx+1, c: c} };
         draw();
-        let hit = data[matchRow+1][c];
-        document.getElementById("future").innerText = `${norm((parseInt(hit)+5)%100)} - ${hit.split('').reverse().join('')} - ${hit}`;
-        document.getElementById("matchLog").innerText = `CHECK LINE ACTIVE: Row ${matchRow+2} -> Row ${r+1}`;
+        let val = data[foundIdx+1][c];
+        document.getElementById("future").innerText = `${norm((parseInt(val)+5)%100)} - ${val.split('').reverse().join('')} - ${val}`;
+        document.getElementById("matchLog").innerText = `CHECK LINE: Match from Row ${foundIdx+2} connected to Row ${r+1}`;
     } else {
-        alert("कोई मैचिंग चेक लाइन नहीं मिली।");
+        alert("Pattern not found in records.");
     }
 }
 
-function renderCanvas() {
+function drawCheckLineOnCanvas() {
     const cvs = document.getElementById("mainCanvas"), tbl = document.getElementById("tbl"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    // Points to connect: Old Hit -> P1 -> P2 -> Base -> Target
-    const classes = [".old-hit", ".p1", ".p2", ".base", ".target"];
-    let points = [];
+    // Connection points for Check Line
+    const elements = [".old-record-match", ".p1", ".p2", ".base", ".target-cell"];
     const rect = tbl.getBoundingClientRect();
+    let pts = [];
 
-    classes.forEach(cls => {
-        let el = tbl.querySelector(cls);
+    elements.forEach(sel => {
+        let el = tbl.querySelector(sel);
         if(el) {
             let r = el.getBoundingClientRect();
-            points.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
+            pts.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
         }
     });
 
-    if(points.length < 2) return;
+    if(pts.length < 2) return;
 
-    // Drawing the Line
-    ctx.strokeStyle = "#00ff88"; 
-    ctx.lineWidth = 4;
-    ctx.setLineDash([5, 5]); // Dash style for clarity
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "#00ff88";
-
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 4;
+    ctx.setLineDash([6, 4]); 
     ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for(let i=1; i<points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
     
-    // Numbers on the points
-    ctx.setLineDash([]);
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 12px Arial";
-    points.forEach((p, i) => {
-        ctx.fillText(i+1, p.x + 10, p.y - 10);
+    // Markers
+    ctx.setLineDash([]); ctx.fillStyle = "#fff";
+    pts.forEach((p, i) => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+        ctx.fillText(i+1, p.x+8, p.y-8);
     });
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved!"); }
-function clearData(){ if(confirm("सब मिटा दें?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
