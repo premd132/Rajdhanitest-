@@ -3,56 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - DPBOSS Style</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;900&display=swap" rel="stylesheet">
+    <title>Kalyan Pro AI - Double Family Pattern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #121212; --panel: #1e1e1e; --yellow: #ffff00; }
+        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --orange: #ff9f43; }
         * { box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
-        
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; border: 1px solid #333; }
-        
-        .table-container { position: relative; background: #fff; border-radius: 4px; padding: 0; display: inline-block; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; justify-content: center; }
+        .table-container { position: relative; background: #fff; border-radius: 4px; padding: 5px; display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #bbb; padding: 10px 5px; text-align: center; font-weight: bold; width: 50px; height: 50px; cursor: pointer; }
+        td, th { border: 1px solid #ccc; padding: 10px 5px; text-align: center; font-weight: bold; width: 48px; height: 48px; cursor: pointer; }
         th { background: #333; color: white; font-size: 11px; }
         
-        /* DPBOSS Colors */
-        .base-node { background-color: var(--yellow) !important; color: #000 !important; font-weight: 900; position: relative; }
-        .pattern-node { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(26, 115, 232, 0.1); }
-        .old-hit-node { border: 3px solid var(--green) !important; border-radius: 50%; font-weight: 900; }
-        
+        /* Shape Color Coding */
+        .base { background-color: var(--yellow) !important; color: #000; }
+        .fam1 { background-color: #ff4757 !important; color: #fff; } /* Family 1 */
+        .fam2 { background-color: #5f27cd !important; color: #fff; } /* Family 2 */
+        .target { border: 4px solid var(--blue) !important; border-radius: 50%; }
+        .old-match { border: 4px solid var(--green) !important; border-radius: 50%; }
+
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        
-        .card { background: var(--panel); padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid var(--gold); }
-        #future { font-size: 28px; color: var(--green); font-weight: 900; letter-spacing: 4px; text-align: center; }
-        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 15px; border-radius: 4px; color: white; }
+        .card { background: var(--panel); padding: 15px; border-radius: 10px; margin-top: 15px; border-top: 4px solid var(--gold); }
+        #future { font-size: 28px; color: var(--green); font-weight: 900; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <button onclick="addRow()" style="background:#444;">➕ ROW</button>
-        <button onclick="saveData()" style="background:var(--green);">💾 SAVE</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:var(--green); color:white;">💾 SAVE</button>
+        <button onclick="document.getElementById('csv').click()" style="background:var(--blue); color:white;">📂 UPLOAD</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
     <center>
         <div class="table-container">
-            <canvas id="lineCanvas"></canvas>
+            <canvas id="canvas"></canvas>
             <table id="mainTable"></table>
         </div>
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:12px;">🔮 DPBOSS STYLE PREDICTION</h3>
+        <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:12px; text-align:center;">🔮 DOUBLE FAMILY PATTERN PREDICTION</h3>
         <div id="future">-- -- --</div>
-        <div id="log" style="font-size:11px; color:#888; margin-top:5px; text-align:center;">Click to reveal hidden pattern line</div>
+        <div id="log" style="font-size:11px; color:#aaa; margin-top:5px; text-align:center;">Shape & Double Family Match System</div>
     </div>
 
 <script>
-const KEY="dpboss_king_style";
+const KEY="dpboss_double_fam_v1";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -61,8 +59,8 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["22","33","44","55","66","77"],["**","**","**","**","**","**"]];
-let currentPattern = null;
+let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
+let activePattern = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
 function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
@@ -73,66 +71,68 @@ function render(){
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = "";
-   if(currentPattern){
-       if(ri==currentPattern.target.r && ci==currentPattern.target.c) cls="pattern-node";
-       else if(ri==currentPattern.base.r && ci==currentPattern.base.c) cls="base-node";
-       else if(ri==currentPattern.old.r && ci==currentPattern.old.c) cls="old-hit-node";
+   if(activePattern){
+       if(ri==activePattern.target.r && ci==activePattern.target.c) cls="target";
+       else if(ri==activePattern.base.r && ci==activePattern.base.c) cls="base";
+       else if(ri==activePattern.f1.r && ci==activePattern.f1.c) cls="fam1";
+       else if(ri==activePattern.f2.r && ci==activePattern.f2.c) cls="fam2";
+       else if(ri==activePattern.old.r && ci==activePattern.old.c) cls="old-match";
    }
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="findDpbossPattern(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="findComplexPattern(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("mainTable").innerHTML=h;
- if(currentPattern) setTimeout(drawDpbossLines, 50);
+ if(activePattern) setTimeout(drawCheckLine, 50);
 }
 
-function findDpbossPattern(r, c) {
+function findComplexPattern(r, c) {
     if(data[r][c] !== "**") return;
     
-    // Logic: Current Base is above. We find same family in records.
+    // Pattern Shape: 
+    // Base (Above), F1 (Above-Above), F2 (Diagonal Left/Right)
     let base = {r: r-1, c: c};
-    if(base.r < 0) return;
-    let bVal = data[base.r][base.c];
-    if(bVal == "**") return;
+    let f1 = {r: r-2, c: c};
+    let f2 = {r: r-1, c: (c > 0 ? c-1 : c+1)};
 
-    let targetFam = fam(bVal);
-    let matchRow = -1;
+    if(base.r < 0 || f1.r < 0) return;
+    let bVal = data[base.r][base.c], f1Val = data[f1.r][f1.c], f2Val = data[f2.r][f2.c];
+    if(bVal=="**" || f1Val=="**" || f2Val=="**") return;
 
-    // Scan records for family match
-    for(let i = r-2; i >= 0; i--) {
-        if(fam(data[i][c]) === targetFam) {
+    let bFam = fam(bVal), f1Fam = fam(f1Val), f2Fam = fam(f2Val);
+    let matchIdx = -1;
+
+    // Scan records for same 2-Family Shape and same Base Position
+    for(let i = r-3; i >= 0; i--) {
+        if(fam(data[i][base.c]) === bFam && fam(data[i-1][f1.c]) === f1Fam && fam(data[i][f2.c]) === f2Fam) {
             if(data[i+1] && data[i+1][c] !== "**") {
-                matchRow = i; break;
+                matchIdx = i; break;
             }
         }
     }
 
-    if(matchRow !== -1) {
-        currentPattern = {
-            target: {r, c},
-            base: base,
-            old: {r: matchRow+1, c: c}
-        };
+    if(matchIdx !== -1) {
+        activePattern = { target: {r, c}, base, f1, f2, old: {r: matchIdx+1, c: c} };
         render();
-        let val = data[matchRow+1][c];
-        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm((parseInt(val)+5)%100)}`;
-        document.getElementById("log").innerText = `LINE DETECTED: ROW ${matchRow+2} CONNECTS TO ROW ${r+1}`;
+        let val = data[matchIdx+1][c];
+        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm((parseInt(val)+10)%100)}`;
+        document.getElementById("log").innerText = `DOUBLE FAMILY MATCH: Row ${matchIdx+2} -> Row ${r+1}`;
     } else {
-        alert("No pattern match found in records.");
+        alert("Same Shape with 2 Families not found.");
     }
 }
 
-function drawDpbossLines() {
-    const cvs = document.getElementById("lineCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
+function drawCheckLine() {
+    const cvs = document.getElementById("canvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    const nodes = [".old-hit-node", ".base-node", ".pattern-node"];
+    const selectors = [".old-match", ".fam1", ".fam2", ".base", ".target"];
     const rect = tbl.getBoundingClientRect();
     let pts = [];
 
-    nodes.forEach(sel => {
-        let el = tbl.querySelector(sel);
+    selectors.forEach(s => {
+        let el = tbl.querySelector(s);
         if(el) {
             let r = el.getBoundingClientRect();
             pts.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
@@ -141,32 +141,24 @@ function drawDpbossLines() {
 
     if(pts.length < 2) return;
 
-    // DPBOSS Style Thick Green Line
-    ctx.strokeStyle = "#2ecc71";
-    ctx.lineWidth = 5;
-    ctx.lineJoin = "round";
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "#2ecc71";
-
+    // Check Line - DPBOSS Style
+    ctx.strokeStyle = "#2ecc71"; ctx.lineWidth = 4;
+    ctx.setLineDash([8, 4]);
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
 
-    // Secondary Blue Connection for Pattern
-    ctx.strokeStyle = "#1a73e8";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
-    ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle = "white";
+    pts.forEach((p, i) => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+        ctx.fillText(i+1, p.x+8, p.y-8);
+    });
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("DPBOSS Data Saved!"); }
-function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved!"); }
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
