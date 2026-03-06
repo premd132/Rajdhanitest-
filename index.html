@@ -3,36 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - Double Family Pattern</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700;900&display=swap" rel="stylesheet">
+    <title>Kalyan AI - Dynamic Shape Pattern</title>
     <style>
-        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --orange: #ff9f43; }
-        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
+        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --red: #ff4757; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; padding: 10px; }
         .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; justify-content: center; }
         .table-container { position: relative; background: #fff; border-radius: 4px; padding: 5px; display: inline-block; }
-        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ccc; padding: 10px 5px; text-align: center; font-weight: bold; width: 48px; height: 48px; cursor: pointer; }
-        th { background: #333; color: white; font-size: 11px; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
+        th { background: #333; color: white; font-size: 10px; }
         
-        /* Shape Color Coding */
-        .base { background-color: var(--yellow) !important; color: #000; }
-        .fam1 { background-color: #ff4757 !important; color: #fff; } /* Family 1 */
-        .fam2 { background-color: #5f27cd !important; color: #fff; } /* Family 2 */
-        .target { border: 4px solid var(--blue) !important; border-radius: 50%; }
-        .old-match { border: 4px solid var(--green) !important; border-radius: 50%; }
+        /* Dynamic Markers */
+        .base-node { background-color: var(--yellow) !important; color: #000; }
+        .shape-node { background-color: var(--red) !important; color: #fff; }
+        .target-node { border: 4px solid var(--blue) !important; border-radius: 50%; background: rgba(26,115,232,0.1); }
+        .old-hit-node { border: 4px solid var(--green) !important; border-radius: 50%; }
 
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        .card { background: var(--panel); padding: 15px; border-radius: 10px; margin-top: 15px; border-top: 4px solid var(--gold); }
-        #future { font-size: 28px; color: var(--green); font-weight: 900; text-align: center; }
+        .card { background: var(--panel); padding: 15px; border-radius: 10px; margin-top: 15px; border-top: 4px solid var(--gold); text-align: center; }
+        #future { font-size: 24px; color: var(--green); font-weight: 900; margin: 10px 0; }
+        button { cursor: pointer; border: none; font-weight: bold; padding: 8px 12px; border-radius: 4px; color: white; }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
-        <button onclick="saveData()" style="background:var(--green); color:white;">💾 SAVE</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--blue); color:white;">📂 UPLOAD</button>
+        <button onclick="addRow()" style="background:#444;">➕ ROW</button>
+        <button onclick="saveData()" style="background:var(--green);">💾 SAVE</button>
+        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
@@ -44,13 +42,13 @@
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:12px; text-align:center;">🔮 DOUBLE FAMILY PATTERN PREDICTION</h3>
+        <h3 style="color:var(--gold); margin:0; font-size:12px;">🔍 SHAPE MEMORY SEARCH</h3>
         <div id="future">-- -- --</div>
-        <div id="log" style="font-size:11px; color:#aaa; margin-top:5px; text-align:center;">Shape & Double Family Match System</div>
+        <div id="log" style="font-size:11px; color:#aaa;">Click any cell to scan for that shape in history</div>
     </div>
 
 <script>
-const KEY="dpboss_double_fam_v1";
+const KEY="pradeep_shape_ai";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -59,8 +57,8 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
-let activePattern = null;
+let data = JSON.parse(localStorage.getItem(KEY)) || [["11","22","33","44","55","66"],["16","27","38","49","50","61"],["**","**","**","**","**","**"]];
+let activeSet = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
 function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
@@ -71,69 +69,78 @@ function render(){
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = "";
-   if(activePattern){
-       if(ri==activePattern.target.r && ci==activePattern.target.c) cls="target";
-       else if(ri==activePattern.base.r && ci==activePattern.base.c) cls="base";
-       else if(ri==activePattern.f1.r && ci==activePattern.f1.c) cls="fam1";
-       else if(ri==activePattern.f2.r && ci==activePattern.f2.c) cls="fam2";
-       else if(ri==activePattern.old.r && ci==activePattern.old.c) cls="old-match";
+   if(activeSet){
+       if(ri==activeSet.target.r && ci==activeSet.target.c) cls="target-node";
+       else if(ri==activeSet.base.r && ci==activeSet.base.c) cls="base-node";
+       else if(ri==activeSet.s1.r && ci==activeSet.s1.c) cls="shape-node";
+       else if(ri==activeSet.old.r && ci==activeSet.old.c) cls="old-hit-node";
    }
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="findComplexPattern(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="smartScan(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("mainTable").innerHTML=h;
- if(activePattern) setTimeout(drawCheckLine, 50);
+ if(activeSet) setTimeout(drawLines, 50);
 }
 
-function findComplexPattern(r, c) {
+function smartScan(r, c) {
     if(data[r][c] !== "**") return;
+
+    // 1. Identify Today's Shape (Flexible: Current Cell, One Above, One Tircha)
+    let bPos = {r: r-1, c: c}; // Base
+    let s1Pos = {r: r-1, c: (c>0?c-1:c+1)}; // Tircha/Side
     
-    // Pattern Shape: 
-    // Base (Above), F1 (Above-Above), F2 (Diagonal Left/Right)
-    let base = {r: r-1, c: c};
-    let f1 = {r: r-2, c: c};
-    let f2 = {r: r-1, c: (c > 0 ? c-1 : c+1)};
+    if(bPos.r < 0) return;
+    let bVal = data[bPos.r][bPos.c];
+    let s1Val = data[s1Pos.r][s1Pos.c];
+    
+    if(bVal == "**") return;
 
-    if(base.r < 0 || f1.r < 0) return;
-    let bVal = data[base.r][base.c], f1Val = data[f1.r][f1.c], f2Val = data[f2.r][f2.c];
-    if(bVal=="**" || f1Val=="**" || f2Val=="**") return;
-
-    let bFam = fam(bVal), f1Fam = fam(f1Val), f2Fam = fam(f2Val);
+    let bFam = fam(bVal);
+    let s1Fam = fam(s1Val);
     let matchIdx = -1;
 
-    // Scan records for same 2-Family Shape and same Base Position
-    for(let i = r-3; i >= 0; i--) {
-        if(fam(data[i][base.c]) === bFam && fam(data[i-1][f1.c]) === f1Fam && fam(data[i][f2.c]) === f2Fam) {
-            if(data[i+1] && data[i+1][c] !== "**") {
-                matchIdx = i; break;
+    // 2. Search History for "Same Shape" (Same position logic)
+    for(let i = r-2; i >= 0; i--) {
+        // Match Base Family AND Shape Family in the same relative position
+        if(fam(data[i][bPos.c]) === bFam) {
+            // Check if Shape 1 also matches in the history at the same relative spot
+            if(s1Val !== "**" && fam(data[i][s1Pos.c]) === s1Fam) {
+                if(data[i+1] && data[i+1][c] !== "**") {
+                    matchIdx = i; break;
+                }
+            } else if (s1Val === "**") { 
+                // Simple Match if no side shape
+                if(data[i+1] && data[i+1][c] !== "**") {
+                    matchIdx = i; break;
+                }
             }
         }
     }
 
     if(matchIdx !== -1) {
-        activePattern = { target: {r, c}, base, f1, f2, old: {r: matchIdx+1, c: c} };
+        activeSet = { target: {r, c}, base: bPos, s1: s1Pos, old: {r: matchIdx+1, c: c} };
         render();
         let val = data[matchIdx+1][c];
-        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm((parseInt(val)+10)%100)}`;
-        document.getElementById("log").innerText = `DOUBLE FAMILY MATCH: Row ${matchIdx+2} -> Row ${r+1}`;
+        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm((parseInt(val)+5)%100)}`;
+        document.getElementById("log").innerText = `SHAPE MATCH: Found same pattern in Row ${matchIdx+2}`;
     } else {
-        alert("Same Shape with 2 Families not found.");
+        alert("History में ऐसा Shape और Family नहीं मिली।");
     }
 }
 
-function drawCheckLine() {
+function drawLines() {
     const cvs = document.getElementById("canvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    const selectors = [".old-match", ".fam1", ".fam2", ".base", ".target"];
+    const sels = [".old-hit-node", ".shape-node", ".base-node", ".target-node"];
     const rect = tbl.getBoundingClientRect();
     let pts = [];
 
-    selectors.forEach(s => {
+    sels.forEach(s => {
         let el = tbl.querySelector(s);
-        if(el) {
+        if(el && el.innerText !== "**") {
             let r = el.getBoundingClientRect();
             pts.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
         }
@@ -141,24 +148,17 @@ function drawCheckLine() {
 
     if(pts.length < 2) return;
 
-    // Check Line - DPBOSS Style
     ctx.strokeStyle = "#2ecc71"; ctx.lineWidth = 4;
-    ctx.setLineDash([8, 4]);
+    ctx.setLineDash([5, 5]);
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
-
-    ctx.setLineDash([]); ctx.fillStyle = "white";
-    pts.forEach((p, i) => {
-        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
-        ctx.fillText(i+1, p.x+8, p.y-8);
-    });
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved!"); }
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Shape Data Saved!"); }
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
