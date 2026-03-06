@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI - Edit & Shape Scan</title>
+    <title>Kalyan Pro AI - 12 Row Limit Pattern</title>
     <style>
         :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --red: #ff4757; }
         body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; }
         .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid #333; }
-        
         .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 50px; height: 50px; cursor: pointer; outline: none; }
+        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 48px; height: 48px; cursor: pointer; outline: none; }
         th { background: #333; color: white; font-size: 11px; }
         
-        /* Interactive States */
-        td:focus { background: #e8f0fe; border: 2px solid var(--blue); }
+        /* Shape Nodes */
         .base-node { background-color: var(--yellow) !important; color: #000; }
         .shape-node { background-color: var(--red) !important; color: #fff; }
         .target-node { border: 4px solid var(--blue) !important; border-radius: 50%; }
@@ -25,15 +23,14 @@
         .card { background: var(--panel); padding: 20px; border-radius: 15px; margin-top: 15px; border-top: 5px solid var(--gold); text-align: center; }
         #future { font-size: 32px; color: var(--green); font-weight: 900; margin: 15px 0; letter-spacing: 5px; }
         button { cursor: pointer; border: none; font-weight: bold; padding: 10px 20px; border-radius: 6px; color: white; transition: 0.3s; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
         <button onclick="addRow()" style="background:#444;">➕ ADD ROW</button>
-        <button onclick="saveData()" style="background:var(--green);">💾 SAVE RECORD</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD CSV</button>
+        <button onclick="saveData()" style="background:var(--green);">💾 SAVE</button>
+        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD</button>
         <button onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
@@ -46,13 +43,13 @@
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); margin:0; font-size:14px; text-transform:uppercase;">🔍 Advanced Pattern Predictor</h3>
+        <h3 style="color:var(--gold); margin:0; font-size:14px;">🔍 12-WEEK SHAPE SCANNER</h3>
         <div id="future">-- -- --</div>
-        <div id="log" style="font-size:12px; color:#888;">किसी भी सेल को Edit करें या खाली सेल (**) पर क्लिक करके Pattern ढूंढें।</div>
+        <div id="log" style="font-size:12px; color:#888;">सिस्टम पिछले 12 हफ्तों के रिकॉर्ड में पैटर्न स्कैन करेगा।</div>
     </div>
 
 <script>
-const KEY="pradeep_edit_v6";
+const KEY="pradeep_v12_row";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -61,7 +58,7 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
 let activeSet = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
@@ -94,27 +91,27 @@ function updateCell(r, c, el) {
 }
 
 function handleInteraction(r, c) {
-    if(data[r][c] === "**") {
-        smartScan(r, c);
-    }
+    if(data[r][c] === "**") smartScan(r, c);
 }
 
 function smartScan(r, c) {
-    let bPos = {r: r-1, c: c};
-    let s1Pos = {r: r-1, c: (c>0?c-1:c+1)}; 
+    let bPos = {r: r-1, c: c}; // Base above
+    let s1Pos = {r: r-1, c: (c>0?c-1:c+1)}; // Side node
     
     if(bPos.r < 0) return;
     let bVal = data[bPos.r][bPos.c];
     let s1Val = data[s1Pos.r][s1Pos.c];
-    
     if(bVal == "**") return;
 
-    let bFam = fam(bVal);
-    let s1Fam = fam(s1Val);
+    let bFam = fam(bVal), s1Fam = fam(s1Val);
     let matchIdx = -1;
 
-    for(let i = r-2; i >= 0; i--) {
+    // --- MAX 12 ROW LIMIT ---
+    let startLimit = Math.max(0, r - 12);
+
+    for(let i = r-2; i >= startLimit; i--) {
         if(fam(data[i][bPos.c]) === bFam) {
+            // Shape Check
             if(s1Val !== "**" && fam(data[i][s1Pos.c]) === s1Fam) {
                 if(data[i+1] && data[i+1][c] !== "**") { matchIdx = i; break; }
             } else if (s1Val === "**") {
@@ -128,9 +125,9 @@ function smartScan(r, c) {
         render();
         let val = data[matchIdx+1][c];
         document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm(String((parseInt(val)+5)%100))}`;
-        document.getElementById("log").innerText = `Shape Match Found! Check Line Connected to Row ${matchIdx+2}`;
+        document.getElementById("log").innerText = `12-हफ्ते के अंदर पैटर्न मिला! Row ${matchIdx+2} से कनेक्शन।`;
     } else {
-        alert("कोई पैटर्न नहीं मिला। कृपया डेटा चेक करें।");
+        alert("पिछले 12 हफ्तों में कोई मैचिंग पैटर्न नहीं मिला।");
     }
 }
 
@@ -143,8 +140,8 @@ function drawLines() {
     const rect = tbl.getBoundingClientRect();
     let pts = [];
 
-    sels.forEach(s => {
-        let el = tbl.querySelector(s);
+    sels.forEach(sel => {
+        let el = tbl.querySelector(sel);
         if(el && el.innerText !== "**") {
             let r = el.getBoundingClientRect();
             pts.push({x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2});
@@ -162,8 +159,8 @@ function drawLines() {
 }
 
 function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Record Saved Successfully!"); }
-function clearData(){ if(confirm("सारा डेटा डिलीट करें?")){ localStorage.clear(); location.reload(); }}
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
