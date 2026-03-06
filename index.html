@@ -3,56 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan AI - Tircha & Shape Pattern</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Kalyan Pro AI - DPBOSS Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --blue: #0084ff; --green: #00ff88; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --red: #ff4757; --purple: #a4b0be; }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #121212; --panel: #1e1e1e; --yellow: #ffff00; }
+        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; padding: 10px; }
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; justify-content: center; }
-        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; display: inline-block; }
-        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
-        th { background: #1e293b; color: white; font-size: 10px; }
         
-        /* Markers */
-        .base { background-color: var(--yellow) !important; color: #000; }
-        .slant-1 { background-color: var(--red) !important; color: #fff; }
-        .slant-2 { background-color: var(--purple) !important; color: #fff; }
-        .target { border: 4px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.2); }
-        .old-match { border: 4px solid var(--green) !important; border-radius: 50% !important; }
-
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; border: 1px solid #333; }
+        
+        .table-container { position: relative; background: #fff; border-radius: 4px; padding: 0; display: inline-block; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #bbb; padding: 10px 5px; text-align: center; font-weight: bold; width: 50px; height: 50px; cursor: pointer; }
+        th { background: #333; color: white; font-size: 11px; }
+        
+        /* DPBOSS Colors */
+        .base-node { background-color: var(--yellow) !important; color: #000 !important; font-weight: 900; position: relative; }
+        .pattern-node { border: 3px solid var(--blue) !important; border-radius: 50%; background: rgba(26, 115, 232, 0.1); }
+        .old-hit-node { border: 3px solid var(--green) !important; border-radius: 50%; font-weight: 900; }
+        
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); margin-top: 15px; text-align: center; }
-        #future { font-size: 26px; color: var(--green); font-weight: 800; letter-spacing: 5px; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 10px 15px; color: white; }
+        
+        .card { background: var(--panel); padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid var(--gold); }
+        #future { font-size: 28px; color: var(--green); font-weight: 900; letter-spacing: 4px; text-align: center; }
+        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 15px; border-radius: 4px; color: white; }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
-        <button onclick="document.getElementById('csv').click()" style="background:#0084ff;">📂 UPLOAD CSV</button>
         <button onclick="addRow()" style="background:#444;">➕ ROW</button>
-        <button onclick="saveData()" style="background:#28a745;">💾 SAVE</button>
-        <button onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR</button>
+        <button onclick="saveData()" style="background:var(--green);">💾 SAVE</button>
+        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD</button>
+        <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
     <center>
         <div class="table-container">
-            <canvas id="mainCanvas"></canvas>
-            <table id="tbl"></table>
+            <canvas id="lineCanvas"></canvas>
+            <table id="mainTable"></table>
         </div>
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); font-size:12px;">📈 तिरछा पैटर्न (TIRCHA) + CHECK LINE</h3>
+        <h3 style="color:var(--gold); margin:0 0 10px 0; font-size:12px;">🔮 DPBOSS STYLE PREDICTION</h3>
         <div id="future">-- -- --</div>
-        <div id="matchLog" style="font-size:11px; color:var(--green); margin-top:5px;">Check Line match from records</div>
+        <div id="log" style="font-size:11px; color:#888; margin-top:5px; text-align:center;">Click to reveal hidden pattern line</div>
     </div>
 
 <script>
-const KEY="pradeep_tircha_v1";
+const KEY="dpboss_king_style";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -61,78 +61,77 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
-let activeSet = null;
+let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["22","33","44","55","66","77"],["**","**","**","**","**","**"]];
+let currentPattern = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
 function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
 
-function draw(){
+function render(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = "";
-   if(activeSet){
-       if(ri==activeSet.cur.r && ci==activeSet.cur.c) cls="target";
-       else if(ri==activeSet.base.r && ci==activeSet.base.c) cls="base";
-       else if(ri==activeSet.s1.r && ci==activeSet.s1.c) cls="slant-1";
-       else if(ri==activeSet.s2.r && ci==activeSet.s2.c) cls="slant-2";
-       else if(ri==activeSet.oldMatch.r && ci==activeSet.oldMatch.c) cls="old-match";
+   if(currentPattern){
+       if(ri==currentPattern.target.r && ci==currentPattern.target.c) cls="pattern-node";
+       else if(ri==currentPattern.base.r && ci==currentPattern.base.c) cls="base-node";
+       else if(ri==currentPattern.old.r && ci==currentPattern.old.c) cls="old-hit-node";
    }
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="processTircha(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="findDpbossPattern(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
- document.getElementById("tbl").innerHTML=h;
- if(activeSet) setTimeout(drawCheckLine, 50);
+ document.getElementById("mainTable").innerHTML=h;
+ if(currentPattern) setTimeout(drawDpbossLines, 50);
 }
 
-function processTircha(r, c) {
+function findDpbossPattern(r, c) {
     if(data[r][c] !== "**") return;
     
-    // Tircha Pattern (diagonal points)
+    // Logic: Current Base is above. We find same family in records.
     let base = {r: r-1, c: c};
-    let s1 = {r: r-2, c: (c>0 ? c-1 : c+1)}; // तिरछा 1
-    let s2 = {r: r-1, c: (c>0 ? c-1 : c+1)}; // तिरछा 2
-    
-    if(base.r < 0 || s1.r < 0) return;
+    if(base.r < 0) return;
     let bVal = data[base.r][base.c];
     if(bVal == "**") return;
 
-    let bFam = fam(bVal);
-    let found = -1;
+    let targetFam = fam(bVal);
+    let matchRow = -1;
 
-    // Scan records for same base family in Tircha position
-    for(let i = r-2; i >= Math.max(0, r-12); i--) {
-        if(fam(data[i][base.c]) === bFam) {
+    // Scan records for family match
+    for(let i = r-2; i >= 0; i--) {
+        if(fam(data[i][c]) === targetFam) {
             if(data[i+1] && data[i+1][c] !== "**") {
-                found = i; break;
+                matchRow = i; break;
             }
         }
     }
 
-    if(found !== -1) {
-        activeSet = { cur: {r, c}, base, s1, s2, oldMatch: {r: found+1, c: c} };
-        draw();
-        let val = data[found+1][c];
-        document.getElementById("future").innerText = `${norm((parseInt(val)+5)%100)} - ${val.split('').reverse().join('')} - ${val}`;
-        document.getElementById("matchLog").innerText = `CHECK LINE: Match found in Row ${found+2}`;
+    if(matchRow !== -1) {
+        currentPattern = {
+            target: {r, c},
+            base: base,
+            old: {r: matchRow+1, c: c}
+        };
+        render();
+        let val = data[matchRow+1][c];
+        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm((parseInt(val)+5)%100)}`;
+        document.getElementById("log").innerText = `LINE DETECTED: ROW ${matchRow+2} CONNECTS TO ROW ${r+1}`;
     } else {
-        alert("तिरछा पैटर्न पुराने रिकॉर्ड में नहीं मिला।");
+        alert("No pattern match found in records.");
     }
 }
 
-function drawCheckLine() {
-    const cvs = document.getElementById("mainCanvas"), tbl = document.getElementById("tbl"), ctx = cvs.getContext("2d");
+function drawDpbossLines() {
+    const cvs = document.getElementById("lineCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
-    const elements = [".old-match", ".slant-1", ".slant-2", ".base", ".target"];
+    const nodes = [".old-hit-node", ".base-node", ".pattern-node"];
     const rect = tbl.getBoundingClientRect();
     let pts = [];
 
-    elements.forEach(sel => {
+    nodes.forEach(sel => {
         let el = tbl.querySelector(sel);
         if(el) {
             let r = el.getBoundingClientRect();
@@ -142,34 +141,42 @@ function drawCheckLine() {
 
     if(pts.length < 2) return;
 
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 4;
-    ctx.setLineDash([5, 5]); // Check Line Dash Style
+    // DPBOSS Style Thick Green Line
+    ctx.strokeStyle = "#2ecc71";
+    ctx.lineWidth = 5;
+    ctx.lineJoin = "round";
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "#2ecc71";
+
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
-    
-    // Draw numbers on points
-    ctx.setLineDash([]); ctx.fillStyle = "white";
-    pts.forEach((p, i) => {
-        ctx.fillText(i+1, p.x+5, p.y-5);
-    });
+
+    // Secondary Blue Connection for Pattern
+    ctx.strokeStyle = "#1a73e8";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+    ctx.stroke();
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear?")){ localStorage.clear(); location.reload(); }}
+function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("DPBOSS Data Saved!"); }
+function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
         data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v)));
         localStorage.setItem(KEY, JSON.stringify(data));
-        draw();
+        render();
     };
     fr.readAsText(e.target.files[0]);
 }
-draw();
+render();
 </script>
 </body>
 </html>
