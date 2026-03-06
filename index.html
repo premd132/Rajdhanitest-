@@ -3,34 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan AI - Dynamic Shape Pattern</title>
+    <title>Kalyan Pro AI - Edit & Shape Scan</title>
     <style>
         :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #0f172a; --panel: #1e293b; --yellow: #ffff00; --red: #ff4757; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; padding: 10px; }
-        .toolbar { background: var(--panel); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; justify-content: center; }
-        .table-container { position: relative; background: #fff; border-radius: 4px; padding: 5px; display: inline-block; }
-        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ccc; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
-        th { background: #333; color: white; font-size: 10px; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; }
+        .toolbar { background: var(--panel); padding: 10px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid #333; }
         
-        /* Dynamic Markers */
+        .table-container { position: relative; background: #fff; border-radius: 8px; padding: 5px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 50px; height: 50px; cursor: pointer; outline: none; }
+        th { background: #333; color: white; font-size: 11px; }
+        
+        /* Interactive States */
+        td:focus { background: #e8f0fe; border: 2px solid var(--blue); }
         .base-node { background-color: var(--yellow) !important; color: #000; }
         .shape-node { background-color: var(--red) !important; color: #fff; }
-        .target-node { border: 4px solid var(--blue) !important; border-radius: 50%; background: rgba(26,115,232,0.1); }
+        .target-node { border: 4px solid var(--blue) !important; border-radius: 50%; }
         .old-hit-node { border: 4px solid var(--green) !important; border-radius: 50%; }
 
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
-        .card { background: var(--panel); padding: 15px; border-radius: 10px; margin-top: 15px; border-top: 4px solid var(--gold); text-align: center; }
-        #future { font-size: 24px; color: var(--green); font-weight: 900; margin: 10px 0; }
-        button { cursor: pointer; border: none; font-weight: bold; padding: 8px 12px; border-radius: 4px; color: white; }
+        .card { background: var(--panel); padding: 20px; border-radius: 15px; margin-top: 15px; border-top: 5px solid var(--gold); text-align: center; }
+        #future { font-size: 32px; color: var(--green); font-weight: 900; margin: 15px 0; letter-spacing: 5px; }
+        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 20px; border-radius: 6px; color: white; transition: 0.3s; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <button onclick="addRow()" style="background:#444;">➕ ROW</button>
-        <button onclick="saveData()" style="background:var(--green);">💾 SAVE</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD</button>
+        <button onclick="addRow()" style="background:#444;">➕ ADD ROW</button>
+        <button onclick="saveData()" style="background:var(--green);">💾 SAVE RECORD</button>
+        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 UPLOAD CSV</button>
+        <button onclick="clearData()" style="background:#dc3545;">🗑️ CLEAR</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
@@ -42,13 +46,13 @@
     </center>
 
     <div class="card">
-        <h3 style="color:var(--gold); margin:0; font-size:12px;">🔍 SHAPE MEMORY SEARCH</h3>
+        <h3 style="color:var(--gold); margin:0; font-size:14px; text-transform:uppercase;">🔍 Advanced Pattern Predictor</h3>
         <div id="future">-- -- --</div>
-        <div id="log" style="font-size:11px; color:#aaa;">Click any cell to scan for that shape in history</div>
+        <div id="log" style="font-size:12px; color:#888;">किसी भी सेल को Edit करें या खाली सेल (**) पर क्लिक करके Pattern ढूंढें।</div>
     </div>
 
 <script>
-const KEY="pradeep_shape_ai";
+const KEY="pradeep_edit_v6";
 const FAMILY = {
  "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
  "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
@@ -57,11 +61,11 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["11","22","33","44","55","66"],["16","27","38","49","50","61"],["**","**","**","**","**","**"]];
+let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
 let activeSet = null;
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
-function norm(v){ v=String(v).trim(); return (v==""||v=="**")?"**":(v.length==1?"0"+v:v); }
+function norm(v){ v=v.replace(/[^0-9*]/g, ''); if(v=="**" || v=="") return "**"; return v.padStart(2,'0').slice(-2); }
 
 function render(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
@@ -75,7 +79,7 @@ function render(){
        else if(ri==activeSet.s1.r && ci==activeSet.s1.c) cls="shape-node";
        else if(ri==activeSet.old.r && ci==activeSet.old.c) cls="old-hit-node";
    }
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="smartScan(${ri},${ci})">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="handleInteraction(${ri},${ci})">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -83,12 +87,21 @@ function render(){
  if(activeSet) setTimeout(drawLines, 50);
 }
 
-function smartScan(r, c) {
-    if(data[r][c] !== "**") return;
+function updateCell(r, c, el) {
+    let val = el.innerText.trim();
+    data[r][c] = (val === "**" || val === "") ? "**" : norm(val);
+    el.innerText = data[r][c];
+}
 
-    // 1. Identify Today's Shape (Flexible: Current Cell, One Above, One Tircha)
-    let bPos = {r: r-1, c: c}; // Base
-    let s1Pos = {r: r-1, c: (c>0?c-1:c+1)}; // Tircha/Side
+function handleInteraction(r, c) {
+    if(data[r][c] === "**") {
+        smartScan(r, c);
+    }
+}
+
+function smartScan(r, c) {
+    let bPos = {r: r-1, c: c};
+    let s1Pos = {r: r-1, c: (c>0?c-1:c+1)}; 
     
     if(bPos.r < 0) return;
     let bVal = data[bPos.r][bPos.c];
@@ -100,20 +113,12 @@ function smartScan(r, c) {
     let s1Fam = fam(s1Val);
     let matchIdx = -1;
 
-    // 2. Search History for "Same Shape" (Same position logic)
     for(let i = r-2; i >= 0; i--) {
-        // Match Base Family AND Shape Family in the same relative position
         if(fam(data[i][bPos.c]) === bFam) {
-            // Check if Shape 1 also matches in the history at the same relative spot
             if(s1Val !== "**" && fam(data[i][s1Pos.c]) === s1Fam) {
-                if(data[i+1] && data[i+1][c] !== "**") {
-                    matchIdx = i; break;
-                }
-            } else if (s1Val === "**") { 
-                // Simple Match if no side shape
-                if(data[i+1] && data[i+1][c] !== "**") {
-                    matchIdx = i; break;
-                }
+                if(data[i+1] && data[i+1][c] !== "**") { matchIdx = i; break; }
+            } else if (s1Val === "**") {
+                if(data[i+1] && data[i+1][c] !== "**") { matchIdx = i; break; }
             }
         }
     }
@@ -122,10 +127,10 @@ function smartScan(r, c) {
         activeSet = { target: {r, c}, base: bPos, s1: s1Pos, old: {r: matchIdx+1, c: c} };
         render();
         let val = data[matchIdx+1][c];
-        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm((parseInt(val)+5)%100)}`;
-        document.getElementById("log").innerText = `SHAPE MATCH: Found same pattern in Row ${matchIdx+2}`;
+        document.getElementById("future").innerText = `${val} - ${val.split('').reverse().join('')} - ${norm(String((parseInt(val)+5)%100))}`;
+        document.getElementById("log").innerText = `Shape Match Found! Check Line Connected to Row ${matchIdx+2}`;
     } else {
-        alert("History में ऐसा Shape और Family नहीं मिली।");
+        alert("कोई पैटर्न नहीं मिला। कृपया डेटा चेक करें।");
     }
 }
 
@@ -156,9 +161,9 @@ function drawLines() {
     ctx.stroke();
 }
 
-function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Shape Data Saved!"); }
+function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Record Saved Successfully!"); }
+function clearData(){ if(confirm("सारा डेटा डिलीट करें?")){ localStorage.clear(); location.reload(); }}
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
