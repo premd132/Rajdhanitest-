@@ -3,67 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI - Pradeep Edition V100</title>
+    <title>Rajdhani Pro AI - V200 Tircha Pattern</title>
     <style>
-        :root { --gold: #ffd700; --blue: #00a8ff; --green: #00ff88; --bg: #0a0f1e; --panel: #161d31; --yellow: #f1c40f; --neon: #00f2ff; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; padding: 10px; overflow-x: hidden; }
+        :root { --gold: #ffd700; --blue: #00a8ff; --green: #00ff88; --bg: #050a18; --panel: #111b36; --neon-pink: #ff00ff; --neon-cyan: #00f2ff; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; }
         
-        /* Glassmorphism Toolbar */
-        .toolbar { background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .toolbar { background: rgba(17, 27, 54, 0.9); padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; border-bottom: 2px solid var(--neon-cyan); }
         
-        /* Pro Table Style */
-        .table-outer { position: relative; padding: 10px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 15px; border: 1px solid #334155; display: inline-block; }
-        table { border-collapse: separate; border-spacing: 2px; color: #fff; position: relative; z-index: 5; }
-        td, th { border: 1px solid rgba(255,255,255,0.05); padding: 10px; text-align: center; font-weight: 700; width: 42px; height: 42px; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-size: 16px; background: rgba(255,255,255,0.02); }
-        th { background: #1e293b; color: var(--neon); font-size: 10px; letter-spacing: 1px; }
+        .table-outer { position: relative; padding: 8px; background: #fff; border-radius: 10px; display: inline-block; box-shadow: 0 0 40px rgba(0,242,255,0.2); }
+        table { border-collapse: collapse; color: #000; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: 900; width: 45px; height: 45px; cursor: pointer; transition: 0.2s; font-size: 18px; }
+        th { background: #0f172a; color: #fff; font-size: 11px; }
         
-        /* DNA Highlight Classes */
-        .cell-dna { background: rgba(0, 168, 255, 0.2) !important; border: 1px solid var(--blue) !important; color: var(--blue); }
-        .cell-hit { background: rgba(0, 255, 136, 0.2) !important; border: 1px solid var(--green) !important; box-shadow: 0 0 15px var(--green); }
-        .cell-target { border: 2px solid var(--neon) !important; box-shadow: 0 0 20px var(--neon); animation: pulse 1.5s infinite; }
-        
-        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+        /* Tircha & Family Circles */
+        .circle-fam1 { background: rgba(255, 0, 255, 0.15) !important; border: 3px solid var(--neon-pink) !important; border-radius: 50% !important; color: #d000d0; }
+        .circle-fam2 { background: rgba(0, 242, 255, 0.15) !important; border: 3px solid var(--neon-cyan) !important; border-radius: 50% !important; color: #0088aa; }
+        .target-node { border: 4px double #333 !important; background: #ffff00 !important; color: #000; }
+        .old-match { border: 4px solid var(--green) !important; border-radius: 10px; background: rgba(0,255,136,0.1); }
 
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; filter: drop-shadow(0 0 8px var(--green)); }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; filter: drop-shadow(0 0 5px var(--neon-cyan)); }
         
-        /* Futuristic AI Card */
-        .ai-card { background: var(--panel); padding: 25px; border-radius: 24px; margin-top: 25px; text-align: center; border: 1px solid rgba(0, 242, 255, 0.3); position: relative; overflow: hidden; }
-        .ai-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, var(--neon), transparent 30%); animation: rotate 4s linear infinite; opacity: 0.1; }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        .ai-card { background: var(--panel); padding: 25px; border-radius: 20px; margin-top: 20px; text-align: center; border: 1px solid var(--neon-cyan); position: relative; }
+        #future-display { font-size: 45px; color: var(--green); font-weight: 900; margin: 10px 0; text-shadow: 0 0 20px var(--green); letter-spacing: 5px; }
         
-        #future-display { font-size: 42px; color: var(--green); font-weight: 900; margin: 15px 0; letter-spacing: 8px; font-family: 'Courier New', monospace; }
-        
-        .btn { cursor: pointer; border: none; font-weight: bold; padding: 12px 20px; border-radius: 12px; color: white; transition: 0.3s; text-transform: uppercase; font-size: 11px; }
-        .btn-blue { background: linear-gradient(135deg, #0081ff, #0045ff); }
-        .btn-green { background: linear-gradient(135deg, #00b09b, #96c93d); }
+        .btn { cursor: pointer; border: none; font-weight: bold; padding: 10px 20px; border-radius: 8px; color: white; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <button class="btn btn-blue" onclick="addRow()">➕ New Row</button>
-        <button class="btn btn-green" onclick="saveData()">💾 Save Cloud</button>
-        <button class="btn" style="background:#4b5563;" onclick="document.getElementById('csv').click()">📂 Import DNA</button>
+        <button class="btn" style="background:var(--panel); border:1px solid var(--neon-cyan)" onclick="addRow()">➕ ROW</button>
+        <button class="btn" style="background:var(--green); color:#000" onclick="saveData()">💾 SAVE</button>
+        <button class="btn" style="background:var(--blue)" onclick="document.getElementById('csv').click()">📂 CSV</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
     <center>
         <div class="table-outer">
-            <canvas id="mainCanvas"></canvas>
+            <canvas id="lineCanvas"></canvas>
             <table id="mainTable"></table>
         </div>
     </center>
 
     <div class="ai-card">
-        <div style="color:var(--neon); font-size:12px; font-weight:900; letter-spacing:3px;">PREDICTION ENGINE V100</div>
+        <div style="color:var(--neon-cyan); font-size:12px; font-weight:900; letter-spacing:2px;">TIRCHA DNA - 2 FAMILY SYSTEM</div>
         <div id="future-display">-- -- --</div>
-        <div id="status-log" style="color:#64748b; font-size:12px;">Waiting for Pattern Input...</div>
+        <div id="log" style="color:#64748b; font-size:12px;">Click (**) to Scan Diagonal Patterns</div>
     </div>
 
 <script>
 const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let records = JSON.parse(localStorage.getItem("pradeep_v100")) || [["01","02","03","04","05","06"],["11","12","13","14","15","16"],["**","**","**","**","**","**"]];
+let records = JSON.parse(localStorage.getItem("pradeep_v200")) || [["12","34","56","78","90","11"],["67","89","22","44","66","88"],["**","**","**","**","**","**"]];
 let activeSet = null;
 
 function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v; }
@@ -76,52 +67,58 @@ function render(){
         row.forEach((val, cIdx)=>{
             let cls = "";
             if(activeSet){
-                if(rIdx==activeSet.target.r && cIdx==activeSet.target.c) cls="cell-target";
-                else if(activeSet.dna.some(n=>n.r==rIdx && n.c==cIdx)) cls="cell-dna";
-                else if(rIdx==activeSet.match.r && cIdx==activeSet.match.c) cls="cell-hit";
+                if(rIdx==activeSet.target.r && cIdx==activeSet.target.c) cls="target-node";
+                else if(rIdx==activeSet.f1.r && cIdx==activeSet.f1.c) cls="circle-fam1";
+                else if(rIdx==activeSet.f2.r && cIdx==activeSet.f2.c) cls="circle-fam2";
+                else if(rIdx==activeSet.match.r && cIdx==activeSet.match.c) cls="old-match";
             }
-            html += `<td class="${cls}" contenteditable="true" onblur="update(${rIdx},${cIdx},this)" onclick="deepSearch(${rIdx},${cIdx})">${val}</td>`;
+            html += `<td class="${cls}" contenteditable="true" onblur="update(${rIdx},${cIdx},this)" onclick="tirchaScan(${rIdx},${cIdx})">${val}</td>`;
         });
         html += "</tr>";
     });
     document.getElementById("mainTable").innerHTML = html;
-    if(activeSet) drawSmartLines();
+    if(activeSet) setTimeout(drawTirchaLines, 50);
 }
 
 function update(r,c,el){ records[r][c]=clean(el.innerText); el.innerText=records[r][c]; }
 
-function deepSearch(r, c) {
+function tirchaScan(r, c) {
     if(records[r][c] !== "**") return;
 
-    // AI Logic: Identify local DNA (The shape around clicking cell)
-    let dnaPoints = [{r: r-1, c: c}, {r: r-1, c: c-1}, {r: r-1, c: c+1}].filter(p=>p.r>=0 && p.c>=0 && p.c<6 && records[p.r][p.c]!="**");
+    // TIRCHA DNA (Diagonal Logic)
+    let f1Pos = {r: r-1, c: (c > 0 ? c-1 : 1)}; // Tircha Left
+    let f2Pos = {r: r-2, c: (c < 5 ? c+1 : 4)}; // Tircha Right One Step Up
     
-    if(dnaPoints.length === 0) return;
+    if(f1Pos.r < 0 || f2Pos.r < 0) return;
 
-    let bFam = getFam(records[dnaPoints[0].r][dnaPoints[0].c]);
-    let bestMatch = null;
+    let f1Val = records[f1Pos.r][f1Pos.c], f2Val = records[f2Pos.r][f2Pos.c];
+    if(f1Val=="**" || f2Val=="**") return;
 
-    // Scans history with 10-week depth
-    for(let i = r-2; i >= Math.max(0, r-10); i--) {
-        if(getFam(records[i][dnaPoints[0].c]) === bFam) {
+    let f1Fam = getFam(f1Val), f2Fam = getFam(f2Val);
+    let found = null;
+
+    // 12 Week Historical Scan
+    for(let i = r-3; i >= Math.max(0, r-12); i--) {
+        if(getFam(records[i][f1Pos.c]) === f1Fam && getFam(records[i-1][f2Pos.c]) === f2Fam) {
             if(records[i+1] && records[i+1][c] !== "**") {
-                bestMatch = {r: i+1, c: c};
-                break;
+                found = {r: i+1, c: c}; break;
             }
         }
     }
 
-    if(bestMatch) {
-        activeSet = { target: {r, c}, dna: dnaPoints, match: bestMatch };
+    if(found) {
+        activeSet = { target: {r, c}, f1: f1Pos, f2: f2Pos, match: found };
         render();
-        let v = records[bestMatch.r][bestMatch.c];
-        document.getElementById("future-display").innerText = `${v} ${v.split('').reverse().join('')} ${clean(String((parseInt(v)+5)%100))}`;
-        document.getElementById("status-log").innerText = "SYSTEM SECURED: DNA Pattern Matched in History";
+        let v = records[found.r][found.c];
+        document.getElementById("future-display").innerText = `${v} ${v.split('').reverse().join('')} ${clean(String((parseInt(v)+10)%100))}`;
+        document.getElementById("log").innerText = "SUCCESS: Tircha 2-Family Pattern Detected!";
+    } else {
+        alert("12 हफ्तों में यह तिरछा पैटर्न नहीं मिला।");
     }
 }
 
-function drawSmartLines() {
-    const cvs = document.getElementById("mainCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
+function drawTirchaLines() {
+    const cvs = document.getElementById("lineCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
@@ -132,39 +129,32 @@ function drawSmartLines() {
         return {x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2};
     };
 
-    let start = pos(activeSet.match);
-    let end = pos(activeSet.target);
+    let p0 = pos(activeSet.match), p1 = pos(activeSet.f2), p2 = pos(activeSet.f1), p3 = pos(activeSet.target);
 
-    // Glow Effect
-    ctx.shadowBlur = 15; ctx.shadowColor = "#00ff88";
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 4;
-    ctx.setLineDash([10, 5]);
+    ctx.strokeStyle = "#00f2ff"; ctx.lineWidth = 4;
+    ctx.shadowBlur = 10; ctx.shadowColor = "#00f2ff";
+    ctx.setLineDash([5, 5]);
 
+    // Draw Smooth Trace through Tircha Points
     ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    
-    // Smooth Bezier Curve logic like DPBoss
-    let cp1x = start.x + (end.x - start.x)/2;
-    let cp1y = start.y;
-    let cp2x = start.x + (end.x - start.x)/2;
-    let cp2y = end.y;
-
-    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, end.x, end.y);
+    ctx.moveTo(p0.x, p0.y);
+    ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     ctx.stroke();
 
-    // End Points
+    // Circle Dots
     ctx.setLineDash([]);
-    ctx.fillStyle = "#00f2ff";
-    ctx.beginPath(); ctx.arc(end.x, end.y, 6, 0, 7); ctx.fill();
+    [p0, p3].forEach(p => {
+        ctx.fillStyle = "#00ff88"; ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, 7); ctx.fill();
+    });
 }
 
 function addRow(){ records.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem("pradeep_v100", JSON.stringify(records)); alert("Encrypted Data Saved!"); }
+function saveData(){ localStorage.setItem("pradeep_v200", JSON.stringify(records)); alert("Data Saved!"); }
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
         records = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => clean(v)));
-        localStorage.setItem("pradeep_v100", JSON.stringify(records));
+        localStorage.setItem("pradeep_v200", JSON.stringify(records));
         render();
     };
     fr.readAsText(e.target.files[0]);
