@@ -3,186 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DPBOSS Style Smart AI - Pradeep Kumar</title>
+    <title>Rajdhani Pro AI - Pradeep Edition V100</title>
     <style>
-        :root { --gold: #ffd700; --blue: #1a73e8; --green: #2ecc71; --bg: #111827; --panel: #1f2937; --yellow: #fbbf24; --red: #ef4444; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; padding: 10px; overflow-x: hidden; }
+        :root { --gold: #ffd700; --blue: #00a8ff; --green: #00ff88; --bg: #0a0f1e; --panel: #161d31; --yellow: #f1c40f; --neon: #00f2ff; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; padding: 10px; overflow-x: hidden; }
         
-        /* Toolbar */
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; border-bottom: 3px solid var(--blue); }
+        /* Glassmorphism Toolbar */
+        .toolbar { background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* Table Style like DPBOSS */
-        .table-container { position: relative; background: #fff; border-radius: 4px; padding: 2px; display: inline-block; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        table { border-collapse: collapse; color: #000; font-size: 16px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ccc; padding: 12px 8px; text-align: center; font-weight: 800; width: 45px; height: 45px; cursor: pointer; position: relative; }
-        th { background: #374151; color: white; font-size: 10px; text-transform: uppercase; }
+        /* Pro Table Style */
+        .table-outer { position: relative; padding: 10px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 15px; border: 1px solid #334155; display: inline-block; }
+        table { border-collapse: separate; border-spacing: 2px; color: #fff; position: relative; z-index: 5; }
+        td, th { border: 1px solid rgba(255,255,255,0.05); padding: 10px; text-align: center; font-weight: 700; width: 42px; height: 42px; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-size: 16px; background: rgba(255,255,255,0.02); }
+        th { background: #1e293b; color: var(--neon); font-size: 10px; letter-spacing: 1px; }
         
-        /* Pattern Classes */
-        .node-active { background: var(--yellow) !important; color: #000; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
-        .node-match { border: 3px solid var(--green) !important; border-radius: 50%; color: var(--green); }
-        .node-target { border: 3px solid var(--blue) !important; background: rgba(26,115,232,0.1); border-radius: 50%; }
-        .node-family { background: #fee2e2 !important; color: #b91c1c; }
+        /* DNA Highlight Classes */
+        .cell-dna { background: rgba(0, 168, 255, 0.2) !important; border: 1px solid var(--blue) !important; color: var(--blue); }
+        .cell-hit { background: rgba(0, 255, 136, 0.2) !important; border: 1px solid var(--green) !important; box-shadow: 0 0 15px var(--green); }
+        .cell-target { border: 2px solid var(--neon) !important; box-shadow: 0 0 20px var(--neon); animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; opacity: 0.8; }
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; filter: drop-shadow(0 0 8px var(--green)); }
         
-        /* AI Card */
-        .card { background: var(--panel); padding: 20px; border-radius: 16px; margin-top: 20px; text-align: center; border: 1px solid #374151; }
-        #future { font-size: 36px; color: var(--green); font-weight: 900; margin: 10px 0; text-shadow: 0 0 15px rgba(46,204,113,0.4); }
-        button { cursor: pointer; border: none; font-weight: bold; padding: 10px 18px; border-radius: 8px; color: white; transition: 0.2s; font-size: 12px; }
-        button:active { transform: scale(0.95); }
+        /* Futuristic AI Card */
+        .ai-card { background: var(--panel); padding: 25px; border-radius: 24px; margin-top: 25px; text-align: center; border: 1px solid rgba(0, 242, 255, 0.3); position: relative; overflow: hidden; }
+        .ai-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, var(--neon), transparent 30%); animation: rotate 4s linear infinite; opacity: 0.1; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        
+        #future-display { font-size: 42px; color: var(--green); font-weight: 900; margin: 15px 0; letter-spacing: 8px; font-family: 'Courier New', monospace; }
+        
+        .btn { cursor: pointer; border: none; font-weight: bold; padding: 12px 20px; border-radius: 12px; color: white; transition: 0.3s; text-transform: uppercase; font-size: 11px; }
+        .btn-blue { background: linear-gradient(135deg, #0081ff, #0045ff); }
+        .btn-green { background: linear-gradient(135deg, #00b09b, #96c93d); }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <button onclick="addRow()" style="background:#4b5563;">➕ Add Row</button>
-        <button onclick="saveData()" style="background:var(--green);">💾 Save Data</button>
-        <button onclick="document.getElementById('csv').click()" style="background:var(--blue);">📂 Import CSV</button>
+        <button class="btn btn-blue" onclick="addRow()">➕ New Row</button>
+        <button class="btn btn-green" onclick="saveData()">💾 Save Cloud</button>
+        <button class="btn" style="background:#4b5563;" onclick="document.getElementById('csv').click()">📂 Import DNA</button>
         <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
     </div>
 
     <center>
-        <div class="table-container">
-            <canvas id="lineCanvas"></canvas>
+        <div class="table-outer">
+            <canvas id="mainCanvas"></canvas>
             <table id="mainTable"></table>
         </div>
     </center>
 
-    <div class="card">
-        <h3 style="color:var(--gold); margin:0; font-size:14px; letter-spacing:2px;">DPBOSS SMART PATTERN ENGINE</h3>
-        <div id="future">-- -- --</div>
-        <div id="log" style="font-size:12px; color:#9ca3af;">Click on any empty cell (**) to trace pattern lines</div>
+    <div class="ai-card">
+        <div style="color:var(--neon); font-size:12px; font-weight:900; letter-spacing:3px;">PREDICTION ENGINE V100</div>
+        <div id="future-display">-- -- --</div>
+        <div id="status-log" style="color:#64748b; font-size:12px;">Waiting for Pattern Input...</div>
     </div>
 
 <script>
-const KEY="dpboss_smart_pradeep";
-const FAMILY = {
- "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
-};
+const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
-let data = JSON.parse(localStorage.getItem(KEY)) || [["10","20","30","40","50","60"],["15","25","35","45","55","65"],["**","**","**","**","**","**"]];
-let activePattern = null;
+let records = JSON.parse(localStorage.getItem("pradeep_v100")) || [["01","02","03","04","05","06"],["11","12","13","14","15","16"],["**","**","**","**","**","**"]];
+let activeSet = null;
 
-function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v;}
-function norm(v){ v=v.replace(/[^0-9*]/g, ''); return (v=="**"||v=="")?"**":v.padStart(2,'0').slice(-2); }
+function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v; }
+function clean(v){ v=v.replace(/[^0-9*]/g,''); return (v=="**"||v=="")?"**":v.padStart(2,'0').slice(-2); }
 
 function render(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls = "";
-   if(activePattern){
-       if(ri==activePattern.target.r && ci==activeSet.target.c) cls="node-target";
-       else if(activePattern.nodes.some(n => n.r==ri && n.c==ci)) cls="node-active";
-       else if(ri==activePattern.match.r && ci==activePattern.match.c) cls="node-match";
-   }
-   h+=`<td class="${cls}" contenteditable="true" onblur="updateCell(${ri},${ci},this)" onclick="smartSearch(${ri},${ci})">${c}</td>`;
-  });
-  h+="</tr>";
- });
- document.getElementById("mainTable").innerHTML=h;
- if(activePattern) setTimeout(drawDpbossLines, 50);
+    let html="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+    records.forEach((row, rIdx)=>{
+        html += "<tr>";
+        row.forEach((val, cIdx)=>{
+            let cls = "";
+            if(activeSet){
+                if(rIdx==activeSet.target.r && cIdx==activeSet.target.c) cls="cell-target";
+                else if(activeSet.dna.some(n=>n.r==rIdx && n.c==cIdx)) cls="cell-dna";
+                else if(rIdx==activeSet.match.r && cIdx==activeSet.match.c) cls="cell-hit";
+            }
+            html += `<td class="${cls}" contenteditable="true" onblur="update(${rIdx},${cIdx},this)" onclick="deepSearch(${rIdx},${cIdx})">${val}</td>`;
+        });
+        html += "</tr>";
+    });
+    document.getElementById("mainTable").innerHTML = html;
+    if(activeSet) drawSmartLines();
 }
 
-function updateCell(r, c, el) {
-    data[r][c] = norm(el.innerText);
-    el.innerText = data[r][c];
-}
+function update(r,c,el){ records[r][c]=clean(el.innerText); el.innerText=records[r][c]; }
 
-function smartSearch(r, c) {
-    if(data[r][c] !== "**") return;
+function deepSearch(r, c) {
+    if(records[r][c] !== "**") return;
 
-    // DPBOSS Logic: Scan neighbors for any non-empty jodi
-    let neighbors = [
-        {r: r-1, c: c},       // Top
-        {r: r-1, c: c-1},     // Top-Left (Tircha)
-        {r: r-1, c: c+1}      // Top-Right (Tircha)
-    ].filter(n => n.r >= 0 && n.c >= 0 && n.c < 6 && data[n.r][n.c] !== "**");
+    // AI Logic: Identify local DNA (The shape around clicking cell)
+    let dnaPoints = [{r: r-1, c: c}, {r: r-1, c: c-1}, {r: r-1, c: c+1}].filter(p=>p.r>=0 && p.c>=0 && p.c<6 && records[p.r][p.c]!="**");
+    
+    if(dnaPoints.length === 0) return;
 
-    if(neighbors.length === 0) return;
+    let bFam = getFam(records[dnaPoints[0].r][dnaPoints[0].c]);
+    let bestMatch = null;
 
-    let base = neighbors[0]; // Primary pattern trigger
-    let bFam = fam(data[base.r][base.c]);
-    let foundMatch = null;
-
-    // MAX 12 ROW REVERSE SCAN
-    let limit = Math.max(0, r - 12);
-    for(let i = r-2; i >= limit; i--) {
-        // Search in the same column as the base
-        if(fam(data[i][base.c]) === bFam) {
-            if(data[i+1] && data[i+1][c] !== "**") {
-                foundMatch = {r: i+1, c: c};
+    // Scans history with 10-week depth
+    for(let i = r-2; i >= Math.max(0, r-10); i--) {
+        if(getFam(records[i][dnaPoints[0].c]) === bFam) {
+            if(records[i+1] && records[i+1][c] !== "**") {
+                bestMatch = {r: i+1, c: c};
                 break;
             }
         }
     }
 
-    if(foundMatch) {
-        activePattern = {
-            target: {r, c},
-            nodes: neighbors,
-            match: foundMatch
-        };
+    if(bestMatch) {
+        activeSet = { target: {r, c}, dna: dnaPoints, match: bestMatch };
         render();
-        let val = data[foundMatch.r][foundMatch.c];
-        document.getElementById("future").innerText = `${val} • ${val.split('').reverse().join('')} • ${norm(String((parseInt(val)+5)%100))}`;
-        document.getElementById("log").innerText = `PATTERN MATCHED: Trace from Row ${foundMatch.r + 1}`;
-    } else {
-        alert("12 हफ्तों में कोई 'DPBOSS' स्टाइल पैटर्न नहीं मिला।");
+        let v = records[bestMatch.r][bestMatch.c];
+        document.getElementById("future-display").innerText = `${v} ${v.split('').reverse().join('')} ${clean(String((parseInt(v)+5)%100))}`;
+        document.getElementById("status-log").innerText = "SYSTEM SECURED: DNA Pattern Matched in History";
     }
 }
 
-function drawDpbossLines() {
-    const cvs = document.getElementById("lineCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
+function drawSmartLines() {
+    const cvs = document.getElementById("mainCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
     cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
     
     const rect = tbl.getBoundingClientRect();
-    const getPos = (pos) => {
-        let el = tbl.rows[pos.r+1].cells[pos.c];
+    const pos = (p) => {
+        let el = tbl.rows[p.r+1].cells[p.c];
         let r = el.getBoundingClientRect();
         return {x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2};
     };
 
-    let start = getPos(activePattern.match);
-    let end = getPos(activePattern.target);
+    let start = pos(activeSet.match);
+    let end = pos(activeSet.target);
 
-    // DPBOSS Style Thick Path
+    // Glow Effect
+    ctx.shadowBlur = 15; ctx.shadowColor = "#00ff88";
+    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 4;
+    ctx.setLineDash([10, 5]);
+
     ctx.beginPath();
-    ctx.strokeStyle = "#2ecc71";
-    ctx.lineWidth = 5;
-    ctx.setLineDash([8, 4]);
     ctx.moveTo(start.x, start.y);
     
-    // Connect through neighbors
-    activePattern.nodes.forEach(n => {
-        let p = getPos(n);
-        ctx.lineTo(p.x, p.y);
-    });
+    // Smooth Bezier Curve logic like DPBoss
+    let cp1x = start.x + (end.x - start.x)/2;
+    let cp1y = start.y;
+    let cp2x = start.x + (end.x - start.x)/2;
+    let cp2y = end.y;
 
-    ctx.lineTo(end.x, end.y);
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, end.x, end.y);
     ctx.stroke();
 
-    // Add points
+    // End Points
     ctx.setLineDash([]);
-    ctx.fillStyle = "#1a73e8";
-    [start, end].forEach(p => {
-        ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, 7); ctx.fill();
-    });
+    ctx.fillStyle = "#00f2ff";
+    ctx.beginPath(); ctx.arc(end.x, end.y, 6, 0, 7); ctx.fill();
 }
 
-function addRow(){ data.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); alert("Data Saved!"); }
+function addRow(){ records.push(["**","**","**","**","**","**"]); render(); }
+function saveData(){ localStorage.setItem("pradeep_v100", JSON.stringify(records)); alert("Encrypted Data Saved!"); }
 function importCSV(e){
     let fr = new FileReader();
     fr.onload = () => {
-        data = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => norm(v)));
-        localStorage.setItem(KEY, JSON.stringify(data));
+        records = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => clean(v)));
+        localStorage.setItem("pradeep_v100", JSON.stringify(records));
         render();
     };
     fr.readAsText(e.target.files[0]);
