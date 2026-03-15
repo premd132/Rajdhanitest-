@@ -1,160 +1,321 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI - V300 Auto-Scan</title>
+    <title>Kalyan Pro AI – Premium System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --blue: #00a8ff; --green: #00ff88; --bg: #050a18; --panel: #111b36; --neon-pink: #ff00ff; --neon-cyan: #00f2ff; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; }
-        
-        .toolbar { background: rgba(17, 27, 54, 0.9); padding: 12px; border-radius: 15px; margin-bottom: 15px; display: flex; gap: 8px; justify-content: center; border-bottom: 2px solid var(--green); }
-        
-        .table-outer { position: relative; padding: 5px; background: #fff; border-radius: 8px; display: inline-block; box-shadow: 0 0 30px rgba(0,255,136,0.3); }
-        table { border-collapse: collapse; color: #000; position: relative; z-index: 5; }
-        td, th { border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: 900; width: 42px; height: 42px; cursor: pointer; font-size: 16px; }
-        th { background: #334155; color: #fff; font-size: 10px; }
-        
-        /* Scan Highlights */
-        .f1-circle { border: 3px solid var(--neon-pink) !important; border-radius: 50% !important; background: rgba(255,0,255,0.1); }
-        .f2-circle { border: 3px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0,168,255,0.1); }
-        .match-glow { background: var(--green) !important; box-shadow: 0 0 20px var(--green); color: #000 !important; border-radius: 5px; }
-        .target-cell { border: 3px solid var(--gold) !important; background: #ffff00; }
+        :root { 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; 
+            --orange-circle: #ff8800;
+            --green-line: #00ff88; 
+            --orange-line: #ff8800;
+            --bg: #0f172a; 
+            --panel: #1e293b; 
+        }
 
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; opacity: 0.7; }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
+
+        #home-screen {
+            height: 100vh; width: 100vw; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
+        .enter-btn {
+            background: var(--gold); color: #000; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        #main-app { display: none; padding: 15px; }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         
-        .ai-card { background: var(--panel); padding: 20px; border-radius: 20px; margin-top: 15px; text-align: center; border: 1px solid #334155; }
-        #future-display { font-size: 38px; color: var(--green); font-weight: 900; margin: 5px 0; text-shadow: 0 0 10px var(--green); }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
         
-        .btn { cursor: pointer; border: none; font-weight: bold; padding: 10px 15px; border-radius: 8px; color: white; font-size: 11px; text-transform: uppercase; }
+        /* Marking Styles */
+        .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; }
+        .circle2 { border: 3px solid var(--orange-circle) !important; border-radius: 50% !important; background: rgba(255, 136, 0, 0.15); z-index: 10; }
+        
+        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
+
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
+
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
     </style>
 </head>
 <body>
 
+<div id="home-screen">
+    <h1 class="hero-title">Kalyan PRO AI</h1>
+    <p class="hero-sub">DUAL PATTERN ENGINE</p>
+    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
+</div>
+
+<div id="main-app">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h2 style="color:var(--gold); margin:0;">Kalyan</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444;">Logout</button>
+    </div>
+
     <div class="toolbar">
-        <button class="btn" style="background:#334155" onclick="addRow()">➕ Add Row</button>
-        <button class="btn" style="background:var(--green); color:#000" onclick="saveData()">💾 Save</button>
-        <button class="btn" style="background:var(--blue)" onclick="document.getElementById('csv').click()">📂 Import CSV</button>
-        <input type="file" id="csv" style="display:none" onchange="importCSV(event)">
+        <input type="file" id="csv" style="display:none">
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
 
     <center>
-        <div class="table-outer">
-            <canvas id="lineCanvas"></canvas>
-            <table id="mainTable"></table>
+        <div class="table-container">
+            <canvas id="mainCanvas"></canvas>
+            <table id="tbl"></table>
         </div>
     </center>
 
-    <div class="ai-card">
-        <div id="status" style="color:var(--gold); font-size:12px; font-weight:bold;">SYSTEM READY - V300</div>
-        <div id="future-display">-- -- --</div>
-        <div id="log" style="color:#94a3b8; font-size:11px;">Click on (**) to start Smart Scan</div>
+    <div class="dashboard">
+        <div class="card">
+            <h3>✔ Matches Found</h3>
+            <div id="checks"></div>
+        </div>
+        <div class="card">
+            <h3>🤖 AI Analysis</h3>
+            <div id="ai">Wait for input...</div>
+        </div>
+        <div class="card">
+            <h3>🔮 Future Prediction</h3>
+            <div id="future">Select a match...</div>
+        </div>
     </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div id="popup">
+    <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
+    <center>
+        <div class="table-container" style="border: 1px solid #ddd;">
+            <canvas id="popCanvas"></canvas>
+            <div id="popData"></div>
+        </div>
+    </center>
+</div>
 
 <script>
-const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
+const STORAGE_KEY="pdata_Kalyan_v2";
+let targetCol=null;
+let activeMark=null;  // Blue Pattern
+let activeMark2=null; // Orange Pattern
 
-let records = JSON.parse(localStorage.getItem("pradeep_v300")) || [["12","34","56","78","90","11"],["67","89","22","44","66","88"],["**","**","**","**","**","**"]];
-let activeSet = null;
-
-function getFam(v){ for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return v; }
-function clean(v){ v=v.replace(/[^0-9*]/g,''); return (v=="**"||v=="")?"**":v.padStart(2,'0').slice(-2); }
-
-function render(){
-    let html="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
-    records.forEach((row, rIdx)=>{
-        html += "<tr>";
-        row.forEach((val, cIdx)=>{
-            let cls = "";
-            if(activeSet){
-                if(rIdx==activeSet.target.r && cIdx==activeSet.target.c) cls="target-cell";
-                else if(rIdx==activeSet.f1.r && cIdx==activeSet.f1.c) cls="f1-circle";
-                else if(rIdx==activeSet.f2.r && cIdx==activeSet.f2.c) cls="f2-circle";
-                else if(rIdx==activeSet.match.r && cIdx==activeSet.match.c) cls="match-glow";
-            }
-            html += `<td class="${cls}" contenteditable="true" onblur="update(${rIdx},${cIdx},this)" onclick="smartScan(${rIdx},${cIdx})">${val}</td>`;
-        });
-        html += "</tr>";
-    });
-    document.getElementById("mainTable").innerHTML = html;
-    if(activeSet) setTimeout(drawDpbossLines, 50);
-}
-
-function update(r,c,el){ records[r][c]=clean(el.innerText); el.innerText=records[r][c]; }
-
-function smartScan(r, c) {
-    if(records[r][c] !== "**") return;
+const FAMILY = {
+ "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
+ "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
+ "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
+ "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
+ "45":["04","09","40","45","54","59","90","95"]
+};
     
-    // 1. Check Multiple Shapes (Tircha & Straight)
-    let searchShapes = [
-        {f1: {r: r-1, c: c}, f2: {r: r-2, c: c}}, // Straight
-        {f1: {r: r-1, c: c-1}, f2: {r: r-1, c: c+1}}, // Wide
-        {f1: {r: r-1, c: c-1}, f2: {r: r-2, c: c}} // Tircha L
-    ];
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
 
-    let found = null;
-    let usedShape = null;
-
-    for(let shape of searchShapes) {
-        if(shape.f1.r < 0 || shape.f1.c < 0 || shape.f1.c > 5) continue;
-        if(shape.f2.r < 0 || shape.f2.c < 0 || shape.f2.c > 5) continue;
-        
-        let v1 = records[shape.f1.r][shape.f1.c], v2 = records[shape.f2.r][shape.f2.c];
-        if(v1=="**" || v2=="**") continue;
-
-        let fam1 = getFam(v1), fam2 = getFam(v2);
-
-        // Scan 12 Weeks
-        for(let i = r-2; i >= Math.max(0, r-12); i--) {
-            if(getFam(records[i][shape.f1.c]) === fam1 && records[i+1] && records[i+1][c] !== "**") {
-                found = {r: i+1, c: c};
-                usedShape = shape;
-                break;
-            }
-        }
-        if(found) break;
-    }
-
-    if(found) {
-        activeSet = { target: {r, c}, f1: usedShape.f1, f2: usedShape.f2, match: found };
-        render();
-        let val = records[found.r][found.c];
-        document.getElementById("future-display").innerText = `${val} • ${val.split('').reverse().join('')}`;
-        document.getElementById("status").innerText = "PATTERN DETECTED";
-    } else {
-        alert("कोई पैटर्न नहीं मिला। कृपया डेटा अपडेट करें या 12 हफ़्तों का रिकॉर्ड चेक करें।");
-    }
+function norm(v) {
+    if (!v || v.trim() === "" || v === "**") return "**";
+    let n = v.replace(/[^0-9]/g, "");
+    if (n === "") return "**";
+    if (n.length === 1) n = "0" + n;
+    return n.substring(0, 2);
 }
 
-function drawDpbossLines() {
-    const cvs = document.getElementById("lineCanvas"), tbl = document.getElementById("mainTable"), ctx = cvs.getContext("2d");
-    cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    const rect = tbl.getBoundingClientRect();
-    const pos = (p) => {
-        let el = tbl.rows[p.r+1].cells[p.c];
-        let r = el.getBoundingClientRect();
-        return {x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2};
-    };
-    let start = pos(activeSet.match), p1 = pos(activeSet.f2), p2 = pos(activeSet.f1), end = pos(activeSet.target);
-    ctx.strokeStyle = "#00ff88"; ctx.lineWidth = 4; ctx.setLineDash([5, 5]);
-    ctx.beginPath(); ctx.moveTo(start.x, start.y);
-    ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, end.x, end.y);
+function startApp() {
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    draw();
+}
+
+function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
+function palti(v){return v.length==2 ? v[1]+v[0] : v;}
+function smartMatch(a1,b1){ if(a1=="**"||b1=="**") return false; return a1===b1 || palti(a1)===b1 || fam(a1)===fam(b1); }
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = "";
+   if(activeMark && isPartOfPattern(ri, ci, activeMark)) cls = "circle";
+   else if(activeMark2 && isPartOfPattern(ri, ci, activeMark2)) cls = "circle2";
+   
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark || activeMark2) {
+    setTimeout(() => {
+        const cvs = document.getElementById("mainCanvas");
+        const tbl = document.getElementById("tbl");
+        cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
+        const ctx = cvs.getContext("2d");
+        ctx.clearRect(0,0,cvs.width,cvs.height);
+        drawLines("mainCanvas", tbl, ".circle", "#00ff88"); // Green line for Blue circles
+        drawLines("mainCanvas", tbl, ".circle2", "#ff8800"); // Orange line for Orange circles
+    }, 50);
+ }
+}
+
+function isPartOfPattern(ri, ci, mark){
+    if(!mark) return false;
+    let i = ri - mark.start;
+    return (i >= 0 && i < mark.shape.length && mark.shape[i][ci]);
+}
+
+function drawLines(cvsId, tblEl, selector, color) {
+    const cvs = document.getElementById(cvsId);
+    const ctx = cvs.getContext("2d");
+    const cells = tblEl.querySelectorAll(selector);
+    if(cells.length < 2) return;
+    const tRect = tblEl.getBoundingClientRect();
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
     ctx.stroke();
 }
 
-function addRow(){ records.push(["**","**","**","**","**","**"]); render(); }
-function saveData(){ localStorage.setItem("pradeep_v300", JSON.stringify(records)); alert("Saved!"); }
-function importCSV(e){
+function edit(r,c,el){ data[r][c] = norm(el.innerText.trim()); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved!"); }
+function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
+
+function makePattern(r,c){
+  targetCol=c; let base="**";
+  for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
+  if(base=="**") return;
+
+  let s1 = Array(9).fill(0).map(() => Array(6).fill(0));
+  let s2 = Array(9).fill(0).map(() => Array(6).fill(0));
+  let m1 = 0, m2 = 0;
+  let startRow = Math.max(0, r-8);
+
+  for(let i = r; i >= startRow; i--){
+    for(let j = 0; j < 6; j++){
+      let v = data[i][j];
+      if(v != "**"){
+        // Pattern 1: Blue (Exact/Palti)
+        if(m1 < 3 && (v === base || v === palti(base))){
+          s1[i - startRow][j] = 1; m1++;
+        } 
+        // Pattern 2: Orange (Family only)
+        else if(m2 < 3 && fam(v) === fam(base)){
+          s2[i - startRow][j] = 1; m2++;
+        }
+      }
+    }
+  }
+  searchPattern(s1, s2, base);
+}
+
+function searchPattern(s1, s2, base){
+ let matches=[];
+ for(let i=0; i<=data.length-9; i++){
+  let ok=true;
+  for(let k=0; k<9; k++){
+   for(let j=0; j<6; j++){ 
+     if(s1[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}
+   }
+   if(!ok) break;
+  }
+  if(ok) matches.push({index:i});
+ }
+ activeMark = {start: data.length-9, shape: s1}; // Temporary visual
+ activeMark2 = {start: data.length-9, shape: s2};
+ draw();
+ showChecks(s1, s2, matches);
+}
+
+function showChecks(s1, s2, matches){
+ document.getElementById("checks").innerHTML="";
+ matches.forEach((m)=>{
+  let d = document.createElement("div");
+  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid var(--gold);";
+  d.innerText = `Pattern at Row ${m.index + 1}`;
+  d.onclick = () => { 
+    activeMark={start:m.index, shape:s1}; 
+    activeMark2={start:m.index, shape:s2}; 
+    draw(); 
+    showOne(s1, s2, m.index); 
+  };
+  document.getElementById("checks").appendChild(d);
+ });
+ updateAI(s1, s2, matches);
+}
+
+function showOne(s1, s2, idx){
+ let html="<table id='popTbl' style='color:#000'>";
+ for(let i=0; i<9; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   let cls = s1[i][j] ? 'circle' : (s2[i][j] ? 'circle2' : '');
+   html+=`<td class="${cls}">${v}</td>`;
+  });
+  html+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=html+"</table>";
+ document.getElementById("popup").style.display="block";
+ document.getElementById("overlay").style.display="block";
+ setTimeout(() => {
+    const pcvs = document.getElementById("popCanvas");
+    const ptbl = document.getElementById("popTbl");
+    pcvs.width = ptbl.offsetWidth; pcvs.height = ptbl.offsetHeight;
+    const pctx = pcvs.getContext("2d");
+    pctx.clearRect(0,0,pcvs.width,pcvs.height);
+    drawLines("popCanvas", ptbl, ".circle", "#00ff88");
+    drawLines("popCanvas", ptbl, ".circle2", "#ff8800");
+ }, 100);
+}
+
+function updateAI(s1, s2, matches){
+ let jc={};
+ matches.forEach(m=>{
+  let nextR = m.index + 9;
+  if(nextR < data.length && data[nextR][targetCol] != "**"){
+   let v = data[nextR][targetCol];
+   jc[v]=(jc[v]||0)+1;
+  }
+ });
+ document.getElementById("future").innerHTML = Object.keys(jc).length ? `<b>Probable Next:</b> ${Object.keys(jc).join(", ")}` : "Calculating...";
+}
+
+function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+
+document.getElementById("csv").onchange = e => {
     let fr = new FileReader();
     fr.onload = () => {
-        records = fr.result.split('\n').filter(l=>l.trim()).map(l => l.split(',').map(v => clean(v)));
-        localStorage.setItem("pradeep_v300", JSON.stringify(records));
-        render();
+        let lines = fr.result.split(/\r?\n/);
+        data = lines.filter(l=>l.trim()).map(l => {
+            let r = l.split(',').map(v => norm(v.trim()));
+            while(r.length < 6) r.push("**");
+            return r.slice(0,6);
+        });
+        draw();
+        alert("CSV Loaded!");
     };
     fr.readAsText(e.target.files[0]);
-}
-render();
+};
 </script>
 </body>
 </html>
