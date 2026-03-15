@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Deep Match System</title>
+    <title>Rajdhani Pro AI - Fixed Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -33,7 +33,7 @@
 
 <div id="main-app">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">Kalyan AI Deep</h2>
+        <h2 style="color:var(--gold); margin:0;">Kalyan Pro AI</h2>
         <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444;">Refresh</button>
     </div>
 
@@ -54,12 +54,12 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>✔ Deep Matches Found</h3>
+            <h3>✔ Fixed Check Lines</h3>
             <div id="checks"></div>
         </div>
         <div class="card">
-            <h3>🔮 Smart AI Prediction</h3>
-            <div id="future">Analyzing...</div>
+            <h3>🔮 Top Results</h3>
+            <div id="future">Click a blank cell...</div>
         </div>
     </div>
 </div>
@@ -67,7 +67,7 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
-    <h3 style="margin: 0 0 15px 0;">Matched Sequence</h3>
+    <h3 style="margin: 0 0 15px 0;">Sequence Check</h3>
     <center>
         <div class="table-container" style="border: 1px solid #ddd;">
             <canvas id="popCanvas"></canvas>
@@ -78,7 +78,7 @@
 
 <script>
 const STORAGE_KEY="pdata_Kalyan_v2";
-let targetCol=null, activeMark=null, activeMark2=null;
+let targetCol=null, activeMark=null, activeMark2=null, patternS1=[], patternS2=[];
 const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
 
@@ -98,14 +98,14 @@ function draw(){
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
- renderLines();
+ renderLines("mainCanvas", "tbl");
 }
 
-function isPartOf(ri,ci,m){ let i=ri-m.start; return i>=0 && i<m.shape.length && m.shape[i][ci]; }
+function isPartOf(ri,ci,m){ let i=ri-m.start; return i>=0 && i<10 && m.shape[i][ci]; }
 
-function renderLines(){
+function renderLines(cvsId, tblId){
  setTimeout(()=>{
-  const cvs=document.getElementById("mainCanvas"), tbl=document.getElementById("tbl");
+  const cvs=document.getElementById(cvsId), tbl=document.getElementById(tblId);
   if(!cvs || !tbl) return;
   cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
   const ctx=cvs.getContext("2d"); ctx.clearRect(0,0,cvs.width,cvs.height);
@@ -128,55 +128,76 @@ function makePattern(r,c){
  for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c]; break;}}
  if(base=="**") return;
 
- let s1=Array(10).fill(0).map(()=>Array(6).fill(0)), s2=Array(10).fill(0).map(()=>Array(6).fill(0));
+ patternS1=[]; patternS2=[];
  let m1=0, m2=0, start=Math.max(0,r-9);
  
  for(let i=r;i>=start;i--){
   for(let j=0;j<6;j++){
    let v=data[i][j]; if(v=="**") continue;
-   if(m1<2 && (v===base||v===palti(base))){ s1[i-start][j]=1; m1++; }
-   else if(m2<2 && fam(v)===fam(base) && !s1[i-start][j]){ s2[i-start][j]=1; m2++; }
+   let rr = i-start;
+   if(m1<2 && (v===base||v===palti(base))){ patternS1.push({rr, cc:j}); m1++; }
+   else if(m2<2 && fam(v)===fam(base)){
+    if(!patternS1.some(p=>p.rr===rr && p.cc===j)){ patternS2.push({rr, cc:j}); m2++; }
+   }
   }
  }
- deepSearch(s1,s2,base);
+ searchFixed(base);
 }
 
-function deepSearch(s1,s2,base){
+function convertToShape(points){
+ let shape=Array(10).fill(0).map(()=>Array(6).fill(0));
+ points.forEach(p=> shape[p.rr][p.cc]=1);
+ return shape;
+}
+
+function searchFixed(base){
  let res=[];
- // Pure data ko scan karna (Current ko chhod kar)
  for(let i=0; i<=data.length-10; i++){
-  let matchPoints=0, totalPoints=0;
-  for(let k=0;k<10;k++) for(let j=0;j<6;j++){
-   if(s1[k][j]){ totalPoints++; if(smartMatch(data[i+k][j],base)) matchPoints++; }
-   if(s2[k][j]){ totalPoints++; if(fam(data[i+k][j])===fam(base)) matchPoints++; }
-  }
-  // Thoda relax criteria taaki kam se kam 2-3 matches milein
-  if(matchPoints >= (totalPoints - 1) && matchPoints > 0 && i < data.length-11){
-      res.push({index:i, strength: matchPoints});
-  }
+  let score=0;
+  patternS1.forEach(p=> { if(smartMatch(data[i+p.rr][p.cc], base)) score++; });
+  patternS2.forEach(p=> { if(fam(data[i+p.rr][p.cc])===fam(base)) score++; });
+
+  // Score 3 means 75% match, ensuring at least 2-3 check lines
+  if(score >= 3 && i < data.length-11) res.push({index:i, score});
  }
- // Strength ke hisaab se sort karna
- res.sort((a,b)=> b.strength - a.strength);
+ res.sort((a,b)=>b.score - a.score);
  
- activeMark={start:data.length-10, shape:s1}; activeMark2={start:data.length-10, shape:s2};
- draw(); showChecks(s1,s2,res);
+ activeMark={start:data.length-10, shape:convertToShape(patternS1)};
+ activeMark2={start:data.length-10, shape:convertToShape(patternS2)};
+ draw();
+ showChecksFixed(res);
 }
 
-function showChecks(s1,s2,matches){
+function showChecksFixed(matches){
  const div=document.getElementById("checks"); div.innerHTML="";
- if(matches.length === 0) div.innerHTML = "<small>No matches. Try adding more rows.</small>";
- 
  matches.slice(0,5).forEach((m, idx)=>{
   let b=document.createElement("div");
-  b.style="background:#1e293b; color:#fff; margin:8px 0; padding:12px; border-radius:8px; cursor:pointer; border-left:4px solid "+(idx<2?"#00ff88":"#ffd700");
-  b.innerHTML=`<b>Match #${idx+1}</b> (Row ${m.index+1})<br><small>Pattern Strength: ${m.strength}</small>`;
+  b.style="background:#1e293b; color:#fff; margin:8px 0; padding:12px; border-radius:8px; cursor:pointer; border-left:4px solid #00ff88; font-size:13px;";
+  b.innerHTML=`<b>Line ${idx+1}</b> (Row ${m.index+1}) <span style="float:right; color:var(--gold)">Score: ${m.score}</span>`;
   b.onclick=()=>{ 
-    activeMark={start:m.index, shape:s1}; activeMark2={start:m.index, shape:s2}; 
-    draw(); showPopup(s1,s2,m.index); 
+    // Yahan fixed pattern coordinates hi pass hote hain
+    activeMark={start:m.index, shape:convertToShape(patternS1)}; 
+    activeMark2={start:m.index, shape:convertToShape(patternS2)}; 
+    draw(); showPopupFixed(m.index); 
   };
   div.appendChild(b);
  });
  updatePredict(matches);
+}
+
+function showPopupFixed(idx){
+ let h="<table id='popTbl'>";
+ let s1Shape = convertToShape(patternS1);
+ let s2Shape = convertToShape(patternS2);
+ for(let i=0;i<10;i++){
+  h+="<tr>"; data[idx+i].forEach((v,j)=>{
+   let cls=s1Shape[i][j]?"circle":(s2Shape[i][j]?"circle2":"");
+   h+=`<td class="${cls}">${v}</td>`;
+  }); h+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=h+"</table>";
+ document.getElementById("popup").style.display="block"; document.getElementById("overlay").style.display="block";
+ renderLines("popCanvas", "popTbl");
 }
 
 function updatePredict(ms){
@@ -190,30 +211,12 @@ function updatePredict(ms){
  });
  let top=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,3);
  document.getElementById("future").innerHTML=top.length? 
-    `<div style='font-size:1.2rem; color:#00ff88'>${top.join(" , ")}</div><small>Based on ${ms.length} matches</small>` : 
-    "Analyzing historical data...";
-}
-
-function showPopup(s1,s2,idx){
- let h="<table id='popTbl'>";
- for(let i=0;i<10;i++){
-  h+="<tr>"; data[idx+i].forEach((v,j)=>{
-   let cls=s1[i][j]?"circle":(s2[i][j]?"circle2":"");
-   h+=`<td class="${cls}">${v}</td>`;
-  }); h+="</tr>";
- }
- document.getElementById("popData").innerHTML=h+"</table>";
- document.getElementById("popup").style.display="block"; document.getElementById("overlay").style.display="block";
- setTimeout(()=>{
-  const cvs=document.getElementById("popCanvas"), tbl=document.getElementById("popTbl");
-  cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
-  const ctx=cvs.getContext("2d"); drawLineSet(ctx,tbl,".circle","#00ff88"); drawLineSet(ctx,tbl,".circle2","#ff8800");
- },100);
+    `<div style='font-size:1.5rem; color:#00ff88; font-weight:800; text-align:center;'>${top.join(" , ")}</div>` : "No match found.";
 }
 
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved to Local Storage!"); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved Successfully!"); }
 function clearData(){ if(confirm("Clear Everything?")){localStorage.clear(); location.reload();}}
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
