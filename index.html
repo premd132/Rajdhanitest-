@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Fixed Coordinate Mirror</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Rajdhani AI - Double Family Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --gold: #ffd700; --blue-circle: #0084ff; --orange-circle: #ff8800;
+            --gold: #ffd700; --blue: #0084ff; --orange: #ff8800;
             --bg: #0f172a; --panel: #1e293b; 
         }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -18,8 +18,8 @@
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; cursor: pointer; }
         th { background: #1e293b; color: white; font-size: 11px; }
-        .circle { border: 3.5px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); }
-        .circle2 { border: 3.5px solid var(--orange-circle) !important; border-radius: 50% !important; background: rgba(255, 136, 0, 0.15); }
+        .circle { border: 3.5px solid var(--blue) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); }
+        .circle2 { border: 3.5px solid var(--orange) !important; border-radius: 50% !important; background: rgba(255, 136, 0, 0.15); }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
@@ -31,7 +31,7 @@
 <body>
 
 <div id="main-app">
-    <h2 style="color:var(--gold); text-align:center; margin-bottom:15px;">Rajdhani AI Mirror</h2>
+    <h2 style="color:var(--gold); text-align:center; margin-bottom:15px;">Rajdhani AI - Double Family</h2>
 
     <div class="toolbar">
         <input type="file" id="csv" style="display:none">
@@ -50,12 +50,12 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3 style="color:var(--gold); font-size:14px; margin:0 0 10px 0;">✔ Check Lines (Mirror Mode)</h3>
+            <h3 style="color:var(--gold); font-size:14px; margin:0 0 10px 0;">✔ Multi-Family Check Lines</h3>
             <div id="checks"></div>
         </div>
         <div class="card">
-            <h3 style="color:var(--gold); font-size:14px; margin:0 0 10px 0;">🔮 Prediction</h3>
-            <div id="future" style="font-size:1.6rem; color:#00ff88; font-weight:800;">Select Blank...</div>
+            <h3 style="color:var(--gold); font-size:14px; margin:0 0 10px 0;">🔮 Top Predictions</h3>
+            <div id="future" style="font-size:1.6rem; color:#00ff88; font-weight:800; text-align:center;">...</div>
         </div>
     </div>
 </div>
@@ -63,7 +63,7 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
-    <h3 style="margin:0 0 10px 0;">Pattern View</h3>
+    <h3 style="margin:0 0 10px 0;">Pattern Records</h3>
     <center>
         <div class="table-container" style="border:1px solid #ddd;">
             <canvas id="popCanvas"></canvas>
@@ -73,17 +73,15 @@
 </div>
 
 <script>
-const STORAGE_KEY="kalyan_mirror_v5";
+const STORAGE_KEY="kalyan_doublefam_v1";
 let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["**","**","**","**","**","**"]];
-let activeS1=[], activeS2=[], activeStart=null, targetCol=null;
+let activeS1=[], activeS2=[], baseFam1="NA", baseFam2="NA", targetCol=null;
 
 const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 
 function norm(v){ if(!v || v=="**") return "**"; let n=v.replace(/[^0-9]/g,""); return n.length==1?"0"+n:n.substring(0,2); }
 function fam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k; return "NA";}
 function palti(v){return v.length==2?v[1]+v[0]:v;}
-function isExact(v, base){ return v === base || v === palti(base); }
-function isFam(v, base){ return fam(v) === fam(base); }
 
 function draw(tblId="tbl", canvasId="mainCanvas", startRow=null, s1=[], s2=[]){
     let table = document.getElementById(tblId);
@@ -99,7 +97,7 @@ function draw(tblId="tbl", canvasId="mainCanvas", startRow=null, s1=[], s2=[]){
                     if(s2.some(p => p.rr === rel && p.cc === ci)) cls = "circle2";
                 }
             }
-            h += `<td class="${cls}" contenteditable onblur="updateVal(${ri},${ci},this)" onclick="cellAction(${ri},${ci},'${c}')">${c}</td>`;
+            h += `<td class="${cls}" contenteditable onblur="updateVal(${ri},${ci},this)" onclick="cellClick(${ri},${ci},'${c}')">${c}</td>`;
         });
         h += "</tr>";
     });
@@ -107,40 +105,56 @@ function draw(tblId="tbl", canvasId="mainCanvas", startRow=null, s1=[], s2=[]){
     renderLines(canvasId, tblId);
 }
 
-function cellAction(ri, ci, val){ if(val === "**") makePattern(ri, ci); }
+function cellClick(ri, ci, val){ if(val === "**") makePattern(ri, ci); }
 
 function makePattern(r, c){
-    targetCol = c; let base = "**";
-    for(let i=r; i>=0; i--){ if(data[i][c]!="**"){base=data[i][c]; break;} }
-    if(base == "**") return;
-
+    targetCol = c; let startRow = Math.max(0, r-9);
     activeS1 = []; activeS2 = [];
-    let startRow = Math.max(0, r-9);
-    let m1=0, m2=0;
-
-    // Fixed Coordinate Mapping: Sirf 2 Blue, 2 Orange
+    baseFam1 = "NA"; baseFam2 = "NA";
+    
+    // Step 1: Pehla pair dhoondhna (Blue)
     for(let i=r; i>=startRow; i--){
         for(let j=0; j<6; j++){
             let v = data[i][j]; if(v == "**") continue;
-            let rr = i - startRow;
-            if(m1 < 2 && isExact(v, base)){
-                activeS1.push({rr, cc:j}); m1++;
-            } else if(m2 < 2 && isFam(v, base) && !activeS1.some(p=>p.rr===rr && p.cc===j)){
-                activeS2.push({rr, cc:j}); m2++;
+            if(activeS1.length < 2){
+                if(baseFam1 === "NA") baseFam1 = fam(v);
+                if(fam(v) === baseFam1) activeS1.push({rr: i-startRow, cc:j, val: v});
             }
         }
     }
-    searchMirror(base);
+
+    // Step 2: Doosra pair dhoondhna (Orange) - Jo pehle family se alag ho
+    for(let i=r; i>=startRow; i--){
+        for(let j=0; j<6; j++){
+            let v = data[i][j]; if(v == "**") continue;
+            let rr = i-startRow;
+            // Check agar ye Blue pattern ka hissa nahi hai
+            if(!activeS1.some(p=>p.rr===rr && p.cc===j) && activeS2.length < 2){
+                let f = fam(v);
+                if(f !== baseFam1){
+                    if(baseFam2 === "NA") baseFam2 = f;
+                    if(fam(v) === baseFam2) activeS2.push({rr, cc:j, val: v});
+                }
+            }
+        }
+    }
+    searchDoubleFam();
 }
 
-function searchMirror(base){
+function searchDoubleFam(){
     let ms = [];
     for(let i=0; i <= data.length-11; i++){
         let score = 0;
-        // Strict Position Match
-        activeS1.forEach(p => { if(isExact(data[i+p.rr][p.cc], base)) score++; });
-        activeS2.forEach(p => { if(isFam(data[i+p.rr][p.cc], base)) score++; });
+        // Check Pattern 1 (Blue Family)
+        activeS1.forEach(p => { 
+            if(fam(data[i+p.rr][p.cc]) === baseFam1) score++; 
+        });
+        // Check Pattern 2 (Orange Family)
+        activeS2.forEach(p => { 
+            if(fam(data[i+p.rr][p.cc]) === baseFam2) score++; 
+        });
 
+        // Agar kam se kam 3 points match hon (Double Fam match)
         if(score >= 3) ms.push({index: i, score});
     }
     ms.sort((a,b) => b.score - a.score);
@@ -152,8 +166,8 @@ function showChecks(ms){
     let div = document.getElementById("checks"); div.innerHTML = "";
     ms.slice(0,5).forEach((m, idx) => {
         let b = document.createElement("div");
-        b.style = "background:#1e293b; color:#fff; margin:5px 0; padding:12px; border-radius:8px; cursor:pointer; border-left:4px solid "+(idx<2?"#00ff88":"#ffd700");
-        b.innerHTML = `Match #${idx+1} (Row ${m.index+1}) <small style="float:right">Mirror Score: ${m.score}/4</small>`;
+        b.style = "background:#1e293b; color:#fff; margin:5px 0; padding:12px; border-radius:8px; cursor:pointer; border-left:4px solid #ffd700";
+        b.innerHTML = `Match #${idx+1} (Row ${m.index+1}) <span style="float:right; color:#00ff88;">Acc: ${m.score}/4</span>`;
         b.onclick = () => {
             draw("tbl", "mainCanvas", m.index, activeS1, activeS2);
             showPopup(m.index);
@@ -210,13 +224,13 @@ function updatePrediction(ms){
         }
     });
     let top = Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,3);
-    document.getElementById("future").innerText = top.length ? top.join(" , ") : "Analyzing...";
+    document.getElementById("future").innerText = top.length ? top.join(" , ") : "Scanning...";
 }
 
 function updateVal(r,c,el){ data[r][c] = norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
 function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear All?")){localStorage.clear(); location.reload();} }
+function clearData(){ if(confirm("Delete All?")){localStorage.clear(); location.reload();} }
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
 document.getElementById("csv").onchange=e=>{
