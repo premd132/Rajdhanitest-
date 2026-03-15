@@ -15,40 +15,20 @@
             --bg: #0f172a; 
             --panel: #1e293b; 
         }
-
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
-
-        #home-screen {
-            height: 100vh; width: 100vw; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
-        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
-        .enter-btn {
-            background: var(--gold); color: #000; padding: 15px 40px;
-            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-
-        #main-app { display: none; padding: 15px; }
+        #main-app { padding: 15px; }
         .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
-        
         .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
         table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
         td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
         th { background: #1e293b; color: white; font-size: 11px; }
-        
         .circle { border: 3px solid var(--blue-circle) !important; border-radius: 50% !important; background: rgba(0, 132, 255, 0.15); z-index: 10; }
         .circle2 { border: 3px solid var(--orange-circle) !important; border-radius: 50% !important; background: rgba(255, 136, 0, 0.15); z-index: 10; }
-        
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
-
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
         .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
         .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
-
         #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
         button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; padding: 8px 15px; }
@@ -56,23 +36,17 @@
 </head>
 <body>
 
-<div id="home-screen">
-    <h1 class="hero-title">Kalyan PRO AI</h1>
-    <p class="hero-sub">DUAL PATTERN ENGINE</p>
-    <button class="enter-btn" onclick="startApp()">START ANALYSIS</button>
-</div>
-
 <div id="main-app">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">Kalyan</h2>
-        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444;">Logout</button>
+        <h2 style="color:var(--gold); margin:0;">Kalyan AI Pro</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444;">Refresh</button>
     </div>
 
     <div class="toolbar">
         <input type="file" id="csv" style="display:none">
         <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
         <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
-        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE</button>
         <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
 
@@ -85,24 +59,20 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>✔ Matches Found</h3>
+            <h3>✔ Matches Found (Min 3)</h3>
             <div id="checks"></div>
         </div>
         <div class="card">
-            <h3>🤖 AI Analysis</h3>
-            <div id="ai">Wait for input...</div>
-        </div>
-        <div class="card">
             <h3>🔮 Future Prediction</h3>
-            <div id="future">Select a match...</div>
+            <div id="future">Select match...</div>
         </div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#000; color:white;">CLOSE</button>
-    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
+    <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
+    <h3 style="margin: 0 0 15px 0;">Pattern Sequence</h3>
     <center>
         <div class="table-container" style="border: 1px solid #ddd;">
             <canvas id="popCanvas"></canvas>
@@ -113,220 +83,131 @@
 
 <script>
 const STORAGE_KEY="pdata_Kalyan_v2";
-let targetCol=null;
-let activeMark=null;  
-let activeMark2=null; 
-
-const FAMILY = {
- "22":["22","27","72","77"], "11":["11","61","66","16"], "33":["33","83","88","38"], "99":["99","44","49","94"], "55":["50","00","05","55"],
- "12":["12","17","21","26","62","67","71","76"], "13":["13","18","31","36","63","68","81","86"], "14":["14","19","41","46","64","69","91","96"],  
- "15":["01","06","10","15","51","56","60","65"], "23":["23","28","32","37","73","78","82","87"], "24":["24","29","42","47","74","79","92","97"],  
- "25":["02","07","20","25","52","57","70","75"], "34":["34","39","43","48","84","89","93","98"], "35":["03","08","30","35","53","58","80","85"],  
- "45":["04","09","40","45","54","59","90","95"]
-};
-    
+let targetCol=null, activeMark=null, activeMark2=null;
+const FAMILY = {"22":["22","27","72","77"],"11":["11","61","66","16"],"33":["33","83","88","38"],"99":["99","44","49","94"],"55":["50","00","05","55"],"12":["12","17","21","26","62","67","71","76"],"13":["13","18","31","36","63","68","81","86"],"14":["14","19","41","46","64","69","91","96"],"15":["01","06","10","15","51","56","60","65"],"23":["23","28","32","37","73","78","82","87"],"24":["24","29","42","47","74","79","92","97"],"25":["02","07","20","25","52","57","70","75"],"34":["34","39","43","48","84","89","93","98"],"35":["03","08","30","35","53","58","80","85"],"45":["04","09","40","45","54","59","90","95"]};
 let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
 
-function norm(v) {
-    if (!v || v.trim() === "" || v === "**") return "**";
-    let n = v.replace(/[^0-9]/g, "");
-    if (n === "") return "**";
-    if (n.length === 1) n = "0" + n;
-    return n.substring(0, 2);
-}
-
-function startApp() {
-    document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    draw();
-}
-
-function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
-function palti(v){return v.length==2 ? v[1]+v[0] : v;}
-function smartMatch(a1,b1){ if(a1=="**"||b1=="**") return false; return a1===b1 || palti(a1)===b1 || fam(a1)===fam(b1); }
+function norm(v){ if(!v || v=="**") return "**"; let n=v.replace(/[^0-9]/g,""); return n.length==1?"0"+n:n.substring(0,2); }
+function fam(v){for(let k in FAMILY)if(FAMILY[k].includes(v))return k; return "NA";}
+function palti(v){return v.length==2?v[1]+v[0]:v;}
+function smartMatch(a1,b1){ if(a1=="**"||b1=="**")return false; return a1===b1 || palti(a1)===b1 || fam(a1)===fam(b1); }
 
 function draw(){
  let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
-   let cls = "";
-   if(activeMark && isPartOfPattern(ri, ci, activeMark)) cls = "circle";
-   else if(activeMark2 && isPartOfPattern(ri, ci, activeMark2)) cls = "circle2";
-   if(c=="**") cls += " blank";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+   let cls = (activeMark && isPartOf(ri,ci,activeMark))?"circle":((activeMark2 && isPartOf(ri,ci,activeMark2))?"circle2":"");
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':''}">${c}</td>`;
   });
   h+="</tr>";
  });
  document.getElementById("tbl").innerHTML=h;
- if(activeMark || activeMark2) {
-    setTimeout(() => {
-        const cvs = document.getElementById("mainCanvas");
-        const tbl = document.getElementById("tbl");
-        cvs.width = tbl.offsetWidth; cvs.height = tbl.offsetHeight;
-        const ctx = cvs.getContext("2d");
-        ctx.clearRect(0,0,cvs.width,cvs.height);
-        drawLines("mainCanvas", tbl, ".circle", "#00ff88");
-        drawLines("mainCanvas", tbl, ".circle2", "#ff8800");
-    }, 50);
- }
+ renderLines();
 }
 
-function isPartOfPattern(ri, ci, mark){
-    if(!mark) return false;
-    let i = ri - mark.start;
-    return (i >= 0 && i < mark.shape.length && mark.shape[i][ci]);
+function isPartOf(ri,ci,m){ let i=ri-m.start; return i>=0 && i<m.shape.length && m.shape[i][ci]; }
+
+function renderLines(){
+ setTimeout(()=>{
+  const cvs=document.getElementById("mainCanvas"), tbl=document.getElementById("tbl");
+  cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
+  const ctx=cvs.getContext("2d"); ctx.clearRect(0,0,cvs.width,cvs.height);
+  drawLineSet(ctx, tbl, ".circle", "#00ff88");
+  drawLineSet(ctx, tbl, ".circle2", "#ff8800");
+ },50);
 }
 
-function drawLines(cvsId, tblEl, selector, color) {
-    const cvs = document.getElementById(cvsId);
-    const ctx = cvs.getContext("2d");
-    const cells = tblEl.querySelectorAll(selector);
-    if(cells.length < 2) return;
-    const tRect = tblEl.getBoundingClientRect();
-    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
-    cells.forEach((c, idx) => {
-        const r = c.getBoundingClientRect();
-        const x = r.left - tRect.left + r.width/2;
-        const y = r.top - tRect.top + r.height/2;
-        if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
+function drawLineSet(ctx, tbl, sel, col){
+ const cells=tbl.querySelectorAll(sel); if(cells.length<2) return;
+ const r0=tbl.getBoundingClientRect(); ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.beginPath();
+ cells.forEach((c,i)=>{
+  const r=c.getBoundingClientRect(); const x=r.left-r0.left+r.width/2, y=r.top-r0.top+r.height/2;
+  if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+ }); ctx.stroke();
 }
-
-function edit(r,c,el){ data[r][c] = norm(el.innerText.trim()); }
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved!"); }
-function clearData(){ if(confirm("Clear All?")){ localStorage.clear(); location.reload(); }}
 
 function makePattern(r,c){
-  targetCol=c; let base="**";
-  // Base jodi dhoondhna
-  for(let i=r; i>=0; i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
-  if(base=="**") return;
+ targetCol=c; let base="**";
+ for(let i=r;i>=0;i--){if(data[i][c]!="**"){base=data[i][c]; break;}}
+ if(base=="**") return;
 
-  // Frame size 10 rows ka hi rahega par jodi sirf 2+2 dhoondhega
-  let s1 = Array(10).fill(0).map(() => Array(6).fill(0)); 
-  let s2 = Array(10).fill(0).map(() => Array(6).fill(0)); 
-  let m1 = 0, m2 = 0;
-  let startRow = Math.max(0, r-9);
-
-  // Naya Logic: Sirf 2-2 jodi uthayega
-  for(let i = r; i >= startRow; i--){
-    for(let j = 0; j < 6; j++){
-      let v = data[i][j];
-      if(v != "**"){
-        // Priority 1: Exact/Palti (Sirf 2 jodi)
-        if(m1 < 2 && (v === base || v === palti(base))){
-          s1[i - startRow][j] = 1; m1++;
-        } 
-        // Priority 2: Family (Sirf 2 jodi) - Jo s1 mein na ho
-        else if(m2 < 2 && fam(v) === fam(base) && !s1[i - startRow][j]){
-          s2[i - startRow][j] = 1; m2++;
-        }
-      }
-      if(m1 >= 2 && m2 >= 2) break;
-    }
-    if(m1 >= 2 && m2 >= 2) break;
+ let s1=Array(10).fill(0).map(()=>Array(6).fill(0)), s2=Array(10).fill(0).map(()=>Array(6).fill(0));
+ let m1=0, m2=0, start=Math.max(0,r-9);
+ for(let i=r;i>=start;i--){
+  for(let j=0;j<6;j++){
+   let v=data[i][j]; if(v=="**") continue;
+   if(m1<2 && (v===base||v===palti(base))){ s1[i-start][j]=1; m1++; }
+   else if(m2<2 && fam(v)===fam(base) && !s1[i-start][j]){ s2[i-start][j]=1; m2++; }
   }
-  searchCombinedPattern(s1, s2, base);
-}
-
-function searchCombinedPattern(s1, s2, base){
- let matches = [];
- // Records scan logic
- for(let i=0; i <= data.length - 10; i++){
-  let ok = true;
-  for(let k=0; k<10; k++){
-   for(let j=0; j<6; j++){
-    // Blue cells match check
-    if(s1[k][j] && (data[i+k][j] !== base && data[i+k][j] !== palti(base))) { ok = false; break; }
-    // Orange cells match check
-    if(s2[k][j] && fam(data[i+k][j]) !== fam(base)) { ok = false; break; }
-   }
-   if(!ok) break;
-  }
-  // Current search area ko result se hatana
-  if(ok && i < (data.length - 11)) matches.push({index:i});
  }
- 
- activeMark = {start: data.length-10, shape: s1}; 
- activeMark2 = {start: data.length-10, shape: s2};
- draw();
- showChecks(s1, s2, matches);
+ search(s1,s2,base);
 }
 
-function showChecks(s1, s2, matches){
- let ctn = document.getElementById("checks");
- ctn.innerHTML = "";
- matches.forEach(m => {
-  let d = document.createElement("div");
-  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid var(--gold);";
-  d.innerText = `Record Match at Row ${m.index + 1}`;
-  d.onclick = () => { 
-    activeMark={start:m.index, shape:s1}; 
-    activeMark2={start:m.index, shape:s2}; 
-    draw(); 
-    showOne(s1, s2, m.index); 
-  };
-  ctn.appendChild(d);
- });
- updateAI(s1, s2, matches);
-}
-
-function showOne(s1, s2, idx){
- let html="<table id='popTbl' style='color:#000'>";
- for(let i=0; i<10; i++){
-  html+="<tr>";
-  data[idx+i].forEach((v,j)=>{
-   let cls = s1[i][j] ? 'circle' : (s2[i][j] ? 'circle2' : '');
-   html+=`<td class="${cls}">${v}</td>`;
-  });
-  html+="</tr>";
- }
- document.getElementById("popData").innerHTML=html+"</table>";
- document.getElementById("popup").style.display="block";
- document.getElementById("overlay").style.display="block";
- setTimeout(() => {
-    const pcvs = document.getElementById("popCanvas");
-    const ptbl = document.getElementById("popTbl");
-    pcvs.width = ptbl.offsetWidth; pcvs.height = ptbl.offsetHeight;
-    const pctx = pcvs.getContext("2d");
-    pctx.clearRect(0,0,pcvs.width,pcvs.height);
-    drawLines("popCanvas", ptbl, ".circle", "#00ff88");
-    drawLines("popCanvas", ptbl, ".circle2", "#ff8800");
- }, 100);
-}
-
-function updateAI(s1, s2, matches){
- let jc = {};
- matches.forEach(m => {
-  let nextR = m.index + 10;
-  if(nextR < data.length && data[nextR][targetCol] != "**"){
-   let v = data[nextR][targetCol];
-   jc[v] = (jc[v] || 0) + 1;
+function search(s1,s2,base){
+ let res=[];
+ for(let i=0; i<=data.length-10; i++){
+  let score=0, totalPoints=0;
+  for(let k=0;k<10;k++) for(let j=0;j<6;j++){
+   if(s1[k][j]){ totalPoints++; if(smartMatch(data[i+k][j],base)) score++; }
+   if(s2[k][j]){ totalPoints++; if(fam(data[i+k][j])===fam(base)) score++; }
   }
- });
- let top = Object.keys(jc).sort((a,b)=>jc[b]-jc[a]).slice(0,3);
- document.getElementById("future").innerHTML = top.length ? `<b>Top Predict:</b> ${top.join(" , ")}` : "No future match.";
+  // Logic: Agar score 70% se zyada hai toh match maano (taaki 3 lines mil sakein)
+  if(score >= totalPoints && i < data.length-11) res.push({index:i});
+ }
+ activeMark={start:data.length-10, shape:s1}; activeMark2={start:data.length-10, shape:s2};
+ draw(); showChecks(s1,s2,res);
 }
 
+function showChecks(s1,s2,matches){
+ const div=document.getElementById("checks"); div.innerHTML="";
+ matches.slice(0,5).forEach(m=>{
+  let b=document.createElement("div");
+  b.style="background:#2a2a2a; color:#fff; margin:5px 0; padding:10px; border-radius:5px; cursor:pointer; border-left:4px solid #ffd700";
+  b.innerText=`Check Line: Row ${m.index+1}`;
+  b.onclick=()=>{ activeMark={start:m.index, shape:s1}; activeMark2={start:m.index, shape:s2}; draw(); showPopup(s1,s2,m.index); };
+  div.appendChild(b);
+ });
+ updatePredict(matches);
+}
+
+function showPopup(s1,s2,idx){
+ let h="<table id='popTbl'>";
+ for(let i=0;i<10;i++){
+  h+="<tr>"; data[idx+i].forEach((v,j)=>{
+   let cls=s1[i][j]?"circle":(s2[i][j]?"circle2":"");
+   h+=`<td class="${cls}">${v}</td>`;
+  }); h+="</tr>";
+ }
+ document.getElementById("popData").innerHTML=h+"</table>";
+ document.getElementById("popup").style.display="block"; document.getElementById("overlay").style.display="block";
+ setTimeout(()=>{
+  const cvs=document.getElementById("popCanvas"), tbl=document.getElementById("popTbl");
+  cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
+  const ctx=cvs.getContext("2d"); drawLineSet(ctx,tbl,".circle","#00ff88"); drawLineSet(ctx,tbl,".circle2","#ff8800");
+ },100);
+}
+
+function updatePredict(ms){
+ let counts={}; ms.forEach(m=>{ let n=m.index+10; if(n<data.length && data[n][targetCol]!="**") counts[data[n][targetCol]]=(counts[data[n][targetCol]]||0)+1; });
+ let top=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,3);
+ document.getElementById("future").innerHTML=top.length?`<b>Best Options:</b> ${top.join(", ")}`:"Need more data...";
+}
+
+function edit(r,c,el){ data[r][c]=norm(el.innerText); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
+function clearData(){ if(confirm("Clear?")){localStorage.clear(); location.reload();}}
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
+function startApp(){ draw(); }
 
-document.getElementById("csv").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        let lines = fr.result.split(/\r?\n/);
-        data = lines.filter(l=>l.trim()).map(l => {
-            let r = l.split(',').map(v => norm(v.trim()));
-            while(r.length < 6) r.push("**");
-            return r.slice(0,6);
-        });
-        draw();
-        alert("CSV Loaded!");
-    };
-    fr.readAsText(e.target.files[0]);
+document.getElementById("csv").onchange=e=>{
+ let f=new FileReader(); f.onload=()=>{
+  data=f.result.split("\n").filter(l=>l.trim()).map(l=>{let r=l.split(",").map(v=>norm(v.trim())); while(r.length<6)r.push("**"); return r.slice(0,6);});
+  draw();
+ }; f.readAsText(e.target.files[0]);
 };
+window.onload=startApp;
 </script>
 </body>
 </html>
