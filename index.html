@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Premium System</title>
+    <title>Kalyan Pro AI – Deep Match System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --gold: #ffd700; 
-            --blue-circle: #0084ff; 
-            --orange-circle: #ff8800;
-            --green-line: #00ff88; 
-            --orange-line: #ff8800;
-            --bg: #0f172a; 
-            --panel: #1e293b; 
+            --gold: #ffd700; --blue-circle: #0084ff; --orange-circle: #ff8800;
+            --green-line: #00ff88; --orange-line: #ff8800; --bg: #0f172a; --panel: #1e293b; 
         }
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
@@ -38,7 +33,7 @@
 
 <div id="main-app">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">Kalyan AI Pro</h2>
+        <h2 style="color:var(--gold); margin:0;">Kalyan AI Deep</h2>
         <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444;">Refresh</button>
     </div>
 
@@ -59,12 +54,12 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>✔ Matches Found (Min 3)</h3>
+            <h3>✔ Deep Matches Found</h3>
             <div id="checks"></div>
         </div>
         <div class="card">
-            <h3>🔮 Future Prediction</h3>
-            <div id="future">Select match...</div>
+            <h3>🔮 Smart AI Prediction</h3>
+            <div id="future">Analyzing...</div>
         </div>
     </div>
 </div>
@@ -72,7 +67,7 @@
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
     <button onclick="closePopup()" style="float:right; background:#000; color:white;">X</button>
-    <h3 style="margin: 0 0 15px 0;">Pattern Sequence</h3>
+    <h3 style="margin: 0 0 15px 0;">Matched Sequence</h3>
     <center>
         <div class="table-container" style="border: 1px solid #ddd;">
             <canvas id="popCanvas"></canvas>
@@ -111,6 +106,7 @@ function isPartOf(ri,ci,m){ let i=ri-m.start; return i>=0 && i<m.shape.length &&
 function renderLines(){
  setTimeout(()=>{
   const cvs=document.getElementById("mainCanvas"), tbl=document.getElementById("tbl");
+  if(!cvs || !tbl) return;
   cvs.width=tbl.offsetWidth; cvs.height=tbl.offsetHeight;
   const ctx=cvs.getContext("2d"); ctx.clearRect(0,0,cvs.width,cvs.height);
   drawLineSet(ctx, tbl, ".circle", "#00ff88");
@@ -120,7 +116,7 @@ function renderLines(){
 
 function drawLineSet(ctx, tbl, sel, col){
  const cells=tbl.querySelectorAll(sel); if(cells.length<2) return;
- const r0=tbl.getBoundingClientRect(); ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.beginPath();
+ const r0=tbl.getBoundingClientRect(); ctx.strokeStyle=col; ctx.lineWidth=3; ctx.beginPath();
  cells.forEach((c,i)=>{
   const r=c.getBoundingClientRect(); const x=r.left-r0.left+r.width/2, y=r.top-r0.top+r.height/2;
   if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
@@ -134,6 +130,7 @@ function makePattern(r,c){
 
  let s1=Array(10).fill(0).map(()=>Array(6).fill(0)), s2=Array(10).fill(0).map(()=>Array(6).fill(0));
  let m1=0, m2=0, start=Math.max(0,r-9);
+ 
  for(let i=r;i>=start;i--){
   for(let j=0;j<6;j++){
    let v=data[i][j]; if(v=="**") continue;
@@ -141,34 +138,60 @@ function makePattern(r,c){
    else if(m2<2 && fam(v)===fam(base) && !s1[i-start][j]){ s2[i-start][j]=1; m2++; }
   }
  }
- search(s1,s2,base);
+ deepSearch(s1,s2,base);
 }
 
-function search(s1,s2,base){
+function deepSearch(s1,s2,base){
  let res=[];
+ // Pure data ko scan karna (Current ko chhod kar)
  for(let i=0; i<=data.length-10; i++){
-  let score=0, totalPoints=0;
+  let matchPoints=0, totalPoints=0;
   for(let k=0;k<10;k++) for(let j=0;j<6;j++){
-   if(s1[k][j]){ totalPoints++; if(smartMatch(data[i+k][j],base)) score++; }
-   if(s2[k][j]){ totalPoints++; if(fam(data[i+k][j])===fam(base)) score++; }
+   if(s1[k][j]){ totalPoints++; if(smartMatch(data[i+k][j],base)) matchPoints++; }
+   if(s2[k][j]){ totalPoints++; if(fam(data[i+k][j])===fam(base)) matchPoints++; }
   }
-  // Logic: Agar score 70% se zyada hai toh match maano (taaki 3 lines mil sakein)
-  if(score >= totalPoints && i < data.length-11) res.push({index:i});
+  // Thoda relax criteria taaki kam se kam 2-3 matches milein
+  if(matchPoints >= (totalPoints - 1) && matchPoints > 0 && i < data.length-11){
+      res.push({index:i, strength: matchPoints});
+  }
  }
+ // Strength ke hisaab se sort karna
+ res.sort((a,b)=> b.strength - a.strength);
+ 
  activeMark={start:data.length-10, shape:s1}; activeMark2={start:data.length-10, shape:s2};
  draw(); showChecks(s1,s2,res);
 }
 
 function showChecks(s1,s2,matches){
  const div=document.getElementById("checks"); div.innerHTML="";
- matches.slice(0,5).forEach(m=>{
+ if(matches.length === 0) div.innerHTML = "<small>No matches. Try adding more rows.</small>";
+ 
+ matches.slice(0,5).forEach((m, idx)=>{
   let b=document.createElement("div");
-  b.style="background:#2a2a2a; color:#fff; margin:5px 0; padding:10px; border-radius:5px; cursor:pointer; border-left:4px solid #ffd700";
-  b.innerText=`Check Line: Row ${m.index+1}`;
-  b.onclick=()=>{ activeMark={start:m.index, shape:s1}; activeMark2={start:m.index, shape:s2}; draw(); showPopup(s1,s2,m.index); };
+  b.style="background:#1e293b; color:#fff; margin:8px 0; padding:12px; border-radius:8px; cursor:pointer; border-left:4px solid "+(idx<2?"#00ff88":"#ffd700");
+  b.innerHTML=`<b>Match #${idx+1}</b> (Row ${m.index+1})<br><small>Pattern Strength: ${m.strength}</small>`;
+  b.onclick=()=>{ 
+    activeMark={start:m.index, shape:s1}; activeMark2={start:m.index, shape:s2}; 
+    draw(); showPopup(s1,s2,m.index); 
+  };
   div.appendChild(b);
  });
  updatePredict(matches);
+}
+
+function updatePredict(ms){
+ let counts={}; 
+ ms.forEach(m=>{ 
+   let n=m.index+10; 
+   if(n<data.length && data[n][targetCol]!="**") {
+     let v = data[n][targetCol];
+     counts[v]=(counts[v]||0)+1;
+   }
+ });
+ let top=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,3);
+ document.getElementById("future").innerHTML=top.length? 
+    `<div style='font-size:1.2rem; color:#00ff88'>${top.join(" , ")}</div><small>Based on ${ms.length} matches</small>` : 
+    "Analyzing historical data...";
 }
 
 function showPopup(s1,s2,idx){
@@ -188,18 +211,11 @@ function showPopup(s1,s2,idx){
  },100);
 }
 
-function updatePredict(ms){
- let counts={}; ms.forEach(m=>{ let n=m.index+10; if(n<data.length && data[n][targetCol]!="**") counts[data[n][targetCol]]=(counts[data[n][targetCol]]||0)+1; });
- let top=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,3);
- document.getElementById("future").innerHTML=top.length?`<b>Best Options:</b> ${top.join(", ")}`:"Need more data...";
-}
-
 function edit(r,c,el){ data[r][c]=norm(el.innerText); }
 function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved!"); }
-function clearData(){ if(confirm("Clear?")){localStorage.clear(); location.reload();}}
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Saved to Local Storage!"); }
+function clearData(){ if(confirm("Clear Everything?")){localStorage.clear(); location.reload();}}
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-function startApp(){ draw(); }
 
 document.getElementById("csv").onchange=e=>{
  let f=new FileReader(); f.onload=()=>{
@@ -207,7 +223,7 @@ document.getElementById("csv").onchange=e=>{
   draw();
  }; f.readAsText(e.target.files[0]);
 };
-window.onload=startApp;
+window.onload=()=>draw();
 </script>
 </body>
 </html>
