@@ -229,76 +229,78 @@ function makePattern(r,c){
   searchPattern(s1, s2, base);
 }
 
-function searchPattern(s1, s2, base){
- let matches=[];
- for(let i=0; i<=data.length-9; i++){
-  let ok=true;
-  for(let k=0; k<9; k++){
-   for(let j=0; j<6; j++){ 
-     if(s1[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}
+// --- Is Section ko apne code ke Script me replace karein ---
+
+function makePattern(r,c){
+  targetCol=c; let base="**";
+  // Base jodi dhoondhna
+  for(let i=r; i>=0; i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
+  if(base=="**") return;
+
+  let s1 = Array(10).fill(0).map(() => Array(6).fill(0)); // Blue Pattern Frame
+  let s2 = Array(10).fill(0).map(() => Array(6).fill(0)); // Orange Pattern Frame
+  let m1 = 0, m2 = 0;
+  let startRow = Math.max(0, r-9);
+
+  // Current Pattern Build karna (Last 10 rows me)
+  for(let i = r; i >= startRow; i--){
+    for(let j = 0; j < 6; j++){
+      let v = data[i][j];
+      if(v != "**"){
+        // Priority 1: Exact/Palti (Blue)
+        if(m1 < 3 && (v === base || v === palti(base))){
+          s1[i - startRow][j] = 1; m1++;
+        } 
+        // Priority 2: Family (Orange) - Sirf tab jab wo s1 me na ho
+        else if(m2 < 3 && fam(v) === fam(base) && !s1[i - startRow][j]){
+          s2[i - startRow][j] = 1; m2++;
+        }
+      }
+    }
+  }
+  searchCombinedPattern(s1, s2, base);
+}
+
+function searchCombinedPattern(s1, s2, base){
+ let matches = [];
+ // Purane records me dono patterns ko ek saath dhoondhna
+ for(let i=0; i <= data.length - 10; i++){
+  let ok = true;
+  for(let k=0; k<10; k++){
+   for(let j=0; j<6; j++){
+    // Agar s1 (Blue) hai toh exact/palti/fam match hona chahiye
+    if(s1[k][j] && !smartMatch(data[i+k][j], base)) { ok = false; break; }
+    // Agar s2 (Orange) hai toh sirf family match hona chahiye
+    if(s2[k][j] && fam(data[i+k][j]) !== fam(base)) { ok = false; break; }
    }
    if(!ok) break;
   }
-  if(ok) matches.push({index:i});
+  // Current position ko matches me nahi dikhana hai
+  if(ok && i < (data.length - 11)) matches.push({index:i});
  }
- activeMark = {start: data.length-9, shape: s1}; // Temporary visual
- activeMark2 = {start: data.length-9, shape: s2};
+ 
+ activeMark = {start: data.length-10, shape: s1}; 
+ activeMark2 = {start: data.length-10, shape: s2};
  draw();
  showChecks(s1, s2, matches);
 }
 
-function showChecks(s1, s2, matches){
- document.getElementById("checks").innerHTML="";
- matches.forEach((m)=>{
-  let d = document.createElement("div");
-  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid var(--gold);";
-  d.innerText = `Pattern at Row ${m.index + 1}`;
-  d.onclick = () => { 
-    activeMark={start:m.index, shape:s1}; 
-    activeMark2={start:m.index, shape:s2}; 
-    draw(); 
-    showOne(s1, s2, m.index); 
-  };
-  document.getElementById("checks").appendChild(d);
- });
- updateAI(s1, s2, matches);
-}
-
-function showOne(s1, s2, idx){
- let html="<table id='popTbl' style='color:#000'>";
- for(let i=0; i<9; i++){
-  html+="<tr>";
-  data[idx+i].forEach((v,j)=>{
-   let cls = s1[i][j] ? 'circle' : (s2[i][j] ? 'circle2' : '');
-   html+=`<td class="${cls}">${v}</td>`;
-  });
-  html+="</tr>";
- }
- document.getElementById("popData").innerHTML=html+"</table>";
- document.getElementById("popup").style.display="block";
- document.getElementById("overlay").style.display="block";
- setTimeout(() => {
-    const pcvs = document.getElementById("popCanvas");
-    const ptbl = document.getElementById("popTbl");
-    pcvs.width = ptbl.offsetWidth; pcvs.height = ptbl.offsetHeight;
-    const pctx = pcvs.getContext("2d");
-    pctx.clearRect(0,0,pcvs.width,pcvs.height);
-    drawLines("popCanvas", ptbl, ".circle", "#00ff88");
-    drawLines("popCanvas", ptbl, ".circle2", "#ff8800");
- }, 100);
-}
-
 function updateAI(s1, s2, matches){
- let jc={};
- matches.forEach(m=>{
-  let nextR = m.index + 9;
+ let jc = {};
+ matches.forEach(m => {
+  let nextR = m.index + 10; // Pattern ke theek neeche wali row
   if(nextR < data.length && data[nextR][targetCol] != "**"){
    let v = data[nextR][targetCol];
-   jc[v]=(jc[v]||0)+1;
+   jc[v] = (jc[v] || 0) + 1;
   }
  });
- document.getElementById("future").innerHTML = Object.keys(jc).length ? `<b>Probable Next:</b> ${Object.keys(jc).join(", ")}` : "Calculating...";
-}
+
+ // Result display
+ let topJodis = Object.keys(jc).sort((a,b) => jc[b] - jc[a]).slice(0,3);
+ document.getElementById("future").innerHTML = topJodis.length ? 
+    `<b>AI Prediction:</b> ${topJodis.join(" , ")}` : 
+    "No strong future match found.";
+                              }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
 
