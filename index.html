@@ -213,13 +213,13 @@ function makePattern(r,c){
   for(let i = r; i >= startRow; i--){
     for(let j = 0; j < 5; j++){
       if(data[i][j] != "**" && smartMatch(data[i][j], base)){
-        if(matchCount < 4){ 
+        if(matchCount < 3){ 
           shape[i - startRow][j] = 1;
           matchCount++;
         }
       }
     }
-    if(matchCount >= 4) break; 
+    if(matchCount >= 3) break; 
   }
   searchPattern(shape, base);
 }
