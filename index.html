@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rajdhani Pro AI – Pradeep Edition</title>
+    <title>Kalyan Pro AI – Premium Auto-Scanner</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --gold: #ffcc00; 
-            --blue-circle: #00d4ff; 
+            --gold: #ffd700; 
+            --blue-circle: #0084ff; 
             --green-line: #00ff88; 
-            --bg: #0b0f1a; 
-            --panel: #161e2d; 
+            --bg: #0f172a; 
+            --panel: #1e293b; 
         }
 
         * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -20,63 +20,70 @@
         #home-screen {
             height: 100vh; width: 100vw; display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center;
-            background: radial-gradient(circle at center, #161e2d 0%, #0b0f1a 100%);
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
-        .hero-title { font-size: 2.8rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,204,0,0.3); }
-        .hero-sub { opacity: 0.7; letter-spacing: 3px; margin-bottom: 30px; font-size: 0.9rem; }
+        .hero-title { font-size: 3rem; color: var(--gold); margin: 0; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        .hero-sub { opacity: 0.7; letter-spacing: 2px; margin-bottom: 30px; }
         .enter-btn {
-            background: var(--gold); color: #000; padding: 15px 45px;
-            font-size: 1.1rem; font-weight: 800; border: none; border-radius: 50px;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            background: var(--gold); color: #000; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: 800; border: none; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
-        .enter-btn:hover { transform: scale(1.05); background: #fff; }
+        .enter-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255,215,0,0.2); }
 
         #main-app { display: none; padding: 15px; }
-        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.05); }
+        .toolbar { background: var(--panel); padding: 12px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         
-        .table-container { position: relative; background: #fff; border-radius: 12px; padding: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.6); display: inline-block; }
-        table { border-collapse: collapse; color: #000; font-size: 15px; position: relative; z-index: 5; }
-        td, th { border: 1px solid #e2e8f0; padding: 5px; text-align: center; font-weight: 700; width: 50px; height: 50px; }
-        th { background: #161e2d; color: #cbd5e1; font-size: 10px; border: 1px solid #334155; }
+        .table-container { position: relative; background: #fff; border-radius: 10px; padding: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: inline-block; }
+        table { border-collapse: collapse; color: #000; font-size: 14px; position: relative; z-index: 5; }
+        td, th { border: 1px solid #ddd; padding: 8px 4px; text-align: center; font-weight: bold; width: 45px; height: 45px; }
+        th { background: #1e293b; color: white; font-size: 11px; }
         
         .circle { 
             border: 3px solid var(--blue-circle) !important; 
             border-radius: 50% !important; 
-            background: rgba(0, 212, 255, 0.2); 
+            background: rgba(0, 132, 255, 0.15); 
             z-index: 10;
         }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
 
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 20px; }
-        .card { background: var(--panel); padding: 15px; border-radius: 15px; border-bottom: 4px solid var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 13px; font-weight: 800; letter-spacing: 1px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: var(--panel); padding: 15px; border-radius: 12px; border-top: 3px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
 
-        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 20px; display: none; z-index: 100; padding: 20px; color: #000; width: 92%; max-width: 380px; box-shadow: 0 0 100px #000; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 90; }
-        
-        button { cursor: pointer; border-radius: 8px; border: none; font-weight: bold; transition: 0.2s; }
-        .btn-action { padding: 10px 15px; font-size: 12px; }
+        .auto-detected-btn {
+            background: #1e293b; color: #fff; margin: 6px 0; padding: 10px; 
+            cursor: pointer; border-radius: 8px; font-size: 12px; 
+            border-left: 4px solid var(--green-line); border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
+        }
+        .auto-detected-btn:hover { background: #2d3748; }
+
+        #popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 15px; display: none; z-index: 100; padding: 15px; color: #000; width: 90%; max-width: 400px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 90; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="home-screen">
-    <h1 class="hero-title">RAJDHANI AI</h1>
-    <p class="hero-sub">5-DAY MASTER PATTERN SYSTEM</p>
-    <button class="enter-btn" onclick="startApp()">OPEN CHART</button>
+    <h1 class="hero-title">Kalyan PRO AI</h1>
+    <p class="hero-sub">AUTOMATIC REPEAT PATTERN DETECTOR</p>
+    <button class="enter-btn" onclick="startApp()">START AUTO SCAN</button>
 </div>
 
 <div id="main-app">
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px;">
-        <h2 style="color:var(--gold); margin:0; font-weight: 800;">Rajdhani Night</h2>
-        <button onclick="location.reload()" style="background:#dc3545; color:white; padding:5px 12px; font-size: 11px;">Reset App</button>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h2 style="color:var(--gold); margin:0;">Kalyan AI Dashboard</h2>
+        <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
     </div>
 
     <div class="toolbar">
         <input type="file" id="csv" style="display:none">
-        <button class="btn-action" onclick="document.getElementById('csv').click()" style="background:#334155; color:white;">📂 LOAD CSV</button>
-        <button class="btn-action" onclick="addRow()" style="background:#334155; color:white;">➕ ADD ROW</button>
-        <button class="btn-action" onclick="saveData()" style="background:#15803d; color:white;">💾 SAVE</button>
+        <button onclick="document.getElementById('csv').click()" style="background:#444; color:white;">📂 CSV</button>
+        <button onclick="addRow()" style="background:#444; color:white;">➕ ROW</button>
+        <button onclick="saveData()" style="background:#28a745; color:white;">💾 SAVE DATA</button>
+        <button onclick="clearData()" style="background:#dc3545; color:white;">🗑️ CLEAR</button>
     </div>
 
     <center>
@@ -88,26 +95,26 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>🔍 History Matches</h3>
-            <div id="checks" style="max-height: 150px; overflow-y: auto;"></div>
+            <h3>🤖 Auto Detected Patterns (2x+ Repeat)</h3>
+            <div id="auto-patterns" style="max-height: 250px; overflow-y: auto;">Scanning records...</div>
         </div>
         <div class="card">
-            <h3>📊 Analysis</h3>
-            <div id="ai" style="font-size: 14px; line-height: 1.6;">Enter data to analyze...</div>
+            <h3>✔ Matches Log</h3>
+            <div id="checks">Select an auto pattern to analyze history...</div>
         </div>
         <div class="card">
-            <h3>🚀 Prediction</h3>
-            <div id="future" style="font-size: 18px; font-weight: 800; color: var(--green-line);">-- --</div>
+            <h3>🔮 Future Prediction</h3>
+            <div id="future">Awaiting pattern selection...</div>
         </div>
     </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePopup()"></div>
 <div id="popup">
-    <button onclick="closePopup()" style="float:right; background:#ff4444; color:white; padding:6px 12px; border-radius: 5px;">X</button>
-    <h3 style="margin: 0 0 15px 0; font-size: 16px;">Mirror Record (5-Day)</h3>
+    <button onclick="closePopup()" style="float:right; background:#000; color:white; padding:5px 10px;">CLOSE</button>
+    <h3 style="margin: 0 0 15px 0;">Sequence View</h3>
     <center>
-        <div class="table-container" style="border: 1px solid #eee; width: 100%;">
+        <div class="table-container" style="border: 1px solid #ddd;">
             <canvas id="popCanvas"></canvas>
             <div id="popData"></div>
         </div>
@@ -115,11 +122,10 @@
 </div>
 
 <script>
-const STORAGE_KEY="Rajdhani_Pro_Data_v1";
+const STORAGE_KEY="pdata_Kalyan_v2";
 let targetCol=null;
 let activeMark=null;
 
-// Normalize: 2-digit format
 function norm(v) {
     if (!v || v.trim() === "" || v === "**") return "**";
     let n = v.replace(/[^0-9]/g, "");
@@ -136,13 +142,13 @@ const FAMILY = {
  "45":["04","09","40","45","54","59","90","95"]
 };
     
-// Initial data for Rajdhani (5 Columns)
-let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["12","34","56","78","90"],["**","**","**","**","**"]];
+let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40","50","60"],["**","**","**","**","**","**"]];
 
 function startApp() {
     document.getElementById('home-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     draw();
+    autoScanAllPatterns();
 }
 
 function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
@@ -150,13 +156,13 @@ function palti(v){return v[1]+v[0];}
 function smartMatch(a1,b1){ if(a1=="**"||b1=="**") return false; return a1===b1 || palti(a1)===b1 || fam(a1)===fam(b1); }
 
 function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>";
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
  data.forEach((r,ri)=>{
   h+="<tr>";
   r.forEach((c,ci)=>{
    let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
    if(c=="**") cls += " blank";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)" onclick="${c=='**'?'makePattern('+ri+','+ci+')':'' }">${c}</td>`;
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
   });
   h+="</tr>";
  });
@@ -172,6 +178,7 @@ function isPartOfPattern(ri, ci){
 
 function drawLines(cvsId, tblEl) {
     const cvs = document.getElementById(cvsId);
+    if (!cvs) return;
     const ctx = cvs.getContext("2d");
     cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
     ctx.clearRect(0,0,cvs.width,cvs.height);
@@ -179,9 +186,9 @@ function drawLines(cvsId, tblEl) {
     if(cells.length < 2) return;
     
     const tRect = tblEl.getBoundingClientRect();
-    ctx.strokeStyle = "#00d4ff"; 
-    ctx.lineWidth = 3;
-    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#00ff88"; 
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
     
     ctx.beginPath();
     cells.forEach((c, idx) => {
@@ -195,54 +202,95 @@ function drawLines(cvsId, tblEl) {
 }
 
 function edit(r,c,el){ 
-    data[r][c] = norm(el.innerText.trim()); 
+    data[r][c] = norm(el.innerText.trim());
+    autoScanAllPatterns();
 }
 
-function addRow(){ data.push(["**","**","**","**","**"]); draw(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Rajdhani Data Saved!"); }
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); autoScanAllPatterns(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved Successfully!"); }
+function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
 
-function makePattern(r,c){
-  targetCol=c; let base="**";
-  for(let i=r;i>=0;i--){ if(data[i][c]!="**"){base=data[i][c]; break;}}
-  if(base=="**") return;
+// NEW: Engine to completely automate pattern scanning over entire history records
+function autoScanAllPatterns() {
+    let container = document.getElementById("auto-patterns");
+    container.innerHTML = "";
+    let detectedList = [];
 
-  let shape = Array(10).fill(0).map(() => Array(5).fill(0)); 
-  let matchCount = 0;
-  let startRow = Math.max(0, r-9);
+    // Scan backwards from the current row up to the last 10 rows to build active comparison blueprints
+    let endRow = data.length - 1;
+    let startScanRow = Math.max(0, endRow - 10);
 
-  for(let i = r; i >= startRow; i--){
-    for(let j = 0; j < 5; j++){
-      if(data[i][j] != "**" && smartMatch(data[i][j], base)){
-        if(matchCount < 3){ 
-          shape[i - startRow][j] = 1;
-          matchCount++;
+    for (let r = endRow; r >= startScanRow; r--) {
+        for (let c = 0; c < 6; c++) {
+            let base = data[r][c];
+            if (base === "**") continue;
+
+            // Generate an isolated shape tracking this dynamic family match sequence
+            let shape = Array(9).fill(0).map(() => Array(6).fill(0));
+            let matchCount = 0;
+            let startRow = Math.max(0, r - 8);
+
+            for (let i = r; i >= startRow; i--) {
+                for (let j = 0; j < 6; j++) {
+                    if (data[i][j] !== "**" && smartMatch(data[i][j], base)) {
+                        if (matchCount < 3) {
+                            shape[i - startRow][j] = 1;
+                            matchCount++;
+                        }
+                    }
+                }
+                if (matchCount >= 3) break;
+            }
+
+            // Search total records to see if this layout exists elsewhere multiple times
+            let matches = [];
+            for (let i = 0; i <= data.length - shape.length; i++) {
+                let ok = true;
+                for (let k = 0; k < shape.length; k++) {
+                    for (let j = 0; j < 6; j++) {
+                        if (shape[k][j] && !smartMatch(data[i + k][j], base)) { ok = false; break; }
+                    }
+                    if (!ok) break;
+                }
+                if (ok) matches.push({ index: i });
+            }
+
+            // If found at least 2 times (Current layout + historical counterpart), flag it!
+            if (matches.length >= 2) {
+                let famKey = fam(base);
+                let checkDup = detectedList.find(d => d.famKey === famKey && d.col === c);
+                if (!checkDup) {
+                    detectedList.push({ famKey: famKey, count: matches.length, shape: shape, base: base, matches: matches, col: c });
+                }
+            }
         }
-      }
     }
-    if(matchCount >= 3) break; 
-  }
-  searchPattern(shape, base);
-}
 
-function searchPattern(shape,base){
- let lastMatches=[];
- for(let i=0; i<=data.length-shape.length; i++){
-  let ok=true;
-  for(let k=0; k<shape.length; k++){
-   for(let j=0; j<5; j++){ if(shape[k][j] && !smartMatch(data[i+k][j],base)){ok=false; break;}}
-   if(!ok) break;
-  }
-  if(ok) lastMatches.push({index:i});
- }
- showChecks(shape, lastMatches);
+    if (detectedList.length === 0) {
+        container.innerHTML = "<div style='color:#94a3b8; font-size:12px;'>No automated matching repeat patterns active. Add rows or check data grid.</div>";
+        return;
+    }
+
+    detectedList.forEach(item => {
+        let btn = document.createElement("div");
+        btn.className = "auto-detected-btn";
+        btn.innerHTML = `<div><strong>Fam ${item.famKey}</strong> (Col: ${item.col + 1})</div> <span style='background:#28a745; padding:2px 6px; border-radius:4px; font-size:10px;'>Repeated: ${item.count}x</span>`;
+        btn.onclick = () => {
+            targetCol = item.col;
+            activeMark = { start: item.matches[0].index, shape: item.shape };
+            draw();
+            showChecks(item.shape, item.matches);
+        };
+        container.appendChild(btn);
+    });
 }
 
 function showChecks(shape, matches){
  document.getElementById("checks").innerHTML="";
  matches.forEach((m,i)=>{
   let d = document.createElement("div");
-  d.style = "background:rgba(255,255,255,0.05); margin:8px 0; padding:10px; cursor:pointer; border-radius:8px; font-size:12px; border-left:4px solid var(--blue-circle); color:#cbd5e1;";
-  d.innerHTML = `<b>Match #${i+1}</b> (Line at Row ${m.index + 1})`;
+  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
+  d.innerText = `Pattern Instance at Row ${m.index + 1}`;
   d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
   document.getElementById("checks").appendChild(d);
  });
@@ -250,7 +298,7 @@ function showChecks(shape, matches){
 }
 
 function showOne(shape, idx){
- let html="<table id='popTbl' style='color:#000; width:100%'>";
+ let html="<table id='popTbl' style='color:#000'>";
  for(let i=0; i<shape.length; i++){
   html+="<tr>";
   data[idx+i].forEach((v,j)=>{
@@ -265,22 +313,25 @@ function showOne(shape, idx){
 }
 
 function updateAI(shape, matches){
- let jc={}, pool = [];
+ let jc={}, dc={};
  matches.forEach(m=>{
   for(let i=0; i<shape.length; i++){
-   for(let j=0; j<5; j++){
+   for(let j=0; j<6; j++){
     if(shape[i][j]){
      let v = data[m.index+i][j];
-     jc[v]=(jc[v]||0)+1;
+     jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
     }
    }
   }
+ });
+ document.getElementById("ai").innerHTML = `<b>Top Jodi:</b> ${Object.keys(jc).slice(0,3).join(", ")}<br><b>Common Ank:</b> ${Object.keys(dc).slice(0,3).join(", ")}`;
+ 
+ let pool = [];
+ matches.forEach(m => {
   let nextR = m.index + shape.length;
   if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
  });
- 
- document.getElementById("ai").innerHTML = `<b>High Power:</b> ${Object.keys(jc).slice(0,3).join(", ") || "No Data"}`;
- document.getElementById("future").innerHTML = pool.length ? pool.slice(0,3).join(" , ") : "-- --";
+ document.getElementById("future").innerHTML = pool.length ? `<b>Probable Next:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing patterns...";
 }
 
 function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
@@ -291,11 +342,12 @@ document.getElementById("csv").onchange = e => {
         let lines = fr.result.split('\n');
         data = lines.filter(l=>l.trim()).map(l => {
             let row = l.split(',').map(v => norm(v.trim()));
-            while(row.length < 5) row.push("**"); 
-            return row.slice(0,5);
+            while(row.length < 6) row.push("**");
+            return row.slice(0,6);
         });
         draw();
-        alert("Rajdhani CSV Loaded!");
+        autoScanAllPatterns();
+        alert("CSV Loaded successfully!");
     };
     fr.readAsText(e.target.files[0]);
 };
