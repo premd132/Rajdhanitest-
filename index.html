@@ -146,4 +146,165 @@ let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40",
 
 function startApp() {
     document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-
+    document.getElementById('main-app').style.display = 'block';
+    draw();
+    scanBottomLivePattern();
+}
+
+function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA"; }
+function palti(v){return v[1]+v[0];}
+function smartMatch(a1,b1){ if(a1=="**"||b1=="**") return false; return a1===b1 || palti(a1)===b1 || fam(a1)===fam(b1); }
+
+function draw(){
+ let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
+ data.forEach((r,ri)=>{
+  h+="<tr>";
+  r.forEach((c,ci)=>{
+   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
+   if(c=="**") cls += " blank";
+   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
+  });
+  h+="</tr>";
+ });
+ document.getElementById("tbl").innerHTML=h;
+ if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
+}
+
+function isPartOfPattern(ri, ci){
+    if(!activeMark) return false;
+    let i = ri - activeMark.start;
+    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
+}
+
+function drawLines(cvsId, tblEl) {
+    const cvs = document.getElementById(cvsId);
+    if (!cvs) return;
+    const ctx = cvs.getContext("2d");
+    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    const cells = tblEl.querySelectorAll(".circle");
+    if(cells.length < 2) return;
+    
+    const tRect = tblEl.getBoundingClientRect();
+    ctx.strokeStyle = "#00ff88"; 
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    
+    ctx.beginPath();
+    cells.forEach((c, idx) => {
+        const r = c.getBoundingClientRect();
+        const x = r.left - tRect.left + r.width/2;
+        const y = r.top - tRect.top + r.height/2;
+        if(idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+function edit(r,c,el){ 
+    data[r][c] = norm(el.innerText.trim());
+    scanBottomLivePattern();
+}
+
+function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); scanBottomLivePattern(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved Successfully!"); }
+function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
+
+function scanBottomLivePattern() {
+    let container = document.getElementById("auto-patterns");
+    if (!container) return;
+    container.innerHTML = "";
+    let detectedList = [];
+
+    let lastRowIdx = data.length - 1;
+
+    for (let c = 0; c < 6; c++) {
+        let base = "**";
+        let targetRow = lastRowIdx;
+        for (let i = lastRowIdx; i >= 0; i--) {
+            if (data[i][c] !== "**") {
+                base = data[i][c];
+                targetRow = i;
+                break;
+            }
+        }
+        if (base === "**") continue;
+
+        let shape = Array(9).fill(0).map(() => Array(6).fill(0));
+        let matchCount = 0;
+        let startRow = Math.max(0, targetRow - 8);
+
+        for (let i = targetRow; i >= startRow; i--) {
+            for (let j = 0; j < 6; j++) {
+                if (data[i][j] !== "**" && smartMatch(data[i][j], base)) {
+                    if (matchCount < 3) {
+                        shape[i - startRow][j] = 1;
+                        matchCount++;
+                    }
+                }
+            }
+            if (matchCount >= 3) break;
+        }
+
+        let matches = [];
+        let historicalEnd = Math.max(0, targetRow - shape.length); 
+        for (let i = 0; i <= historicalEnd; i++) {
+            let ok = true;
+            for (let k = 0; k < shape.length; k++) {
+                for (let j = 0; j < 6; j++) {
+                    if (shape[k][j] && !smartMatch(data[i + k][j], base)) { ok = false; break; }
+                }
+                if (!ok) break;
+            }
+            if (ok) matches.push({ index: i });
+        }
+
+        if (matches.length > 0) {
+            let famKey = fam(base);
+            detectedList.push({ famKey: famKey, count: matches.length, shape: shape, base: base, matches: matches, col: c, liveStart: startRow });
+        }
+    }
+
+    if (detectedList.length === 0) {
+        container.innerHTML = "<div style='color:#94a3b8; font-size:12px;'>Bottom blank cell ke liye koi purana record match nahi mila. Naya data add karein.</div>";
+        return;
+    }
+
+    detectedList.forEach(item => {
+        let btn = document.createElement("div");
+        btn.className = "auto-detected-btn";
+        btn.innerHTML = `<div><strong>Bottom Pattern (Col: ${item.col + 1})</strong> <br><small>Family: ${item.famKey}</small></div> <span style='background:#0084ff; padding:4px 8px; border-radius:4px; font-size:11px;'>History: ${item.count}x Found</span>`;
+        btn.onclick = () => {
+            targetCol = item.col;
+            activeMark = { start: item.liveStart, shape: item.shape };
+            draw();
+            showChecks(item.shape, item.matches);
+        };
+        container.appendChild(btn);
+    });
+}
+
+function showChecks(shape, matches){
+ let checksDiv = document.getElementById("checks");
+ if(!checksDiv) return;
+ checksDiv.innerHTML="";
+ matches.forEach((m,i)=>{
+  let d = document.createElement("div");
+  d.style = "background:#2a2a2a; margin:5px 0; padding:10px; cursor:pointer; border-radius:6px; font-size:12px; border-left:4px solid #ffd700; display:flex; justify-content:space-between;";
+  d.innerHTML = `<span>Old Match Line ${i + 1} (Row ${m.index + 1})</span> ➔`;
+  d.onclick = () => { 
+      activeMark={start:m.index, shape:shape}; 
+      draw(); 
+      showOne(shape, m.index); 
+  };
+  checksDiv.appendChild(d);
+ });
+ updateAI(shape, matches);
+}
+
+function showOne(shape, idx){
+ let html="<table id='popTbl' style='color:#000'>";
+ for(let i=0; i<shape.length; i++){
+  html+="<tr>";
+  data[idx+i].forEach((v,j)=>{
+   html
