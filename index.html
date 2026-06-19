@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalyan Pro AI – Premium Auto-Scanner</title>
+    <title>Kalyan Pro AI – Bottom Pattern Scanner</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -52,8 +52,8 @@
         .card h3 { margin: 0 0 10px 0; color: var(--gold); font-size: 14px; text-transform: uppercase; }
 
         .auto-detected-btn {
-            background: #1e293b; color: #fff; margin: 6px 0; padding: 10px; 
-            cursor: pointer; border-radius: 8px; font-size: 12px; 
+            background: #1e293b; color: #fff; margin: 6px 0; padding: 12px; 
+            cursor: pointer; border-radius: 8px; font-size: 13px; 
             border-left: 4px solid var(--green-line); border: 1px solid rgba(255,255,255,0.05);
             transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
         }
@@ -68,13 +68,13 @@
 
 <div id="home-screen">
     <h1 class="hero-title">Kalyan PRO AI</h1>
-    <p class="hero-sub">AUTOMATIC REPEAT PATTERN DETECTOR</p>
-    <button class="enter-btn" onclick="startApp()">START AUTO SCAN</button>
+    <p class="hero-sub">LIVE BOTTOM PATTERN MATCH ENGINE</p>
+    <button class="enter-btn" onclick="startApp()">START LIVE SCAN</button>
 </div>
 
 <div id="main-app">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
-        <h2 style="color:var(--gold); margin:0;">Kalyan AI Dashboard</h2>
+        <h2 style="color:var(--gold); margin:0;">Kalyan Bottom Scan AI</h2>
         <button onclick="location.reload()" style="background:none; color:white; border:1px solid #444; padding:5px 10px;">Logout</button>
     </div>
 
@@ -95,16 +95,16 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>🤖 Auto Detected Patterns (2x+ Repeat)</h3>
-            <div id="auto-patterns" style="max-height: 250px; overflow-y: auto;">Scanning records...</div>
+            <h3>🤖 Bottom Live Patterns Found</h3>
+            <div id="auto-patterns" style="max-height: 250px; overflow-y: auto;">Analyzing bottom lines...</div>
         </div>
         <div class="card">
-            <h3>✔ Matches Log</h3>
-            <div id="checks">Select an auto pattern to analyze history...</div>
+            <h3>✔ Old Records Matches</h3>
+            <div id="checks">Select a live pattern to trace old records...</div>
         </div>
         <div class="card">
             <h3>🔮 Future Prediction</h3>
-            <div id="future">Awaiting pattern selection...</div>
+            <div id="future">Select a match line...</div>
         </div>
     </div>
 </div>
@@ -146,211 +146,4 @@ let data=JSON.parse(localStorage.getItem(STORAGE_KEY)) || [["10","20","30","40",
 
 function startApp() {
     document.getElementById('home-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    draw();
-    autoScanAllPatterns();
-}
-
-function fam(v){for(let k in FAMILY) if(FAMILY[k].includes(v)) return k; return "NA";}
-function palti(v){return v[1]+v[0];}
-function smartMatch(a1,b1){ if(a1=="**"||b1=="**") return false; return a1===b1 || palti(a1)===b1 || fam(a1)===fam(b1); }
-
-function draw(){
- let h="<tr><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr>";
- data.forEach((r,ri)=>{
-  h+="<tr>";
-  r.forEach((c,ci)=>{
-   let cls = (activeMark && isPartOfPattern(ri, ci)) ? "circle" : "";
-   if(c=="**") cls += " blank";
-   h+=`<td class="${cls}" contenteditable oninput="edit(${ri},${ci},this)">${c}</td>`;
-  });
-  h+="</tr>";
- });
- document.getElementById("tbl").innerHTML=h;
- if(activeMark) setTimeout(() => drawLines("mainCanvas", document.getElementById("tbl")), 50);
-}
-
-function isPartOfPattern(ri, ci){
-    if(!activeMark) return false;
-    let i = ri - activeMark.start;
-    return (i >= 0 && i < activeMark.shape.length && activeMark.shape[i][ci]);
-}
-
-function drawLines(cvsId, tblEl) {
-    const cvs = document.getElementById(cvsId);
-    if (!cvs) return;
-    const ctx = cvs.getContext("2d");
-    cvs.width = tblEl.offsetWidth; cvs.height = tblEl.offsetHeight;
-    ctx.clearRect(0,0,cvs.width,cvs.height);
-    const cells = tblEl.querySelectorAll(".circle");
-    if(cells.length < 2) return;
-    
-    const tRect = tblEl.getBoundingClientRect();
-    ctx.strokeStyle = "#00ff88"; 
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    
-    ctx.beginPath();
-    cells.forEach((c, idx) => {
-        const r = c.getBoundingClientRect();
-        const x = r.left - tRect.left + r.width/2;
-        const y = r.top - tRect.top + r.height/2;
-        if(idx === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-}
-
-function edit(r,c,el){ 
-    data[r][c] = norm(el.innerText.trim());
-    autoScanAllPatterns();
-}
-
-function addRow(){ data.push(["**","**","**","**","**","**"]); draw(); autoScanAllPatterns(); }
-function saveData(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); alert("Data Saved Successfully!"); }
-function clearData(){ if(confirm("Permanently clear all data?")){ localStorage.clear(); location.reload(); }}
-
-// NEW: Engine to completely automate pattern scanning over entire history records
-function autoScanAllPatterns() {
-    let container = document.getElementById("auto-patterns");
-    container.innerHTML = "";
-    let detectedList = [];
-
-    // Scan backwards from the current row up to the last 10 rows to build active comparison blueprints
-    let endRow = data.length - 1;
-    let startScanRow = Math.max(0, endRow - 10);
-
-    for (let r = endRow; r >= startScanRow; r--) {
-        for (let c = 0; c < 6; c++) {
-            let base = data[r][c];
-            if (base === "**") continue;
-
-            // Generate an isolated shape tracking this dynamic family match sequence
-            let shape = Array(9).fill(0).map(() => Array(6).fill(0));
-            let matchCount = 0;
-            let startRow = Math.max(0, r - 8);
-
-            for (let i = r; i >= startRow; i--) {
-                for (let j = 0; j < 6; j++) {
-                    if (data[i][j] !== "**" && smartMatch(data[i][j], base)) {
-                        if (matchCount < 3) {
-                            shape[i - startRow][j] = 1;
-                            matchCount++;
-                        }
-                    }
-                }
-                if (matchCount >= 3) break;
-            }
-
-            // Search total records to see if this layout exists elsewhere multiple times
-            let matches = [];
-            for (let i = 0; i <= data.length - shape.length; i++) {
-                let ok = true;
-                for (let k = 0; k < shape.length; k++) {
-                    for (let j = 0; j < 6; j++) {
-                        if (shape[k][j] && !smartMatch(data[i + k][j], base)) { ok = false; break; }
-                    }
-                    if (!ok) break;
-                }
-                if (ok) matches.push({ index: i });
-            }
-
-            // If found at least 2 times (Current layout + historical counterpart), flag it!
-            if (matches.length >= 2) {
-                let famKey = fam(base);
-                let checkDup = detectedList.find(d => d.famKey === famKey && d.col === c);
-                if (!checkDup) {
-                    detectedList.push({ famKey: famKey, count: matches.length, shape: shape, base: base, matches: matches, col: c });
-                }
-            }
-        }
-    }
-
-    if (detectedList.length === 0) {
-        container.innerHTML = "<div style='color:#94a3b8; font-size:12px;'>No automated matching repeat patterns active. Add rows or check data grid.</div>";
-        return;
-    }
-
-    detectedList.forEach(item => {
-        let btn = document.createElement("div");
-        btn.className = "auto-detected-btn";
-        btn.innerHTML = `<div><strong>Fam ${item.famKey}</strong> (Col: ${item.col + 1})</div> <span style='background:#28a745; padding:2px 6px; border-radius:4px; font-size:10px;'>Repeated: ${item.count}x</span>`;
-        btn.onclick = () => {
-            targetCol = item.col;
-            activeMark = { start: item.matches[0].index, shape: item.shape };
-            draw();
-            showChecks(item.shape, item.matches);
-        };
-        container.appendChild(btn);
-    });
-}
-
-function showChecks(shape, matches){
- document.getElementById("checks").innerHTML="";
- matches.forEach((m,i)=>{
-  let d = document.createElement("div");
-  d.style = "background:#2a2a2a; margin:5px 0; padding:8px; cursor:pointer; border-radius:6px; font-size:12px; border-left:3px solid #0084ff;";
-  d.innerText = `Pattern Instance at Row ${m.index + 1}`;
-  d.onclick = () => { activeMark={start:m.index, shape:shape}; draw(); showOne(shape, m.index); };
-  document.getElementById("checks").appendChild(d);
- });
- updateAI(shape, matches);
-}
-
-function showOne(shape, idx){
- let html="<table id='popTbl' style='color:#000'>";
- for(let i=0; i<shape.length; i++){
-  html+="<tr>";
-  data[idx+i].forEach((v,j)=>{
-   html+=`<td class="${shape[i][j]?'circle':''}">${v}</td>`;
-  });
-  html+="</tr>";
- }
- document.getElementById("popData").innerHTML=html+"</table>";
- document.getElementById("popup").style.display="block";
- document.getElementById("overlay").style.display="block";
- setTimeout(()=>drawLines("popCanvas", document.getElementById("popTbl")), 100);
-}
-
-function updateAI(shape, matches){
- let jc={}, dc={};
- matches.forEach(m=>{
-  for(let i=0; i<shape.length; i++){
-   for(let j=0; j<6; j++){
-    if(shape[i][j]){
-     let v = data[m.index+i][j];
-     jc[v]=(jc[v]||0)+1; dc[v[0]]=(dc[v[0]]||0)+1; dc[v[1]]=(dc[v[1]]||0)+1;
-    }
-   }
-  }
- });
- document.getElementById("ai").innerHTML = `<b>Top Jodi:</b> ${Object.keys(jc).slice(0,3).join(", ")}<br><b>Common Ank:</b> ${Object.keys(dc).slice(0,3).join(", ")}`;
- 
- let pool = [];
- matches.forEach(m => {
-  let nextR = m.index + shape.length;
-  if(nextR < data.length && data[nextR][targetCol] != "**") pool.push(data[nextR][targetCol]);
- });
- document.getElementById("future").innerHTML = pool.length ? `<b>Probable Next:</b> ${[...new Set(pool)].join(" , ")}` : "Analyzing patterns...";
-}
-
-function closePopup(){ document.getElementById("popup").style.display="none"; document.getElementById("overlay").style.display="none"; }
-
-document.getElementById("csv").onchange = e => {
-    let fr = new FileReader();
-    fr.onload = () => {
-        let lines = fr.result.split('\n');
-        data = lines.filter(l=>l.trim()).map(l => {
-            let row = l.split(',').map(v => norm(v.trim()));
-            while(row.length < 6) row.push("**");
-            return row.slice(0,6);
-        });
-        draw();
-        autoScanAllPatterns();
-        alert("CSV Loaded successfully!");
-    };
-    fr.readAsText(e.target.files[0]);
-};
-</script>
-</body>
-</html>
+    document.getElementById('main-
